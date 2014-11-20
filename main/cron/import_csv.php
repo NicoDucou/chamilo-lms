@@ -127,7 +127,7 @@ class ImportCsv
                 }
             }
 
-            if (empty($fileToProcess)) {
+            if (empty($fileToProcess) && empty($fileToProcessStatic)) {
                 echo 'Error - no files to process.';
 
                 return 0;
@@ -135,7 +135,13 @@ class ImportCsv
 
             $this->prepareImport();
 
-            $sections = array('students', 'teachers', 'courses', 'sessions', 'unsubscribe-static');
+            $sections = array(
+                'students',
+                'teachers',
+                'courses',
+                'sessions',
+                'unsubscribe-static'
+            );
             foreach ($sections as $section) {
                 $this->logger->addInfo("-- Import $section --");
 
@@ -152,11 +158,19 @@ class ImportCsv
                 }
             }
 
-            $sections = array('students-static', 'teachers-static', 'courses-static', 'sessions-static', 'calendar-static');
+            $sections = array(
+                'students-static',
+                'teachers-static',
+                'courses-static',
+                'sessions-static',
+                'calendar-static',
+            );
             foreach ($sections as $section) {
                 $this->logger->addInfo("-- Import static files $section --");
 
-                if (isset($fileToProcessStatic[$section]) && !empty($fileToProcessStatic[$section])) {
+                if (isset($fileToProcessStatic[$section]) &&
+                    !empty($fileToProcessStatic[$section])
+                ) {
                     $files = $fileToProcessStatic[$section];
                     foreach ($files as $fileInfo) {
                         $method = $fileInfo['method'];
@@ -176,11 +190,24 @@ class ImportCsv
     private function prepareImport()
     {
         // Create user extra field: extra_external_user_id
-        UserManager::create_extra_field($this->extraFieldIdNameList['user'], 1, 'External user id', null);
+        UserManager::create_extra_field(
+            $this->extraFieldIdNameList['user'],
+            1,
+            'External user id',
+            null
+        );
         // Create course extra field: extra_external_course_id
-        CourseManager::create_course_extra_field($this->extraFieldIdNameList['course'], 1, 'External course id');
+        CourseManager::create_course_extra_field(
+            $this->extraFieldIdNameList['course'],
+            1,
+            'External course id'
+        );
         // Create session extra field extra_external_session_id
-        SessionManager::create_session_extra_field($this->extraFieldIdNameList['session'], 1, 'External session id');
+        SessionManager::create_session_extra_field(
+            $this->extraFieldIdNameList['session'],
+            1,
+            'External session id'
+        );
     }
 
     /**
@@ -232,6 +259,7 @@ class ImportCsv
 
     /**
      * @param array $row
+     *
      * @return array
      */
     private function cleanCourseRow($row)
@@ -296,13 +324,15 @@ class ImportCsv
             foreach ($data as $row) {
                 $row = $this->cleanUserRow($row);
 
-                $user_id = UserManager::get_user_id_from_original_id($row['extra_'.$this->extraFieldIdNameList['user']], $this->extraFieldIdNameList['user']);
+                $user_id = UserManager::get_user_id_from_original_id(
+                    $row['extra_' . $this->extraFieldIdNameList['user']],
+                    $this->extraFieldIdNameList['user']
+                );
                 $userInfo  = array();
                 $userInfoByOfficialCode  = null;
 
                 if (!empty($user_id)) {
                     $userInfo = api_get_user_info($user_id);
-                    //$userInfo = api_get_user_info_from_username($row['username']);
                     $userInfoByOfficialCode = api_get_user_info_from_official_code($row['official_code']);
                 }
 
@@ -332,7 +362,8 @@ class ImportCsv
 
                     if ($userId) {
                         foreach ($row as $key => $value) {
-                            if (substr($key, 0, 6) == 'extra_') { //an extra field
+                            if (substr($key, 0, 6) == 'extra_') {
+                                //an extra field
                                 UserManager::update_extra_field_value($userId, substr($key, 6), $value);
                             }
                         }
@@ -374,8 +405,13 @@ class ImportCsv
 
                     if ($result) {
                         foreach ($row as $key => $value) {
-                            if (substr($key, 0, 6) == 'extra_') { //an extra field
-                                UserManager::update_extra_field_value($userInfo['user_id'], substr($key, 6), $value);
+                            if (substr($key, 0, 6) == 'extra_') {
+                                //an extra field
+                                UserManager::update_extra_field_value(
+                                    $userInfo['user_id'],
+                                    substr($key, 6),
+                                    $value
+                                );
                             }
                         }
                         $this->logger->addInfo("Teachers - User updated: ".$row['username']);
@@ -461,7 +497,8 @@ class ImportCsv
 
                     if ($result) {
                         foreach ($row as $key => $value) {
-                            if (substr($key, 0, 6) == 'extra_') { //an extra field
+                            if (substr($key, 0, 6) == 'extra_') {
+                                //an extra field
                                 UserManager::update_extra_field_value($result, substr($key, 6), $value);
                             }
                         }
@@ -488,7 +525,9 @@ class ImportCsv
                     // Conditions that disables the update of password and email:
 
                     if (isset($this->conditions['importStudents'])) {
-                        if (isset($this->conditions['importStudents']['update']) && isset($this->conditions['importStudents']['update']['avoid'])) {
+                        if (isset($this->conditions['importStudents']['update']) &&
+                            isset($this->conditions['importStudents']['update']['avoid'])
+                        ) {
                             // Blocking email update -
                             // 1. Condition
                             $avoidUsersWithEmail = $this->conditions['importStudents']['update']['avoid']['email'];
@@ -550,8 +589,13 @@ class ImportCsv
                             $this->logger->addInfo("Students - Username was changes from '".$userInfo['username']."' to '".$row['username']."' ");
                         }
                         foreach ($row as $key => $value) {
-                            if (substr($key, 0, 6) == 'extra_') { //an extra field
-                                UserManager::update_extra_field_value($userInfo['user_id'], substr($key, 6), $value);
+                            if (substr($key, 0, 6) == 'extra_') {
+                                //an extra field
+                                UserManager::update_extra_field_value(
+                                    $userInfo['user_id'],
+                                    substr($key, 6),
+                                    $value
+                                );
                             }
                         }
 
@@ -576,6 +620,10 @@ class ImportCsv
         $this->importCourses($file, false);
     }
 
+    /**
+     * @param string $file
+     * @param bool $moveFile
+     */
     private function importCalendarStatic($file, $moveFile = true)
     {
         $data = Import::csv_to_array($file);
@@ -743,12 +791,12 @@ class ImportCsv
                 if (empty($courseInfo)) {
                     // Create
                     $params = array();
-                    $params['title']                = $row['title'];
-                    $params['exemplary_content']    = false;
-                    $params['wanted_code']          = $row['course_code'];
-                    $params['course_category']      = $row['course_category'];
-                    $params['course_language']      = $row['language'];
-                    $params['teachers']             = $row['teachers'];
+                    $params['title'] = $row['title'];
+                    $params['exemplary_content'] = false;
+                    $params['wanted_code'] = $row['course_code'];
+                    $params['course_category'] = $row['course_category'];
+                    $params['course_language'] = $row['language'];
+                    $params['teachers'] = $row['teachers'];
 
                     $courseInfo = CourseManager::create_course($params);
 
@@ -793,13 +841,12 @@ class ImportCsv
         }
     }
 
-
     /**
+     * Updates the session synchronize with the csv file.
      * @param string $file
      */
     private function importSessionsStatic($file)
     {
-        //$this->importSessions($file, false);
         $content = file($file);
         $sessions = array();
 
@@ -843,12 +890,123 @@ class ImportCsv
                         $this->extraFieldIdNameList['session']
                     );
 
+                    $coachUserName = isset($session['Coach']) ? $session['Coach'] : null;
+                    $categoryId = isset($session['category_id']) ? $session['category_id'] : null;
+
+                    // 2014-06-30
+                    $dateStart = explode('/', $session['DateStart']);
+                    $dateEnd = explode('/', $session['DateEnd']);
+                    //$visibility = $session['visibility'];
+                    $visibility = $this->defaultSessionVisibility;
+
+                    $coachId = null;
+                    if (!empty($coachUserName)) {
+                        $coachInfo = api_get_user_info_from_username($coachUserName);
+                        $coachId = $coachInfo['user_id'];
+                    }
+
+                    if (empty($sessionId)) {
+                        $result = SessionManager::create_session(
+                            $session['SessionName'],
+                            $dateStart[0],
+                            $dateStart[1],
+                            $dateStart[2],
+                            $dateEnd[0],
+                            $dateEnd[1],
+                            $dateEnd[2],
+                            null, //$session['nb_days_access_before_beginning'],
+                            null, //$session['nb_days_access_after_end'],
+                            null,
+                            $coachUserName,
+                            $categoryId,
+                            $visibility
+                        );
+
+                        if (is_numeric($result)) {
+                            $sessionId = $result;
+                            SessionManager::update_session_extra_field_value(
+                                $sessionId,
+                                $this->extraFieldIdNameList['session'],
+                                $session['SessionID']
+                            );
+                        }
+                    } else {
+                        $result = SessionManager::edit_session(
+                            $sessionId,
+                            $session['SessionName'],
+                            $dateStart[0],
+                            $dateStart[1],
+                            $dateStart[2],
+                            $dateEnd[0],
+                            $dateEnd[1],
+                            $dateEnd[2],
+                            null,//$session['nb_days_access_before_beginning'],
+                            null,//$session['nb_days_access_after_end'],
+                            null,
+                            $coachId,
+                            $categoryId,
+                            $visibility
+                        );
+
+                        if (is_numeric($result)) {
+                            $tbl_session = Database::get_main_table(TABLE_MAIN_SESSION);
+                            $params = array(
+                                'description' => $session['SessionDescription'],
+                            );
+                            Database::update(
+                                $tbl_session,
+                                $params,
+                                array('id = ?' => $sessionId)
+                            );
+                        }
+                    }
+
+                    // Courses
+
+                    $courses = explode('|', $session['Courses']);
+                    $courseList = array();
+                    foreach ($courses as $course) {
+                        $courseArray = bracketsToArray($course);
+                        $courseCode = $courseArray[0];
+                        if (CourseManager::course_exists($courseCode)) {
+                            $courseList[] = $courseCode;
+                        }
+                    }
+
+                    SessionManager::add_courses_to_session(
+                        $sessionId,
+                        $courseList,
+                        true
+                    );
+
                     if (!empty($sessionId)) {
                         $courses = explode('|', $session['Courses']);
                         foreach ($courses as $course) {
                             $courseArray = bracketsToArray($course);
                             $courseCode = $courseArray[0];
                             if (CourseManager::course_exists($courseCode)) {
+                                // Coaches
+                                $courseCoaches = isset($courseArray[1]) ? $courseArray[1] : null;
+                                $courseCoaches = explode(',', $courseCoaches);
+
+                                if (!empty($courseCoaches)) {
+                                    $coachList = array();
+                                    foreach ($courseCoaches as $courseCoach) {
+                                        $courseCoachId = UserManager::get_user_id_from_username($courseCoach);
+                                        if ($courseCoachId !== false) {
+                                            // Just insert new coaches
+                                            $coachList[] = $courseCoachId;
+                                        }
+                                    }
+                                    SessionManager::updateCoaches(
+                                        $sessionId,
+                                        $courseCode,
+                                        $coachList,
+                                        true
+                                    );
+                                }
+
+                                // Students
                                 $courseUsers = isset($courseArray[2]) ? $courseArray[2] : null;
                                 $courseUsers = explode(',', $courseUsers);
                                 if (!empty($courseUsers)) {
@@ -859,15 +1017,14 @@ class ImportCsv
                                             $userList[] = $userInfo['user_id'];
                                         }
                                     }
-                                    if (!empty($userList)) {
-                                        SessionManager::subscribe_users_to_session_course(
-                                            $userList,
-                                            $sessionId,
-                                            $courseCode
-                                        );
-                                    } else {
-                                        $this->logger->addInfo("No users to register.");
-                                    }
+
+                                    SessionManager::subscribe_users_to_session_course(
+                                        $userList,
+                                        $sessionId,
+                                        $courseCode,
+                                        SESSION_VISIBLE_READ_ONLY,
+                                        true
+                                    );
                                 } else {
                                     $this->logger->addInfo("No users to register.");
                                 }
@@ -894,7 +1051,9 @@ class ImportCsv
     private function importSessions($file, $moveFile = true)
     {
         $avoid =  null;
-        if (isset($this->conditions['importSessions']) && isset($this->conditions['importSessions']['update'])) {
+        if (isset($this->conditions['importSessions']) &&
+            isset($this->conditions['importSessions']['update'])
+        ) {
             $avoid = $this->conditions['importSessions']['update'];
         }
         $result = SessionManager::importCSV(
@@ -973,8 +1132,8 @@ class ImportCsv
         // User
         $table = Database::get_main_table(TABLE_MAIN_USER);
         $tableAdmin = Database::get_main_table(TABLE_MAIN_ADMIN);
-        //$sql = "DELETE FROM $table WHERE username NOT IN ('admin') AND lastname <> 'Anonymous' ";
-        $sql = "DELETE FROM $table WHERE user_id not in (select user_id from $tableAdmin) and status <> ".ANONYMOUS;
+        $sql = "DELETE FROM $table
+                WHERE user_id not in (select user_id from $tableAdmin) and status <> ".ANONYMOUS;
         Database::query($sql);
         echo $sql.PHP_EOL;
 

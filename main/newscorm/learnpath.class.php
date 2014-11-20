@@ -6152,7 +6152,8 @@ class learnpath
     }
 
     /**
-     * Function that displays a list with al the resources that could be added to the learning path
+     * Function that displays a list with al the resources that
+     * could be added to the learning path
      * @return string
      */
     public function display_resources()
@@ -6175,12 +6176,12 @@ class learnpath
         $forums = $this->get_forums(null, $course_code);
 
         $headers = array(
-            Display::return_icon('folder_document.png', get_lang('Documents'), array(), 64),
-            Display::return_icon('quiz.png',  get_lang('Quiz'), array(), 64),
-            Display::return_icon('links.png', get_lang('Links'), array(), 64),
-            Display::return_icon('works.png', get_lang('Works'), array(), 64),
-            Display::return_icon('forum.png', get_lang('Forums'), array(), 64),
-            Display::return_icon('add_learnpath_section.png', get_lang('NewChapter'), array(), 64)
+            Display::return_icon('folder_document.png', get_lang('Documents'), array(), ICON_SIZE_BIG),
+            Display::return_icon('quiz.png',  get_lang('Quiz'), array(), ICON_SIZE_BIG),
+            Display::return_icon('links.png', get_lang('Links'), array(), ICON_SIZE_BIG),
+            Display::return_icon('works.png', get_lang('Works'), array(), ICON_SIZE_BIG),
+            Display::return_icon('forum.png', get_lang('Forums'), array(), ICON_SIZE_BIG),
+            Display::return_icon('add_learnpath_section.png', get_lang('NewChapter'), array(), ICON_SIZE_BIG)
         );
         echo Display::display_normal_message(get_lang('ClickOnTheLearnerViewToSeeYourLearningPath'));
         $chapter = $_SESSION['oLP']->display_item_form('chapter', get_lang('EnterDataNewChapter'), 'add_item');
@@ -7539,9 +7540,9 @@ class learnpath
 
     /**
      * Return HTML form to add/edit a link item
-     * @param string	Action (add/edit)
-     * @param integer	Item ID if exists
-     * @param mixed		Extra info
+     * @param string	$action (add/edit)
+     * @param integer	$id Item ID if exists
+     * @param mixed		$extra_info
      * @return	string	HTML form
      */
     public function display_link_form($action = 'add', $id = 0, $extra_info = '')
@@ -8064,8 +8065,6 @@ class learnpath
                     WHERE c_id = ".$course_id." AND lp_id = " . $this->lp_id . " AND parent_item_id = 0
                     ORDER BY display_order ASC";
         $res_zero = Database::query($sql_zero);
-
-        global $charset;
         $i = 0;
 
         while ($row_zero = Database :: fetch_array($res_zero)) {
@@ -8442,14 +8441,18 @@ class learnpath
      */
     public function get_links()
     {
+        require_once api_get_path(LIBRARY_PATH).'link.lib.php';
+
         $course_id = api_get_course_int_id();
         $tbl_link = Database::get_course_table(TABLE_LINK);
 
         $session_id = api_get_session_id();
         $condition_session = api_get_session_condition($session_id);
 
-        $sql_link = "SELECT id, title FROM $tbl_link WHERE c_id = ".$course_id." $condition_session ORDER BY title ASC";
-        $res_link = Database::query($sql_link);
+        $sql = "SELECT id, title, category_id FROM $tbl_link
+                WHERE c_id = ".$course_id." $condition_session
+                ORDER BY title ASC";
+        $res_link = Database::query($sql);
 
         $return = '<ul class="lp_resource">';
         $return .= '<li class="lp_resource_element">';
@@ -8458,8 +8461,30 @@ class learnpath
         $return .= '</li>';
         $course_info = api_get_course_info();
 
+        $linkCategories = getLinkCategoriesResult($course_id, $session_id);
+        $categoryIdList = array();
+        if (!empty($linkCategories)) {
+            foreach ($linkCategories as $categoryInfo) {
+                $categoryIdList[] = $categoryInfo['id'];
+            }
+        }
+
         while ($row_link = Database :: fetch_array($res_link)) {
-            $item_visibility = api_get_item_visibility($course_info, TOOL_LINK, $row_link['id'], $session_id);
+
+            // Check if category exists if not then consider as deleted.
+            if (!empty($row_link['category_id'])) {
+                $categoryId = $row_link['category_id'];
+                if (!in_array($categoryId, $categoryIdList)) {
+                    continue;
+                }
+            }
+
+            $item_visibility = api_get_item_visibility(
+                $course_info,
+                TOOL_LINK,
+                $row_link['id'],
+                $session_id
+            );
             if ($item_visibility != 2)  {
                 $return .= '<li class="lp_resource_element" data_id="'.$row_link['id'].'" data_type="'.TOOL_LINK.'" title="'.$row_link['title'].'" >';
                 $return .= '<a class="moved" href="#">';
@@ -8473,6 +8498,7 @@ class learnpath
             }
         }
         $return .= '</ul>';
+
         return $return;
     }
 
