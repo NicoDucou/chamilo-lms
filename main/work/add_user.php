@@ -17,6 +17,7 @@ $current_course_tool  = TOOL_STUDENTPUBLICATION;
 $workId = isset($_GET['id']) ? intval($_GET['id']) : null;
 $userId = isset($_GET['user_id']) ? intval($_GET['user_id']) : null;
 $action = isset($_GET['action']) ? $_GET['action'] : null;
+$sessionId = api_get_session_id();
 
 if (empty($workId)) {
     api_not_allowed(true);
@@ -47,14 +48,14 @@ switch ($action) {
         if (empty($data)) {
             addUserToWork($userId, $workId, api_get_course_int_id());
         }
-        $url = api_get_path(WEB_CODE_PATH).'work/add_user.php?id='.$workId;
+        $url = api_get_path(WEB_CODE_PATH).'work/add_user.php?id='.$workId.'&'.api_get_cidreq();
         header('Location: '.$url);
         exit;
         break;
     case 'delete':
         if (!empty($workId) && !empty($userId)) {
             deleteUserToWork($userId, $workId, api_get_course_int_id());
-            $url = api_get_path(WEB_CODE_PATH).'work/add_user.php?id='.$workId;
+            $url = api_get_path(WEB_CODE_PATH).'work/add_user.php?id='.$workId.'&'.api_get_cidreq();
             header('Location: '.$url);
             exit;
         }
@@ -79,12 +80,19 @@ if (!empty($items)) {
     echo '</div>';
 }
 
+
+if (empty($sessionId)) {
+    $status = STUDENT;
+} else {
+    $status = 0;
+}
+
 $userList = CourseManager::get_user_list_from_course_code(
     $courseInfo['code'],
-    api_get_session_id(),
+    $sessionId,
     null,
     null,
-    STUDENT
+    $status
 );
 
 $userToAddList = array();

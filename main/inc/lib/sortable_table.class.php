@@ -95,6 +95,11 @@ class SortableTable extends HTML_Table
     public $use_jqgrid = false;
     public $table_id = null;
     public $headers = array();
+    /**
+     * @var array
+     * Columns to hide
+     */
+    private $columnsToHide = array();
 
     /**
      * Create a new SortableTable
@@ -124,7 +129,6 @@ class SortableTable extends HTML_Table
             $table_id = $table_name.uniqid();
         }
         $this->table_id = $table_id;
-
         parent::__construct(array('class' => 'data_table', 'id' => $table_id));
         $this->table_name = $table_name;
         $this->additional_parameters = array();
@@ -240,6 +244,7 @@ class SortableTable extends HTML_Table
     public function return_table()
     {
         $empty_table = false;
+        $this->processHeaders();
         $content = $this->get_table_html();
 
         if ($this->get_total_number_of_items() == 0) {
@@ -293,7 +298,6 @@ class SortableTable extends HTML_Table
             $html .= '<td>';
 
             if (count($this->form_actions) > 0) {
-
                 $html .= '<div class="btn-toolbar">';
                     $html .= '<div class="btn-group">';
                     $html .= '<a class="btn" href="?'.$params.'&amp;'.$this->param_prefix.'selectall=1" onclick="javascript: setCheckbox(true, \''.$table_id.'\'); return false;">'.get_lang('SelectAll').'</a>';
@@ -574,6 +578,17 @@ class SortableTable extends HTML_Table
             $count = 1;
             foreach ($table_data as & $row) {
                 $row = $this->filter_data($row);
+                $newRow = array();
+                if (!empty($this->columnsToHide)) {
+                    $counter = 0;
+                    foreach ($row as $index => $rowInfo) {
+                        if (!isset($this->columnsToHide[$index])) {
+                            $newRow[$counter] = $rowInfo ;
+                            $counter++;
+                        }
+                    }
+                    $row = $newRow;
+                }
                 $this->addRow($row);
                 if (isset($row['child_of'])) {
                     $this->setRowAttributes($count, array('class' => 'hidden hidden_'.$row['child_of']), true);
@@ -588,6 +603,7 @@ class SortableTable extends HTML_Table
 
         foreach ($this->th_attributes as $column => $attributes) {
             $this->setCellAttributes(0, $column, $attributes);
+
         }
         foreach ($this->td_attributes as $column => $attributes) {
             $this->setColAttributes($column, $attributes);
@@ -668,6 +684,69 @@ class SortableTable extends HTML_Table
     }
 
     /**
+     * @return array
+     */
+    public function getHeaders()
+    {
+        return $this->headers;
+    }
+
+    /**
+     * Process headers
+     */
+    public function processHeaders()
+    {
+        $counter = 0;
+        foreach ($this->headers as $column => $columnInfo) {
+            $label = $columnInfo['label'];
+            $sortable = $columnInfo['sortable'];
+            $th_attributes = $columnInfo['th_attributes'];
+            $td_attributes = $columnInfo['td_attributes'];
+
+            if (!empty($this->columnsToHide)) {
+                if (isset($this->columnsToHide[$column])) {
+                    continue;
+                }
+            }
+
+            $column = $counter;
+
+            $param['direction'] = 'ASC';
+            if ($this->column == $column && $this->direction == 'ASC') {
+                $param['direction'] = 'DESC';
+            }
+            $param['page_nr'] = $this->page_nr;
+            $param['per_page'] = $this->per_page;
+            $param['column'] = $column;
+            if ($sortable) {
+                $link = '<a href="'.api_get_self().'?'.api_get_cidreq().'&amp;';
+                foreach ($param as $key => & $value) {
+                    $link .= $this->param_prefix.$key.'='.urlencode($value).'&amp;';
+                }
+                $link .= $this->get_additional_url_paramstring();
+                $link .= '">'.$label.'</a>';
+                if ($this->column == $column) {
+                    $link .= $this->direction == 'ASC' ? ' &#8595;' : ' &#8593;';
+                }
+            } else {
+                $link = $label;
+            }
+
+            $this->setHeaderContents(0, $column, $link);
+
+            if (!is_null($td_attributes)) {
+                $this->td_attributes[$column] = $td_attributes;
+            }
+            if (!is_null($th_attributes)) {
+                $this->th_attributes[$column] = $th_attributes;
+            }
+
+            $counter++;
+        }
+
+    }
+
+    /**
      * Set the header-label
      * @param int $column The column number
      * @param string $label The label
@@ -680,33 +759,12 @@ class SortableTable extends HTML_Table
      */
     public function set_header($column, $label, $sortable = true, $th_attributes = null, $td_attributes = null)
     {
-        $param['direction'] = 'ASC';
-        if ($this->column == $column && $this->direction == 'ASC') {
-            $param['direction'] = 'DESC';
-        }
-        $param['page_nr'] = $this->page_nr;
-        $param['per_page'] = $this->per_page;
-        $param['column'] = $column;
-        if ($sortable) {
-            $link = '<a href="'.api_get_self().'?'.api_get_cidreq().'&amp;';
-            foreach ($param as $key => & $value) {
-                $link .= $this->param_prefix.$key.'='.urlencode($value).'&amp;';
-            }
-            $link .= $this->get_additional_url_paramstring();
-            $link .= '">'.$label.'</a>';
-            if ($this->column == $column) {
-                $link .= $this->direction == 'ASC' ? ' &#8595;' : ' &#8593;';
-            }
-        } else {
-            $link = $label;
-        }
-        $this->setHeaderContents(0, $column, $link);
-        if (!is_null($td_attributes)) {
-            $this->td_attributes[$column] = $td_attributes;
-        }
-        if (!is_null($th_attributes)) {
-            $this->th_attributes[$column] = $th_attributes;
-        }
+        $this->headers[$column] = array(
+            'label' => $label,
+            'sortable' => $sortable,
+            'th_attributes' => $th_attributes,
+            'td_attributes' => $td_attributes,
+        );
     }
 
     /**
@@ -780,6 +838,15 @@ class SortableTable extends HTML_Table
     public function set_column_filter($column, $function)
     {
         $this->column_filters[$column] = $function;
+    }
+
+    /**
+     * List of columns to hide
+     * @param int $column
+     */
+    public function setHideColumn($column)
+    {
+        $this->columnsToHide[$column] = $column;
     }
 
     /**
