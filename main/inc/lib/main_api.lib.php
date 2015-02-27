@@ -3401,13 +3401,15 @@ function api_item_property_update(
     if (is_null($to_user_id) && is_null($to_group_id)) {
         $to_group_id = 0;
     }
+
+    $to_filter = null;
     if (!is_null($to_user_id)) {
         // Set filter to intended user.
-        $to_filter = " AND to_user_id= '$to_user_id' $condition_session";
+        $to_filter = " AND to_user_id= '$to_user_id' ";
     } else {
         // Set filter to intended group.
         if (($to_group_id != 0) && $to_group_id == strval(intval($to_group_id))) {
-            $to_filter = " AND to_group_id = '$to_group_id' $condition_session";
+            $to_filter = " AND to_group_id = '$to_group_id' ";
         }
     }
 
@@ -3462,6 +3464,7 @@ function api_item_property_update(
                             ref = '$item_id' AND
                             id_session = '$session_id'";
                 $rs = Database::query($sql);
+
                 if (Database::num_rows($rs) > 0) {
                     $sql = "UPDATE $TABLE_ITEMPROPERTY
                             SET
@@ -3493,7 +3496,7 @@ function api_item_property_update(
                         WHERE
                             c_id = $course_id AND
                             tool = '$tool' AND
-                            ref='$item_id' AND
+                            ref = '$item_id' AND
                             id_session = '$session_id'";
                 $rs = Database::query($sql);
                 if (Database::num_rows($rs) > 0) {
@@ -3501,7 +3504,7 @@ function api_item_property_update(
                             SET
                                 lastedit_type = '".str_replace('_', '', ucwords($tool))."Invisible',
                                 lastedit_date = '$time',
-                                lastedit_user_id='$user_id',
+                                lastedit_user_id = '$user_id',
                                 visibility = '$visibility',
                                 id_session = '$session_id' $set_type
                             WHERE $filter";
@@ -3522,7 +3525,6 @@ function api_item_property_update(
         default : // The item will be added or updated.
             $set_type = ", lastedit_type='$lastedit_type' ";
             $visibility = '1';
-            //$filter .= $to_filter; already added
             $sql = "UPDATE $TABLE_ITEMPROPERTY
                     SET
                       lastedit_date = '$time',
