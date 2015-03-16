@@ -29,7 +29,6 @@ if (!$is_locked_attendance || api_is_platform_admin()) {
     echo '</div>';
 }
 
-
 $message_information = get_lang('AttendanceCalendarDescription');
 
 if (!empty($message_information)) {
@@ -38,17 +37,24 @@ if (!empty($message_information)) {
     Display::display_normal_message($message, false);
 }
 
-if ($error_repeat_date) {
+if (isset($error_repeat_date) && $error_repeat_date) {
     $message = get_lang('EndDateMustBeMoreThanStartDate');
     Display::display_error_message($message, false);
 }
 
-if ($error_checkdate) {
+if (isset($error_checkdate) && $error_checkdate) {
     $message = get_lang('InvalidDate');
     Display::display_error_message($message, false);
 }
 
+
 if (isset($action) && $action == 'calendar_add') {
+    $groupList = GroupManager::get_group_list(null, null, 1);
+    $groupIdList = array('--');
+    foreach ($groupList as $group) {
+        $groupIdList[$group['id']] = $group['name'];
+    }
+
     // calendar add form
     $form = new FormValidator(
         'attendance_calendar_add',
@@ -70,13 +76,14 @@ if (isset($action) && $action == 'calendar_add') {
         )
     );
 
-    $defaults['repeat'] = $repeat;
+    $defaults['repeat'] = isset($repeat) ? $repeat : null;
 
-    if ($repeat) {
+    if ($defaults['repeat']) {
         $form->addElement('html', '<div id="repeat-date-attendance" style="display:block">');
     } else {
         $form->addElement('html', '<div id="repeat-date-attendance" style="display:none">');
     }
+
     $a_repeat_type = array(
         'daily' => get_lang('RepeatDaily'),
         'weekly' => get_lang('RepeatWeekly'),
@@ -90,15 +97,25 @@ if (isset($action) && $action == 'calendar_add') {
 
     $defaults['repeat_type'] = 'weekly';
 
-    $form->addElement('style_submit_button', null, get_lang('Save'), 'class="save"');
+    $form->addSelect('groups', get_lang('Group'), $groupIdList);
+
+    $form->addButtonCreate(get_lang('Save'));
     $form->setDefaults($defaults);
     $form->display();
 } else {
-    // calendar list
+    // Calendar list
+
+    $groupList = GroupManager::get_group_list();
+    $groupIdList = array('--');
+    foreach ($groupList as $group) {
+        $groupIdList[$group['id']] = $group['name'];
+    }
+
     echo Display::page_subheader(get_lang('CalendarList'));
     echo '<div class="attendance-calendar-list">';
     if (!empty($attendance_calendar)) {
         foreach ($attendance_calendar as $calendar) {
+
             echo '<div class="attendance-calendar-row">';
             if ((isset($action) && $action == 'calendar_edit') &&
                 (isset($calendar_id) && $calendar_id == $calendar['id'])
@@ -111,6 +128,7 @@ if (isset($action) && $action == 'calendar_add') {
                     'index.php?action=calendar_edit&attendance_id=' . $attendance_id . '&calendar_id=' . $calendar_id . '&' . api_get_cidreq() . $param_gradebook,
                     ''
                 );
+
                 $form->addElement('date_time_picker', 'date_time', '', array('form_name'=>'attendance_calendar_edit'), 5);
                 $defaults['date_time'] = $calendar['date_time'];
                 $form->addElement('style_submit_button', null, get_lang('Save'), 'class="save"');
@@ -119,7 +137,17 @@ if (isset($action) && $action == 'calendar_add') {
                 $form->display();
                 echo '</div>';
             } else {
-                echo Display::return_icon('lp_calendar_event.png', get_lang('DateTime')).' '.substr($calendar['date_time'], 0, strlen($calendar['date_time'])- 3) .'&nbsp;';
+                echo Display::return_icon(
+                        'lp_calendar_event.png',
+                        get_lang('DateTime')
+                    ).' '.substr($calendar['date_time'], 0, strlen($calendar['date_time'])- 3) .'&nbsp;';
+
+                if (isset($calendar['groups']) && !empty($calendar['groups'])) {
+                    foreach ($calendar['groups'] as $group) {
+                        echo '&nbsp;'.Display::label($groupIdList[$group['group_id']]);
+                    }
+                }
+
                 if (!$is_locked_attendance || api_is_platform_admin()) {
                     if (api_is_allowed_to_edit()) {
                         echo '<span style="margin-left:20px;">';

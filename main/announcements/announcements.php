@@ -65,6 +65,7 @@ require_once 'announcements.inc.php';
 
 $course_id = api_get_course_int_id();
 $_course = api_get_course_info();
+api_protect_course_group(GroupManager::GROUP_TOOL_ANNOUNCEMENT);
 
 /*	Tracking	*/
 event_access_tool(TOOL_ANNOUNCEMENT);

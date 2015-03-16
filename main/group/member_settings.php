@@ -167,6 +167,7 @@ if (!empty($group_member_list)) {
         $selected_users[] = $user['user_id'];
     }
 }
+
 $group_members_element = $form->addElement(
     'advmultiselect',
     'group_members',
@@ -192,7 +193,7 @@ $group_members_element->setButtonAttributes('remove', array('class' => 'btn arro
 $form->addFormRule('check_group_members');
 
 // submit button
-$form->addElement('style_submit_button', 'submit', get_lang('SaveSettings'), 'class="save"');
+$form->addButtonSave(get_lang('SaveSettings'));
 
 if ($form->validate()) {
     $values = $form->exportValues();
@@ -224,6 +225,7 @@ switch ($action) {
 }
 
 $defaults = $current_group;
+
 $defaults['group_members'] = $selected_users;
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $defaults['action'] = $action;

@@ -28,12 +28,17 @@ $form = new FormValidator('attendance_add','POST','index.php?action=attendance_a
 $form->addElement('header', '', get_lang('CreateANewAttendance'));
 $form->addElement('hidden', 'sec_token', $token);
 
-$form->add_textfield('title', get_lang('Title'), true, array('size'=>'50'));
+$form->addText('title', get_lang('Title'), true, array('size'=>'50'));
 $form->applyFilter('title','html_filter');
-$form->add_html_editor('description', get_lang('Description'), false, false, array('ToolbarSet' => 'TrainingDescription', 'Width' => '100%', 'Height' => '150'));
+$form->addHtmlEditor(
+    'description',
+    get_lang('Description'),
+    false,
+    false,
+    array('ToolbarSet' => 'TrainingDescription', 'Width' => '100%', 'Height' => '150')
+);
 
 // Adavanced Parameters
-
 $advanced = '<a href="javascript://" class = "advanced_parameters" ><span id="img_plus_and_minus">&nbsp;'.Display::return_icon('div_show.gif',get_lang('Show'),array('style'=>'vertical-align:middle')).' '.get_lang('AdvancedParameters').'</span></a>';
 if ((api_get_session_id() != 0 && Gradebook::is_active()) || api_get_session_id() == 0) {
     $form -> addElement('advanced_settings',$advanced);
@@ -44,7 +49,7 @@ if ((api_get_session_id() != 0 && Gradebook::is_active()) || api_get_session_id(
     $form->addElement('checkbox', 'attendance_qualify_gradebook', '', get_lang('QualifyAttendanceGradebook'),'onclick="javascript: if(this.checked){document.getElementById(\'options_field\').style.display = \'block\';}else{document.getElementById(\'options_field\').style.display = \'none\';}"');
     $form->addElement('html','<div id="options_field" style="display:none">');
 
-    load_gradebook_select_in_tool($form);
+    GradebookUtils::load_gradebook_select_in_tool($form);
 
     $form->addElement('text', 'attendance_qualify_title', get_lang('TitleColumnGradebook'));
     $form->applyFilter('attendance_qualify_title', 'html_filter');
@@ -54,5 +59,5 @@ if ((api_get_session_id() != 0 && Gradebook::is_active()) || api_get_session_id(
 
     $form->addElement('html','</div>');
 }
-$form->addElement('style_submit_button', null, get_lang('Save'), 'class="save"');
+$form->addButtonCreate(get_lang('Save'));
 $form->display();

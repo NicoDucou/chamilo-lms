@@ -183,7 +183,7 @@ class ExerciseLink extends AbstractLink
      * 			array (sum of scores, number of scores) otherwise
      * 			or null if no scores available
      */
-    public function calc_score($stud_id = null)
+    public function calc_score($stud_id = null, $type = null)
     {
         $tblStats = Database::get_main_table(TABLE_STATISTIC_TRACK_E_EXERCICES);
         $tblHp = Database::get_main_table(TABLE_STATISTIC_TRACK_E_HOTPOTATOES);
@@ -235,19 +235,42 @@ class ExerciseLink extends AbstractLink
             // take first attempts into account
             $student_count = 0;
             $sum = 0;
+            $bestResult = 0;
+            $weight = 0;
+            $sumResult = 0;
+
             while ($data = Database::fetch_array($scores, 'ASSOC')) {
-                if (!in_array($data['exe_user_id'], $students)) {
+                if (!isset($students[$data['exe_user_id']])) {
                     if ($data['exe_weighting'] != 0) {
-                        $students[] = $data['exe_user_id'];
+                        $students[$data['exe_user_id']] = $data['exe_result'];
                         $student_count++;
+                        if ($data['exe_result'] > $bestResult) {
+                            $bestResult = $data['exe_result'];
+                        }
                         $sum += $data['exe_result'] / $data['exe_weighting'];
+                        $sumResult += $data['exe_result'];
+                        $weight = $data['exe_weighting'];
                     }
                 }
             }
+
             if ($student_count == 0) {
                 return null;
             } else {
-                return array($sum, $student_count);
+                switch ($type) {
+                    case 'best':
+                        return array($bestResult, $weight);
+                        break;
+                    case 'average':
+                        return array($sumResult/$student_count, $weight);
+                        break;
+                    case 'ranking':
+                        return AbstractLink::getCurrentUserRanking($students);
+                        break;
+                    default:
+                        return array($sum, $student_count);
+                        break;
+                }
             }
         }
     }

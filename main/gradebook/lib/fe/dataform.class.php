@@ -1,11 +1,6 @@
 <?php
 /* For licensing terms, see /license.txt */
 
-require_once dirname(__FILE__).'/../../../inc/global.inc.php';
-require_once dirname(__FILE__).'/../be.inc.php';
-require_once dirname(__FILE__).'/../gradebook_functions.inc.php';
-require_once api_get_path(LIBRARY_PATH) . 'groupmanager.lib.php';
-
 /**
  * Extends FormValidator with import and export forms
  * @author Stijn Konings
@@ -51,7 +46,7 @@ class DataForm extends FormValidator
 		$this->addElement('header', get_lang('ChooseOrientation'));
 		$this->addElement('radio', 'orientation', null, get_lang('Portrait'), 'portrait');
 		$this->addElement('radio', 'orientation', null, get_lang('Landscape'), 'landscape');
-		$this->addElement('style_submit_button', 'submit', get_lang('Export'), 'class="upload"');
+		$this->addButtonExport(get_lang('Export'));
 		$this->setDefaults(array (
 			'orientation' => 'portrait'
 		));
@@ -63,7 +58,7 @@ class DataForm extends FormValidator
 		$this->addElement('radio', 'file_type', get_lang('OutputFileType'), 'CSV (Comma-Separated Values)', 'csv');
 		$this->addElement('radio', 'file_type', null, 'XML (Extensible Markup Language)', 'xml');
 		$this->addElement('radio', 'file_type', null, 'PDF (Portable Document Format)', 'pdf');
-		$this->addElement('style_submit_button', 'submit', get_lang('Export'), 'class="upload"');
+		$this->addButtonExport(get_lang('Export'));
 		$this->setDefaults(array (
 			'file_type' => 'csv'
 		));
@@ -75,7 +70,7 @@ class DataForm extends FormValidator
 		$this->addElement('radio', 'file_type', get_lang('OutputFileType'), 'CSV (Comma-Separated Values)', 'csv');
 		$this->addElement('radio', 'file_type', null, 'XML (Extensible Markup Language)', 'xml');
 		$this->addElement('radio', 'file_type', Display::return_icon('info3.gif',get_lang('ToExportMustLockEvaluation')), 'PDF (Portable Document Format)', 'pdf', array('disabled'));
-		$this->addElement('style_submit_button', 'submit', get_lang('Export'), 'class="upload"');
+		$this->addButtonExport(get_lang('Export'));
 		$this->setDefaults(array (
 			'file_type' => 'csv'
 		));

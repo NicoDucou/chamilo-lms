@@ -46,6 +46,7 @@ require_once $lib_path.'fileDisplay.lib.php';
 require_once $lib_path.'fileManage.lib.php';
 
 api_protect_course_script(true);
+api_protect_course_group(GroupManager::GROUP_TOOL_DOCUMENTS);
 
 DocumentManager::removeGeneratedAudioTempFile();
 

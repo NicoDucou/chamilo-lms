@@ -18,10 +18,6 @@ if (api_is_allowed_to_edit(null, true)) {
     echo '<div class="actions">';
     echo '<a href="index.php?'.api_get_cidreq().$param_gradebook.'&action=attendance_add">'.
         Display::return_icon('new_attendance_list.png',get_lang('CreateANewAttendance'),'',ICON_SIZE_MEDIUM).'</a>';
-
-    /*echo '<a href="index.php?'.api_get_cidreq().$param_gradebook.'&action=calendar_logins">'.
-        Display::return_icon('attendance_list.png',get_lang('Logins'),'',ICON_SIZE_MEDIUM).'</a>';*/
-
     echo '</div>';
 }
 $attendance = new Attendance();
@@ -30,6 +26,8 @@ if ($attendance->get_number_of_attendances() == 0) {
     $attendance->set_description(get_lang('Attendances'));
     $attendance->attendance_add();
 }
+$default_column = isset($default_column) ? $default_column : null;
+$parameters = isset($parameters) ? $parameters : null;
 $table = new SortableTable(
     'attendance_list',
     array('Attendance', 'get_number_of_attendances'),

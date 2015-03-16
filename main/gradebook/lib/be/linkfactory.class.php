@@ -1,17 +1,6 @@
 <?php
 /* For licensing terms, see /license.txt */
 
-require_once 'gradebookitem.class.php';
-require_once 'abstractlink.class.php';
-require_once 'exerciselink.class.php';
-require_once 'evallink.class.php';
-require_once 'dropboxlink.class.php';
-require_once 'studentpublicationlink.class.php';
-require_once 'learnpathlink.class.php';
-require_once 'forumthreadlink.class.php';
-require_once 'attendancelink.class.php';
-require_once 'surveylink.class.php';
-
 /**
  * Class LinkFactory
  * Factory for link objects
@@ -53,7 +42,7 @@ class LinkFactory
     /**
      * Get the link object referring to an evaluation
      */
-    public function get_evaluation_link ($eval_id)
+    public function get_evaluation_link($eval_id)
     {
         $links = AbstractLink :: load(null, null, $eval_id);
         foreach ($links as $link) {
@@ -69,7 +58,7 @@ class LinkFactory
      * @param string $name_mask search string
      * @return array link objects matching the search criterium
      */
-    public function find_links ($name_mask,$selectcat)
+    public function find_links($name_mask,$selectcat)
     {
         return AbstractLink::find_links($name_mask, $selectcat);
     }
@@ -78,7 +67,7 @@ class LinkFactory
      * Static method to create specific link objects
      * @param $type link type
      */
-    public static function create ($type)
+    public static function create($type)
     {
         $type = intval($type);
         switch ($type) {
@@ -106,7 +95,7 @@ class LinkFactory
      * Return an array of all known link types
      * @return array
      */
-    public static function get_all_types ()
+    public static function get_all_types()
     {
         //LINK_DROPBOX,
         return array (

@@ -19,6 +19,7 @@ abstract class AbstractLink implements GradebookItem
     protected $ref_id;
     protected $user_id;
     protected $course_code;
+    /** @var Category */
     protected $category;
     protected $created_at;
     protected $weight;
@@ -26,44 +27,95 @@ abstract class AbstractLink implements GradebookItem
     protected $session_id;
     public $course_id;
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->course_id = api_get_course_int_id();
     }
 
+    /**
+     * @return int
+     */
     public function get_id()
     {
         return $this->id;
     }
 
+    /**
+     * @return string
+     */
     public function get_type()
     {
         return $this->type;
     }
 
+    /**
+     * @return int
+     */
     public function get_ref_id()
     {
         return $this->ref_id;
     }
 
+    /**
+     * @return int
+     */
     public function get_session_id()
     {
         return $this->session_id;
     }
 
+    /**
+     * @return int
+     */
     public function get_user_id()
     {
         return $this->user_id;
     }
 
+    /**
+     * @return string
+     */
     public function get_course_code()
     {
         return $this->course_code;
     }
 
-    public function get_category_id()
+    /**
+     * @return Category
+     */
+    public function getCategory()
     {
         return $this->category;
+    }
+
+    /**
+     * @param Category $category
+     */
+    public function setCategory($category)
+    {
+        $this->category = $category;
+    }
+
+    /**
+     * @return int
+     */
+    public function get_category_id()
+    {
+        return $this->category->get_id();
+    }
+
+    /**
+     * @param int $category_id
+     */
+    public function set_category_id($category_id)
+    {
+        $categories = Category::load($category_id);
+        if (isset($categories[0])) {
+            $this->setCategory($categories[0]);
+        }
     }
 
     public function get_date()
@@ -116,10 +168,7 @@ abstract class AbstractLink implements GradebookItem
         $this->course_id = $course_info['real_id'];
     }
 
-    public function set_category_id ($category_id)
-    {
-        $this->category = $category_id;
-    }
+
 
     public function set_date ($date)
     {
@@ -279,7 +328,7 @@ abstract class AbstractLink implements GradebookItem
             $sql = "SELECT count(*) FROM ".$tbl_grade_links."
                     WHERE
                         ref_id=".$this->get_ref_id()." AND
-                        category_id =  ".$this->category." AND
+                        category_id =  ".$this->category->get_id()." AND
                         course_code = '".$this->course_code."' AND
                         type =  ".$this->type." ";
 
@@ -305,6 +354,7 @@ abstract class AbstractLink implements GradebookItem
         } else {
             die('Error in AbstractLink add: required field empty');
         }
+
         return false;
     }
 
@@ -333,21 +383,25 @@ abstract class AbstractLink implements GradebookItem
     /**
      * @param int $idevaluation
      */
-    public static function add_link_log($idevaluation)
+    public static function add_link_log($idevaluation, $nameLog = null)
     {
         $tbl_grade_linkeval_log = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_LINKEVAL_LOG);
         $dateobject=AbstractLink::load ($idevaluation,null,null,null,null);
         $current_date_server=api_get_utc_datetime();
-        $arreval=get_object_vars($dateobject[0]);
-        $description_log=isset($arreval['description'])?$arreval['description']:'';
-        if (isset($_POST['name_link'])) {
-            $name_log=isset($_POST['name_link'])?Security::remove_XSS($_POST['name_link']):$arreval['course_code'];
-        } elseif ($_POST['link_'.$idevaluation]) {
-            $name_log=$_POST['link_'.$idevaluation];
+        $arreval = get_object_vars($dateobject[0]);
+        $description_log = isset($arreval['description']) ? $arreval['description']:'';
+        if (empty($nameLog)) {
+            if (isset($_POST['name_link'])) {
+                $name_log = isset($_POST['name_link']) ? Security::remove_XSS($_POST['name_link']) : $arreval['course_code'];
+            } elseif (isset($_POST['link_' . $idevaluation]) && $_POST['link_' . $idevaluation]) {
+                $name_log = $_POST['link_' . $idevaluation];
+            } else {
+                $name_log = $arreval['course_code'];
+            }
         } else {
-            $name_log=$arreval['course_code'];
+            $name_log = $nameLog;
         }
-        $sql="INSERT INTO ".$tbl_grade_linkeval_log."(id_linkeval_log,name,description,created_at,weight,visible,type,user_id_log)
+        $sql="INSERT INTO ".$tbl_grade_linkeval_log."(id_linkeval_log, name,description,created_at,weight,visible,type,user_id_log)
               VALUES('".Database::escape_string($arreval['id'])."','".Database::escape_string($name_log)."','".Database::escape_string($description_log)."','".Database::escape_string($current_date_server)."','".Database::escape_string($arreval['weight'])."','".Database::escape_string($arreval['visible'])."','Link',".api_get_user_id().")";
 
         Database::query($sql);
@@ -378,7 +432,7 @@ abstract class AbstractLink implements GradebookItem
 
         $crscats = Category::load(null,null,$this->get_course_code(),0);
         foreach ($crscats as $cat) {
-            $targets[] = array ($cat->get_id(), $cat->get_name(), $level+1);
+            $targets[] = array($cat->get_id(), $cat->get_name(), $level+1);
             $targets = $this->add_target_subcategories($targets, $level+1, $cat->get_id());
         }
 
@@ -451,13 +505,6 @@ abstract class AbstractLink implements GradebookItem
     abstract function get_link();
     abstract function is_valid_link();
     abstract function get_type_name();
-
-    // The following methods are already defined in GradebookItem,
-    // and must be implemented by the subclass as well !
-    //	abstract function get_name();
-    //	abstract function get_description();
-    //  abstract function calc_score($stud_id = null);
-
     abstract function needs_name_and_description();
     abstract function needs_max();
     abstract function needs_results();
@@ -527,5 +574,36 @@ abstract class AbstractLink implements GradebookItem
         $table = Database::get_main_table(TABLE_MAIN_GRADEBOOK_LINK);
         $sql = "UPDATE $table SET locked = '".intval($locked)."' WHERE id='".$this->id."'";
         Database::query($sql);
+    }
+
+    /**
+     * Get current user ranking
+     * @param array $studentList Array with user id and scores
+     * Example: [1 => 5.00, 2 => 8.00]
+     */
+    public static function getCurrentUserRanking($studentList)
+    {
+        $ranking = null;
+        $currentUserId = api_get_user_id();
+        if (!empty($studentList) && !empty($currentUserId)) {
+            asort($studentList);
+            $ranking = $count = count($studentList);
+
+            foreach ($studentList as $userId => $position) {
+                if ($currentUserId == $userId) {
+                    break;
+                }
+                $ranking--;
+            }
+
+            // If no ranking was detected.
+            if ($ranking == 0) {
+                return [];
+            }
+
+            return array($ranking, $count);
+        }
+
+        return array();
     }
 }

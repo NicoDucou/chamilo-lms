@@ -133,6 +133,7 @@ define('TABLE_STATISTIC_TRACK_E_ONLINE',            'track_e_online');
 define('TABLE_STATISTIC_TRACK_E_HOTPOTATOES',       'track_e_hotpotatoes');
 define('TABLE_STATISTIC_TRACK_E_COURSE_ACCESS',     'track_e_course_access');
 define('TABLE_STATISTIC_TRACK_E_EXERCICES',         'track_e_exercices');
+define('TABLE_STATISTIC_TRACK_E_EXERCISES',         'track_e_exercices');
 define('TABLE_STATISTIC_TRACK_E_ATTEMPT',           'track_e_attempt');
 define('TABLE_STATISTIC_TRACK_E_ATTEMPT_RECORDING', 'track_e_attempt_recording');
 define('TABLE_STATISTIC_TRACK_E_DEFAULT',           'track_e_default');
@@ -301,6 +302,7 @@ define('TABLE_METADATA', 'metadata');
 // Attendance Sheet
 define('TABLE_ATTENDANCE',          'attendance');
 define('TABLE_ATTENDANCE_CALENDAR', 'attendance_calendar');
+define('TABLE_ATTENDANCE_CALENDAR_REL_GROUP', 'attendance_calendar_rel_group');
 define('TABLE_ATTENDANCE_SHEET_LOG','attendance_sheet_log');
 
 define('TABLE_ATTENDANCE_SHEET',    'attendance_sheet');

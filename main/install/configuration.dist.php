@@ -293,3 +293,5 @@ $_configuration['system_stable']     = NEW_VERSION_STABLE;
 //$_configuration['prevent_session_admins_to_manage_all_users'] = false;
 // Show delete option in attendance
 //$_configuration['allow_delete_attendance'] = false;
+// Show delete option in attendance
+//$_configuration['allow_delete_attendance'] = false;

@@ -18,6 +18,8 @@ define('TEACHER_HTML_FULLPAGE', 5);
  */
 class FormValidator extends HTML_QuickForm
 {
+    const LAYOUT_HORIZONTAL = 'horizontal';
+    const LAYOUT_INLINE = 'inline';
     public $with_progress_bar = false;
     /**
      * Create a form validator based on an array of form data:
@@ -335,6 +337,159 @@ EOT;
     public function add_html($snippet)
     {
         $this->addElement('html', $snippet);
+    }
+
+    public function addHtmlEditor($name, $label, $required = true, $fullPage = false, $config = array())
+    {
+        return $this->add_html_editor($name, $label, $required, $fullPage, $config);
+    }
+
+    /**
+     * @param string $name
+     * @param string $label
+     * @param string $icon font-awesome
+     * @param string $style default|primary|success|info|warning|danger|link
+     * @param string $size large|default|small|extra-small
+     * @param string $class Example plus is transformed to icon fa fa-plus
+     * @param array  $attributes
+     *
+     * @return HTML_QuickForm_button
+     */
+    public function addButton(
+        $name,
+        $label,
+        $icon = 'check',
+        $style = 'default',
+        $size = 'default',
+        $class = null,
+        $attributes = array(),
+        $createElement = false
+    ) {
+        if ($createElement) {
+            return $this->createElement(
+                'button',
+                $name,
+                $label,
+                $icon,
+                $style,
+                $size,
+                $class,
+                $attributes
+            );
+        }
+
+        return $this->addElement(
+            'button',
+            $name,
+            $label,
+            $icon,
+            $style,
+            $size,
+            $class,
+            $attributes
+        );
+    }
+
+    /**
+     * Shortcut to filter button
+     * @param string $label
+     */
+    public function addButtonFilter($label, $name = 'submit', $createElement = false)
+    {
+        return $this->addButton(
+            $name,
+            $label,
+            'filter',
+            'primary',
+            null,
+            null,
+            array(),
+            $createElement
+        );
+    }
+
+    /**
+     * Shortcut to search button
+     * @param string $label
+     */
+    public function addButtonSearch($label = null)
+    {
+        if (empty($label))  {
+            $label = get_lang('Search');
+        }
+        return $this->addButton('submit', $label, 'search', 'default');
+    }
+
+    /**
+     * @param string $label
+     * @param string $name
+     * @param bool $createElement
+     *
+     * @return HTML_QuickForm_button
+     */
+    public function addButtonCreate($label, $name = 'submit', $createElement = false)
+    {
+        return $this->addButton(
+            $name,
+            $label,
+            'plus',
+            'primary',
+            null,
+            null,
+            array(),
+            $createElement
+        );
+    }
+
+    /**
+     * @param string $label
+     * @param string $name
+     * @param bool $createElement
+     *
+     * @return HTML_QuickForm_button
+     */
+    public function addButtonSave($label, $name = 'submit', $createElement = false)
+    {
+        return $this->addButton(
+            $name,
+            $label,
+            'check',
+            'primary',
+            null,
+            null,
+            array(),
+            $createElement
+        );
+    }
+
+    /**
+     * @param string $name
+     * @param string $label
+     * @param string $options
+     * @param array  $attributes
+     *
+     * @return HTML_QuickForm_select
+     */
+    public function addSelect($name, $label, $options = '', $attributes = array())
+    {
+        return $this->addElement('select', $name, $label, $options, $attributes);
+    }
+
+    /**
+     * Adds a text field to the form.
+     * A trim-filter is attached to the field.
+     * @param string $label					The label for the form-element
+     * @param string $name					The element name
+     * @param bool   $required	(optional)	Is the form-element required (default=true)
+     * @param array  $attributes (optional)	List of attributes for the form-element
+     */
+    public function addText($name, $label, $required = true, $attributes = array())
+    {
+        $this->addElement('text', $name, $label, $attributes);
+        $this->applyFilter($name, 'trim');
+        if ($required) {
+            $this->addRule($name, get_lang('ThisFieldIsRequired'), 'required');
+        }
     }
 
     /**

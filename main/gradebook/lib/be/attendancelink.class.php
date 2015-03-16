@@ -19,11 +19,17 @@ class AttendanceLink extends AbstractLink
 		$this->set_type(LINK_ATTENDANCE);
 	}
 
+	/**
+	 * @return string
+	 */
 	public function get_type_name()
 	{
 		return get_lang('Attendance');
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function is_allowed_to_change_name()
 	{
 		return false;
@@ -100,7 +106,6 @@ class AttendanceLink extends AbstractLink
 		return $my_cats;
 	}
 
-
 	/**
 	 * Has anyone done this exercise yet ?
 	 */
@@ -119,14 +124,17 @@ class AttendanceLink extends AbstractLink
 	 * @param int $stud_id
 	 * @return array|null
 	 */
-	public function calc_score($stud_id = null)
+	public function calc_score($stud_id = null, $type = null)
 	{
 		$tbl_attendance_result = Database::get_course_table(TABLE_ATTENDANCE_RESULT);
 		$session_id = api_get_session_id();
 
 		// get attendance qualify max
 		$sql = 'SELECT att.attendance_qualify_max FROM '.$this->get_attendance_table().' att
-  				WHERE att.c_id = '.$this->course_id.' AND att.id = '.intval($this->get_ref_id()).' AND att.session_id='.intval($session_id).'';
+  				WHERE
+  					att.c_id = '.$this->course_id.' AND
+  					att.id = '.intval($this->get_ref_id()).' AND
+  					att.session_id='.intval($session_id).'';
 		$query = Database::query($sql);
 		$attendance = Database::fetch_array($query);
 
@@ -146,33 +154,53 @@ class AttendanceLink extends AbstractLink
 				return array (0, $attendance['attendance_qualify_max']);
 			}
 		} else {// all students -> get average
-			$students=array();  // user list, needed to make sure we only
+			$students = array();  // user list, needed to make sure we only
 			// take first attempts into account
 			$rescount = 0;
 			$sum = 0;
-			while ($data=Database::fetch_array($scores)) {
-				if (!(array_key_exists($data['user_id'],$students))) {
+			$sumResult = 0;
+			$bestResult = 0;
+
+			while ($data = Database::fetch_array($scores)) {
+				if (!(array_key_exists($data['user_id'], $students))) {
 					if ($attendance['attendance_qualify_max'] != 0) {
 						$students[$data['user_id']] = $data['score'];
 						$rescount++;
-						$sum += ($data['score'] / $attendance['attendance_qualify_max']);
+						$sum += $data['score'] / $attendance['attendance_qualify_max'];
+						$sumResult += $data['score'];
+						if ($data['score'] > $bestResult) {
+							$bestResult = $data['score'];
+						}
+						$weight = $attendance['attendance_qualify_max'];
 					}
 				}
 			}
 			if ($rescount == 0) {
 				return null;
 			} else {
-				return array ($sum , $rescount);
+				switch ($type) {
+					case 'best':
+						return array($bestResult, $weight);
+						break;
+					case 'average':
+						return array($sumResult / $rescount, $weight);
+						break;
+					case 'ranking':
+						return AbstractLink::getCurrentUserRanking($students);
+						break;
+					default:
+						return array($sum, $rescount);
+						break;
+				}
 			}
 		}
 	}
 
-	// INTERNAL FUNCTIONS
-
 	/**
 	 * Lazy load function to get the database table of the student publications
 	 */
-	private function get_attendance_table() {
+	private function get_attendance_table()
+	{
 		$this->attendance_table = Database :: get_course_table(TABLE_ATTENDANCE);
 		return $this->attendance_table;
 	}
@@ -180,19 +208,24 @@ class AttendanceLink extends AbstractLink
 	/**
 	 * Lazy load function to get the database table of the item properties
 	 */
-	private function get_itemprop_table () {
+	private function get_itemprop_table()
+	{
 		$this->itemprop_table = Database :: get_course_table(TABLE_ITEM_PROPERTY);
 		return $this->itemprop_table;
 	}
 
-	public function needs_name_and_description() {
-		return false;
-	}
-	public function needs_max() {
+	public function needs_name_and_description()
+	{
 		return false;
 	}
 
-	public function needs_results() {
+	public function needs_max()
+	{
+		return false;
+	}
+
+	public function needs_results()
+	{
 		return false;
 	}
 
@@ -208,13 +241,16 @@ class AttendanceLink extends AbstractLink
 		}
 	}
 
-	public function get_description() {
+	public function get_description()
+	{
 		return '';
 	}
+
 	/**
 	 * Check if this still links to an exercise
 	 */
-	public function is_valid_link() {
+	public function is_valid_link()
+	{
 		$session_id = api_get_session_id();
 		$sql = 'SELECT count(att.id) FROM '.$this->get_attendance_table().' att
         		 WHERE att.c_id = '.$this->course_id.' AND att.id = '.intval($this->get_ref_id()).' ';
@@ -223,23 +259,26 @@ class AttendanceLink extends AbstractLink
 		return ($number[0] != 0);
 	}
 
-	public function get_test_id() {
+	public function get_test_id()
+	{
 		return 'DEBUG:ID';
 	}
 
-	public function get_link() {
+	public function get_link()
+	{
 		//it was extracts the attendance id
 		$session_id = api_get_session_id();
 		$sql = 'SELECT * FROM '.$this->get_attendance_table().' att
     			WHERE att.c_id = '.$this->course_id.' AND att.id = '.intval($this->get_ref_id()).' ';
 		$result = Database::query($sql);
-		$row    = Database::fetch_array($result,'ASSOC');
+		$row = Database::fetch_array($result,'ASSOC');
 		$attendance_id = $row['id'];
 		$url = api_get_path(WEB_PATH).'main/attendance/index.php?action=attendance_sheet_list&gradebook=view&attendance_id='.$attendance_id.'&session_id='.$session_id.'&cidReq='.$this->get_course_code();
 		return $url;
 	}
 
-	private function get_attendance_data() {
+	private function get_attendance_data()
+	{
 		$tbl_name = $this->get_attendance_table();
 		$session_id = api_get_session_id();
 		if ($tbl_name == '') {
@@ -253,7 +292,8 @@ class AttendanceLink extends AbstractLink
 		return $this->attendance_data;
 	}
 
-	public function get_icon_name() {
+	public function get_icon_name()
+	{
 		return 'attendance';
 	}
 }

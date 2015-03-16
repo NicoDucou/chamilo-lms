@@ -81,6 +81,8 @@ if (!empty($gradebook) && $gradebook == 'view') {
 }
 
 if (!empty($group_id)) {
+    api_protect_course_group(GroupManager::GROUP_TOOL_WORK);
+
     $group_properties  = GroupManager::get_group_properties($group_id);
     $show_work = false;
 

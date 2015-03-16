@@ -24,8 +24,9 @@ if ($origin != 'whoisonline') {
     $_SESSION['target']= $target;
 }
 
-/*  TRACKING */
+api_protect_course_group(GroupManager::GROUP_TOOL_CHAT, false);
 
+/*  TRACKING */
 event_access_tool(TOOL_CHAT);
 header('Content-Type: text/html; charset='.api_get_system_encoding());
 

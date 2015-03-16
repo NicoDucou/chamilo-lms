@@ -21,5 +21,6 @@ return array(
     'Evenement' => array($vendorDir . '/evenement/evenement/src'),
     'Doctrine\\Common\\Cache\\' => array($vendorDir . '/doctrine/cache/lib'),
     'DigitalOcean' => array($vendorDir . '/toin0u/digitalocean/src'),
+    'Chamilo' => array($baseDir . '/src'),
     'Alchemy' => array($vendorDir . '/alchemy/binary-driver/src'),
 );
