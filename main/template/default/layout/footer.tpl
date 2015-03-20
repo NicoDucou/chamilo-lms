@@ -1,3 +1,4 @@
+
 <footer> <!-- start of #footer section -->
     <div class="container">
         <div class="row">
@@ -59,8 +60,20 @@
 {# Extra footer configured in admin section, only shown to non-admins #}
 {{ footer_extra_content }}
 
-<script>
+<div class="modal fade" id="expand-image-modal" tabindex="-1" role="dialog" aria-labelledby="expand-image-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ "Close" | get_lang }}"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="expand-image-modal-title">&nbsp;</h4>
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
 
+<script>
     $("form").on("click", ' .advanced_parameters', function() {
         var id = $(this).attr('id') + '_options';
         var button = $(this);
@@ -71,8 +84,9 @@
 
     /* Makes row highlighting possible */
     $(document).ready( function() {
-
         moment.locale('{{ locale }}');
+        $.datepicker.setDefaults($.datepicker.regional["{{ locale }}"]);
+        $.datepicker.regional["local"] = $.datepicker.regional["{{ locale }}"];
 
         /**
          * Advanced options
@@ -136,7 +150,7 @@
         /* For IOS users */
         $('.autocapitalize_off').attr('autocapitalize', 'off');
 
-        //Tool tip (in exercises)
+        // Tool tip (in exercises)
         var tip_options = {
             placement : 'right'
         };

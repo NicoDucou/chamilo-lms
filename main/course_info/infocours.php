@@ -125,18 +125,18 @@ if (file_exists($course_path.'/course-pic85x85.png')) {
 }
 $form->addElement('html', $image_html);
 
-$form->addText('title', get_lang('Title'), true, array('class' => 'span6'));
+$form->addText('title', get_lang('Title'), true, array('class' => ''));
 $form->applyFilter('title', 'html_filter');
 $form->applyFilter('title', 'trim');
 
 $form->addElement('select', 'category_code', get_lang('Fac'), $categories, array('style'=>'width:350px', 'class'=>'chzn-select', 'id'=>'category_code'));
 $form->addElement('select_language', 'course_language', array(get_lang('Ln'), get_lang('TipLang')));
 
-$form->addText('department_name', get_lang('Department'), false, array('class' => 'span5'));
+$form->addText('department_name', get_lang('Department'), false, array('class' => ''));
 $form->applyFilter('department_name', 'html_filter');
 $form->applyFilter('department_name', 'trim');
 
-$form->addText('department_url', get_lang('DepartmentUrl'), false, array('class' => 'span5'));
+$form->addText('department_url', get_lang('DepartmentUrl'), false, array('class' => ''));
 $form->applyFilter('department_url', 'html_filter');
 
 // Picture
@@ -162,8 +162,7 @@ $group[]=$form->createElement('SelectTheme', 'course_theme', null, array('class'
 $form->addGroup($group, '', array(get_lang("Stylesheets")), '');
 
 $form->addElement('label', get_lang('DocumentQuota'), format_file_size(DocumentManager::get_course_quota()));
-
-$form->addElement('style_submit_button', null, get_lang('SaveSettings'), 'class="save"');
+$form->addButtonSave(get_lang('SaveSettings'),'submit_save');
 $form->addElement('html', '</div></div>');
 
 // COURSE ACCESS
@@ -199,8 +198,8 @@ $form->addText('course_registration_password', get_lang('CourseRegistrationPassw
 
 $form->addElement('checkbox', 'activate_legal', array(null, get_lang('ShowALegalNoticeWhenEnteringTheCourse')), get_lang('ActivateLegal'));
 $form->addElement('textarea', 'legal', get_lang('CourseLegalAgreement'), array('class'=>'span6', 'rows' => 8));
+$form->addButtonSave(get_lang('SaveSettings'), 'submit_save');
 
-$form->addElement('style_submit_button', null, get_lang('SaveSettings'), 'class="save"');
 $form->addElement('html', '</div></div>');
 
 // Documents
@@ -212,8 +211,8 @@ if (api_get_setting('documents_default_visibility_defined_in_course') == 'true')
         $form->createElement('radio', 'documents_default_visibility', null, get_lang('Invisible'), 'invisible')
     );
     $form->addGroup($group, '', array(get_lang("DocumentsDefaultVisibility")), '');
+    $form->addButtonSave(get_lang('SaveSettings'),'submit_save');
 
-    $form->addElement('style_submit_button', null, get_lang('SaveSettings'), 'class="save"');
 
     $form->addElement('html', '</div></div>');
 }
@@ -246,7 +245,7 @@ $group = array();
 $group[]=$form->createElement('radio', 'email_alert_manager_on_new_quiz', get_lang('QuizEmailAlert'), get_lang('QuizEmailAlertActivate'), 1);
 $group[]=$form->createElement('radio', 'email_alert_manager_on_new_quiz', null, get_lang('QuizEmailAlertDeactivate'), 0);
 $form->addGroup($group, '', array(get_lang("QuizEmailAlert")), '');
-$form->addElement('style_submit_button', null, get_lang('SaveSettings'), 'class="save"');
+$form->addButtonSave(get_lang('SaveSettings'), 'submit_save');
 
 $form->addElement('html', '</div></div>');
 
@@ -272,8 +271,7 @@ $group = array();
 $group[]=$form->createElement('radio', 'allow_user_view_user_list', get_lang('AllowUserViewUserList'), get_lang('AllowUserViewUserListActivate'), 1);
 $group[]=$form->createElement('radio', 'allow_user_view_user_list', null, get_lang('AllowUserViewUserListDeactivate'), 0);
 $form->addGroup($group, '', array(get_lang("AllowUserViewUserList")), '');
-
-$form->addElement('style_submit_button', null, get_lang('SaveSettings'), 'class="save"');
+$form->addButtonSave(get_lang('SaveSettings'), 'submit_save');
 $form->addElement('html', '</div></div>');
 
 // CHAT SETTINGS
@@ -283,8 +281,7 @@ $group = array();
 $group[]=$form->createElement('radio', 'allow_open_chat_window', get_lang('AllowOpenchatWindow'), get_lang('AllowOpenChatWindowActivate'), 1);
 $group[]=$form->createElement('radio', 'allow_open_chat_window', null, get_lang('AllowOpenChatWindowDeactivate'), 0);
 $form->addGroup($group, '', array(get_lang("AllowOpenchatWindow")), '');
-
-$form->addElement('style_submit_button', null, get_lang('SaveSettings'), 'class="save"');
+$form->addButtonSave(get_lang('SaveSettings'), 'submit_save');
 $form->addElement('html', '</div></div>');
 
 // LEARNING PATH
@@ -327,7 +324,7 @@ if (isset($_configuration['allow_lp_return_link']) && $_configuration['allow_lp_
 }
 
 if (is_settings_editable()) {
-    $form->addElement('style_submit_button', null, get_lang('SaveSettings'), 'class="save"');
+    $form->addButtonSave(get_lang('SaveSettings'), 'submit_save');
 } else {
     // Is it allowed to edit the course settings?
     if (!is_settings_editable()) {
@@ -338,7 +335,13 @@ if (is_settings_editable()) {
 $form->addElement('html', '</div></div>');
 
 // THEMATIC ADVANCE SETTINGS
-$form->addElement('html', '<div><h3>'.Display::return_icon('course_progress.png', Security::remove_XSS(get_lang('ThematicAdvanceConfiguration')),'',ICON_SIZE_SMALL).' '.Security::remove_XSS(get_lang('ThematicAdvanceConfiguration')).'</h3><div>');
+$form->addElement(
+    'html',
+    '<div><h3>'.Display::return_icon(
+    'course_progress.png',
+    Security::remove_XSS(get_lang('ThematicAdvanceConfiguration')),'',ICON_SIZE_SMALL
+    ).' '.Security::remove_XSS(get_lang('ThematicAdvanceConfiguration')).'</h3><div>'
+);
 
 $group = array();
 $group[]=$form->createElement('radio', 'display_info_advance_inside_homecourse', get_lang('InfoAboutAdvanceInsideHomeCourse'), get_lang('DisplayAboutLastDoneAdvance'), 1);
@@ -346,8 +349,7 @@ $group[]=$form->createElement('radio', 'display_info_advance_inside_homecourse',
 $group[]=$form->createElement('radio', 'display_info_advance_inside_homecourse', null, get_lang('DisplayAboutNextAdvanceNotDoneAndLastDoneAdvance'), 3);
 $group[]=$form->createElement('radio', 'display_info_advance_inside_homecourse', null, get_lang('DoNotDisplayAnyAdvance'), 0);
 $form->addGroup($group, '', array(get_lang("InfoAboutAdvanceInsideHomeCourse")), '');
-
-$form->addElement('style_submit_button', null, get_lang('SaveSettings'), 'class="save"');
+$form->addButtonSave(get_lang('SaveSettings'), 'submit_save');
 $form->addElement('html', '</div></div>');
 
 // Document settings
@@ -359,8 +361,7 @@ $group = array(
 
 );
 $form->addGroup($group, '', array(get_lang("ShowSystemFolders")), '');
-
-$form->addElement('style_submit_button', null, get_lang('SaveSettings'), 'class="save"');
+$form->addButtonSave(get_lang('SaveSettings'), 'submit_save');
 $form->addElement('html', '</div></div>');
 
 // Certificate settings
@@ -370,8 +371,7 @@ if (api_get_setting('allow_public_certificates')=='true') {
     $group[]=$form->createElement('radio', 'allow_public_certificates', get_lang('AllowPublicCertificates'), get_lang('Yes'), 1);
     $group[]=$form->createElement('radio', 'allow_public_certificates', null, get_lang('No'), 0);
     $form->addGroup($group, '', array(get_lang("AllowPublicCertificates")), '');
-
-    $form->addElement('style_submit_button', null, get_lang('SaveSettings'), 'class="save"');
+    $form->addButtonSave(get_lang('SaveSettings'), 'submit_save');
     $form->addElement('html', '</div></div>');
 }
 
@@ -529,6 +529,7 @@ echo '<script>
 $(function() {
 	$("#course_settings").accordion({
 		autoHeight: false,
+		heightStyle: "content",
 		header: "div > h3"
 	});
 });

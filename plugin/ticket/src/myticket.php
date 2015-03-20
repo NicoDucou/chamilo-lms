@@ -6,7 +6,7 @@
  * @package chamilo.plugin.ticket
  */
 
-$language_file = array('messages', 'userInfo', 'admin');
+$language_file = array('userInfo', 'admin');
 $cidReset = true;
 //needed in order to load the plugin lang variables
 $course_plugin = 'ticket';
@@ -252,7 +252,7 @@ if ($isAdmin) {
     // Create a search-box
     $form = new FormValidator('search_simple', 'get', '', '', null, false);
     $renderer = & $form->defaultRenderer();
-    $renderer->setElementTemplate('<span>{element}</span> ');
+    $renderer->setCustomElementTemplate('<span>{element}</span> ');
     $form->addElement('text', 'keyword', get_lang('keyword'), 'size="25"');
     $form->addElement('style_submit_button', 'submit_simple', get_lang('Search'), 'class="search"');
     $form->addElement('static', 'search_advanced_link', null,

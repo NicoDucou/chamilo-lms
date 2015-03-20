@@ -21,13 +21,21 @@ if (api_get_setting('allow_social_tool') !='true') {
 
 $user_id = api_get_user_id();
 
-$friendId = isset($_GET['u']) ? Security::remove_XSS($_GET['u']) : api_get_user_id();
+$friendId = isset($_GET['u']) ? intval($_GET['u']) : api_get_user_id();
 
 $isAdmin = api_is_platform_admin($user_id);
 
 $show_full_profile = true;
 //social tab
 $this_section = SECTION_SOCIAL;
+
+//Initialize blocks
+$social_extra_info_block = null;
+$social_course_block = null;
+$social_group_info_block = null;
+$social_rss_block = null;
+$social_skill_block = null;
+$social_session_block = null;
 
 if (!empty($_POST['social_wall_new_msg_main']) || !empty($_FILES['picture']['tmp_name'])) {
     $messageId = 0;
@@ -126,146 +134,7 @@ if (file_exists($timeAgoLocaleDir)) {
 
 $htmlHeadXtra[] = '<script>
 
-function checkLength( o, n, min, max ) {
-    if ( o.val().length > max || o.val().length < min ) {
-        o.addClass( "ui-state-error" );
-        //updateTips( "Length of " + n + " must be between " + min + " and " + max + "." );
-        return false;
-    } else {
-        return true;
-    }
-}
-
-function send_message_to_user(user_id) {
-    var subject = $( "#subject_id" );
-    var content = $( "#content_id" );
-
-    $("#send_message_form").show();
-    $("#send_message_div").dialog({
-        modal:true,
-        height:350,
-        buttons: {
-            "'.  addslashes(get_lang('Send')).'": function() {
-                var bValid = true;
-                bValid = bValid && checkLength( subject, "subject", 1, 255 );
-                bValid = bValid && checkLength( content, "content", 1, 255 );
-
-                if ( bValid ) {
-                    var url = "'.$ajax_url.'?a=send_message&user_id="+user_id;
-                    var params = $("#send_message_form").serialize();
-                    $.ajax({
-                        url: url+"&"+params,
-                        success:function(data) {
-                            $("#message_ajax_reponse").attr("class", "");
-                            $("#message_ajax_reponse").html(data);
-                            $("#message_ajax_reponse").show();
-                            $("#send_message_div").dialog({ buttons:{}});
-                            $("#send_message_form").hide();
-                            $("#send_message_div").dialog("close");
-
-                            $("#subject_id").val("");
-                            $("#content_id").val("");
-                        }
-                    });
-                }
-            }
-        },
-        close: function() {
-        }
-    });
-    $("#send_message_div").dialog("open");
-    //prevent the browser to follow the link
-}
-
-function send_invitation_to_user(user_id) {
-    var content = $( "#content_invitation_id" );
-    $("#send_invitation_form").show();
-    $("#send_invitation_div").dialog({
-        modal:true,
-        buttons: {
-            "'.  addslashes(get_lang('SendInvitation')).'": function() {
-                var bValid = true;
-                bValid = bValid && checkLength( content, "content", 1, 255 );
-                if (bValid) {
-                    var url = "'.$ajax_url.'?a=send_invitation&user_id="+user_id;
-                    var params = $("#send_invitation_form").serialize();
-                    $.ajax({
-                        url: url+"&"+params,
-                        success:function(data) {
-                            $("#message_ajax_reponse").attr("class", "");
-                            $("#message_ajax_reponse").html(data);
-                            $("#message_ajax_reponse").show();
-
-                            $("#send_invitation_div").dialog({ buttons:{}});
-
-                            $("#send_invitation_form").hide();
-                            $("#send_invitation_div").dialog("close");
-                            $("#content_invitation_id").val("");
-                        }
-                    });
-                }
-            },
-        },
-        close: function() {
-        }
-    });
-    $("#send_invitation_div").dialog("open");
-    //prevent the browser to follow the link
-}
-
-function toogle_course (element_html, course_code){
-    elem_id=$(element_html).attr("id");
-    id_elem=elem_id.split("_");
-    ident="div#div_group_"+id_elem[1];
-
-    id_button="#btn_"+id_elem[1];
-    elem_src=$(id_button).attr("src");
-    image_show=elem_src.split("/");
-    my_image=image_show[2];
-    var content = \'social_content\' + id_elem[1];
-    if (my_image=="nolines_plus.gif") {
-        $(id_button).attr("src","../img/nolines_minus.gif"); var action = "load_course";
-        $("div#"+content).show("fast");
-    } else {
-        $("div#"+content).hide("fast");
-        $(id_button).attr("src","../img/nolines_plus.gif"); var action = "unload";
-        return false;
-    }
-
-     $.ajax({
-        contentType: "application/x-www-form-urlencoded",
-        beforeSend: function(objeto) {
-        $("div#"+content).html("<img src=\'../inc/lib/javascript/indicator.gif\' />"); },
-        type: "POST",
-        url: "'.api_get_path(WEB_AJAX_PATH).'social.ajax.php?a=toogle_course",
-        data: "load_ajax="+id_elem+"&action="+action+"&course_code="+course_code,
-        success: function(datos) {
-         $("div#"+content).html(datos);
-        }
-    });
-}
-
 $(document).ready(function (){
-    $("input#id_btn_send_invitation").bind("click", function(){
-        if (confirm("'.get_lang('SendMessageInvitation', '').'")) {
-            $("#form_register_friend").submit();
-        }
-    });
-
-    $("#send_message_div").dialog({
-        autoOpen: false,
-        modal    : false,
-        width    : 550,
-        height    : 300
-       });
-
-    $("#send_invitation_div").dialog({
-        autoOpen: false,
-        modal    : false,
-        width    : 550,
-        height    : 300
-       });
-
     var container = $("#wallMessages");
     container.jscroll({
         loadingHtml: "<div class=\"well_border\">' . get_lang('Loading') . ' </div>",
@@ -281,19 +150,6 @@ function timeAgo() {
     $(".timeago").timeago();
 }
 
-function display_hide () {
-    setTimeout("hide_display_message()",3000);
-}
-
-function hide_display_message () {
-    $("div#display_response_id").html("");
-    try {
-        $("#txt_subject_id").val("");
-        $("#txt_area_invite").val("");
-    }catch(e) {
-        $("#txt_area_invite").val("");
-    }
-}
 function register_friend(element_input) {
     if(confirm("'.get_lang('AddToFriends').'")) {
         name_button=$(element_input).attr("id");
@@ -367,7 +223,7 @@ if (is_array($personal_course_list)) {
     $course_list_code = array_unique_dimensional($course_list_code);
 }
 
-$social_avatar_block = SocialManager::show_social_avatar_block('shared_profile', null, $user_id);
+//Social Block Menu
 $social_menu_block = SocialManager::show_social_menu('shared_profile', null, $user_id, $show_full_profile);
 
 //Setting some session info
@@ -385,6 +241,7 @@ foreach ($sessionList as $session) {
 $friend_html = listMyFriends($user_id, $link_shared ,$show_full_profile);
 $social_left_content = '<div class="well sidebar-nav">' .$friend_html . '</div>';
 
+/*
 $personal_info = null;
 if (!empty($user_info['firstname']) || !empty($user_info['lastname'])) {
     $personal_info .= '<div><h3>'.api_get_person_name($user_info['firstname'], $user_info['lastname']).'</h3></div>';
@@ -423,11 +280,24 @@ if ($show_full_profile) {
     }
     $personal_info .=  '</dl>';
 }
+*/
+//Social Block Wall
 
 $wallSocialAddPost = wallSocialAddPost();
-$social_right_content = SocialManager::social_wrapper_div($wallSocialAddPost, 5);
+$social_wall_block = $wallSocialAddPost;
 
-$social_right_content .= wallSocialPost($my_user_id, $friendId);
+//Social Post Wall
+$post_wall = wallSocialPost($my_user_id,$friendId) ;
+$social_post_wall_block  = '<div class="panel panel-default social-post">';
+$social_post_wall_block .= '<div class="panel-heading">Mis publicaciones</div>';
+$social_post_wall_block .='<div class="panel-body">';
+if(empty($post_wall)){
+    $social_post_wall_block .= '<p>'.get_lang("NoPosts").'</p>';
+}else{
+    $social_post_wall_block .= $post_wall;
+}
+$social_post_wall_block .= '</div></div>';
+
 $socialAutoExtendLink = Display::url(
     get_lang('SeeMore'),
     $socialAjaxUrl . '?u='. $my_user_id . '&a=listWallMessage&start=10&length=5',
@@ -436,22 +306,24 @@ $socialAutoExtendLink = Display::url(
     )
 );
 
-$socialRightInformation =  SocialManager::social_wrapper_div($personal_info, 4);
+/* $socialRightInformation =  SocialManager::social_wrapper_div($personal_info, 4); */
+$socialRightInformation = null;
 
 //$social_right_content .= SocialManager::social_wrapper_div($wallSocial, 5);
-
+$social_right_content = null;
 
 if ($show_full_profile) {
 
-    // Extra information
+    // Block Extra information
     $t_uf    = Database :: get_main_table(TABLE_MAIN_USER_FIELD);
     $t_ufo    = Database :: get_main_table(TABLE_MAIN_USER_FIELD_OPTIONS);
     $extra_user_data = UserManager::get_extra_user_data($user_id);
     $extra_information = '';
     if (is_array($extra_user_data) && count($extra_user_data)>0 ) {
 
-        $extra_information .= '<div><h3>'.get_lang('ExtraInformation').'</h3></div>';
-        $extra_information .='<div class="social-profile-info">';
+        $extra_information .= '<div class="panel panel-default">';
+        $extra_information .= '<div class="panel-heading">'.get_lang('ExtraInformation').'</div>';
+        $extra_information .='<div class="panel-body">';
         $extra_information_value = '';
         foreach($extra_user_data as $key=>$data) {
             //Avoding parameters
@@ -524,17 +396,20 @@ if ($show_full_profile) {
         if (!empty($extra_information_value)) {
             $extra_information .= $extra_information_value;
         }
-        $extra_information .= '</div>'; //social-profile-info
+        $extra_information .= '</div></div>'; //social-profile-info
     }
-    //     if there are information to show
+
+ //If there are information to show Block Extra Information
+
     if (!empty($extra_information_value)) {
-        $socialRightInformation .=  SocialManager::social_wrapper_div($extra_information, 4);
+        $social_extra_info_block =  $extra_information;
     }
 
     // MY GROUPS
     $results = GroupPortalManager::get_groups_by_user($my_user_id, 0);
     $grid_my_groups = array();
     $max_numbers_of_group = 4;
+
     if (is_array($results) && count($results) > 0) {
         $i = 1;
         foreach ($results as $result) {
@@ -586,6 +461,7 @@ if ($show_full_profile) {
         }
     }
 
+    //Block My Groups
     if (count($grid_my_groups) > 0) {
         $my_groups = '';
         $count_groups = 0;
@@ -594,7 +470,8 @@ if ($show_full_profile) {
         } else {
             $count_groups = count($results);
         }
-        $my_groups .=  '<div><h3>'.get_lang('MyGroups').' ('.$count_groups.') </h3></div>';
+        $my_groups .= '<div class="panel panel-default">';
+        $my_groups .= '<div class="panel-heading">'.get_lang('MyGroups').' ('.$count_groups.') </div>';
 
         if ($i > $max_numbers_of_group) {
             if (api_get_user_id() == $user_id) {
@@ -604,39 +481,35 @@ if ($show_full_profile) {
                 $my_groups .=  '<div class="box_shared_profile_group_actions">'
                     .'<a href="'.api_get_path(WEB_CODE_PATH).'social/profile_friends_and_groups.inc.php'
                     .'?view=mygroups&height=390&width=610&user_id='.$user_id.'"'
-                    .' class="thickbox" title="'.get_lang('SeeAll').'" >'
+                    .' class="ajax" title="'.get_lang('SeeAll').'" >'
                     .get_lang('SeeAllMyGroups')
                     .'</a></div>';
             }
         }
-        /*
-        Display::display_sortable_grid(
-            'shared_profile_mygroups',
-            array(),
-            $grid_my_groups,
-            array('hide_navigation'=>true, 'per_page' => 2),
-            $query_vars,
-            false,
-            array(true, true, true,false)
-        );
-        */
+
         $total = count($grid_my_groups);
         $i = 1;
         foreach($grid_my_groups as $group) {
+            $my_groups .= '<div class="panel-body">';
             $my_groups .=  $group[0];
+            $my_groups .= '</div>';
             if ($i < $total) {
                 $my_groups .=  ', ';
             }
             $i++;
         }
-        $socialRightInformation .=  SocialManager::social_wrapper_div($my_groups, 4);
+        $my_groups .= '</div>';
+        $social_group_info_block =  $my_groups;
     }
+
+    //Block Social Course
 
     $my_courses = null;
     // COURSES LIST
     if ( is_array($list) ) {
-        $my_courses .=  '<div><h3>'.api_ucfirst(get_lang('MyCourses')).'</h3></div>';
-        $my_courses .=  '<div class="social-content-training">';
+        $my_courses .=  '<div class="panel panel-default">';
+        $my_courses .=  '<div class="panel-heading">'.api_ucfirst(get_lang('MyCourses')).'</div>';
+        $my_courses .=  '<div class="panel-body">';
 
         //Courses without sessions
         $i=1;
@@ -648,23 +521,100 @@ if ($show_full_profile) {
                 $i++;
             }
         }
-        $my_courses .=  '</div>';        //social-content-training
-        $socialRightInformation .=  SocialManager::social_wrapper_div($my_courses, 4);
+        $my_courses .=  '</div></div>';
+
+        $social_course_block .=  $my_courses;
     }
 
+    //Block Social Sessions
 
-    $sessions =  '<div><h3>'.api_ucfirst(get_lang('MySessions')).'</h3></div>';
-    $sessions .=  "<div class='social-content-training'>$htmlSessionList</div>";
-    $socialRightInformation .=  SocialManager::social_wrapper_div($sessions, 4);
+    if (count($sessionList) > 0) {
+        $sessions  = '<div class="panel panel-default">';
+        $sessions .= '<div class="panel-heading">'.api_ucfirst(get_lang('MySessions')).'</div>';
+        $sessions .= '<div class="panel-body">'.$htmlSessionList.'</div>';
+        $sessions .= '</div>';
+        $social_session_block = $sessions;
+    }
 
-
-    // user feeds
+    // Block Social User Feeds
     $user_feeds = SocialManager::get_user_feeds($user_id);
+
     if (!empty($user_feeds)) {
-        $rss =  '<div><h3>'.get_lang('RSSFeeds').'</h3></div>';
-        $rss .=  '<div class="social-content-training">'.$user_feeds.'</div>';
-        $socialRightInformation .=  SocialManager::social_wrapper_div($rss, 4);
+        $rss  = '<div class="panel panel-default social-rss">';
+        $rss .= '<div class="panel-heading">'.get_lang('RSSFeeds').'</div>';
+        $rss .= '<div class="panel-body">'.$user_feeds.'</div></div>';
+        $social_rss_block =  $rss;
+
     }
+
+    //BLock Social Skill
+    if (api_get_setting('allow_skills_tool') == 'true') {
+        $skill = new Skill();
+
+        $ranking = $skill->get_user_skill_ranking($my_user_id);
+        $skills = $skill->get_user_skills($my_user_id, true);
+
+        $social_skill_block = '<div class="panel panel-default social-skill">';
+        $social_skill_block .= '<div class="panel-heading">' . get_lang('Skills');
+        $social_skill_block .= '<div class="btn-group pull-right"> <a class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown" href="#">
+                            <span class="caret"></span></a>
+                             <ul class="dropdown-menu">';
+        if (api_is_student() || api_is_student_boss() || api_is_drh()) {
+            $social_skill_block .= '<li>' . Display::url(
+                    get_lang('SkillsReport'),
+                    api_get_path(WEB_CODE_PATH) . 'social/my_skills_report.php'
+                ) . '</li>';
+        }
+
+        $social_skill_block .= '<li>' . Display::url(
+                get_lang('SkillsWheel'),
+                api_get_path(WEB_CODE_PATH) . 'social/skills_wheel.php'
+            ) . '</li>';
+
+        $social_skill_block .= '<li>' . Display::url(
+                sprintf(get_lang('YourSkillRankingX'), $ranking),
+                api_get_path(WEB_CODE_PATH) . 'social/skills_ranking.php'
+            ) . '</li>';
+
+        $social_skill_block .= '</ul></div></div>';
+
+        $lis = '';
+        if (!empty($skills)) {
+            foreach ($skills as $skill) {
+                $badgeImage = null;
+
+                if (!empty($skill['icon'])) {
+                    $badgeImage = Display::img(
+                        api_get_path(WEB_DATA_PATH) . $skill['icon'],
+                        $skill['name']
+                    );
+                } else {
+                    $badgeImage = Display::return_icon(
+                        'badges-default.png',
+                        $skill['name'],
+                        array('title' => $skill['name']),ICON_SIZE_BIG
+                    );
+                }
+
+                $lis .= Display::tag(
+                    'li',
+                    $badgeImage .
+                    '<div class="badges-name">' . $skill['name'] . '</div>'
+                );
+            }
+            $social_skill_block .= '<div class="panel-body">';
+            $social_skill_block .= Display::tag('ul', $lis, array('class' => 'list-badges'));
+            $social_skill_block .= '</div>';
+        }else{
+
+            $social_skill_block .= '<div class="panel-body">';
+            $social_skill_block .= '<p>'. get_lang("WithoutAchievedSkills") . '</p>';
+            $social_skill_block .= '<p>' . Display::url(get_lang('SkillsWheel'),api_get_path(WEB_CODE_PATH) . 'social/skills_wheel.php').'</p>';
+            $social_skill_block .= '</div>';
+        }
+        $social_skill_block.='</div>';
+    }
+
 
     //--Productions
     $production_list =  UserManager::build_production_list($user_id);
@@ -775,17 +725,30 @@ if ($show_full_profile) {
         $socialRightInformation .=  SocialManager::social_wrapper_div($more_info, 4);
     }
 }
-$social_right_content .= MessageManager::generate_message_form('send_message');
-$social_right_content .= MessageManager::generate_invitation_form('send_invitation');
-
 
 $tpl = new Template(get_lang('Social'));
-$tpl->assign('social_avatar_block', $social_avatar_block);
+// Block Avatar Social
+SocialManager::setSocialUserBlock($tpl, $user_id, 'shared_profile');
+
 $tpl->assign('social_menu_block', $social_menu_block);
-$tpl->assign('social_right_content', $social_right_content);
+$tpl->assign('social_wall_block', $social_wall_block);
+$tpl->assign('social_post_wall_block', $social_post_wall_block);
+$tpl->assign('social_extra_info_block', $social_extra_info_block);
+$tpl->assign('social_course_block', $social_course_block);
+$tpl->assign('social_group_info_block', $social_group_info_block);
+$tpl->assign('social_rss_block', $social_rss_block);
+$tpl->assign('social_skill_block', $social_skill_block);
+$tpl->assign('social_session_block', $social_session_block);
 $tpl->assign('socialRightInformation', $socialRightInformation);
 $tpl->assign('socialAutoExtendLink', $socialAutoExtendLink);
-$social_layout = $tpl->get_template('layout/social_layout.tpl');
+
+$formModalTpl =  new Template();
+$formModalTpl->assign('messageForm', MessageManager::generate_message_form('send_message'));
+$formModalTpl->assign('invitationForm', MessageManager::generate_invitation_form('send_invitation'));
+$formModals = $formModalTpl->fetch('default/social/form_modals.tpl');
+
+$tpl->assign('formModals', $formModals);
+$social_layout = $tpl->get_template('social/profile.tpl');
 $tpl->display($social_layout);
 
 /*
@@ -811,7 +774,7 @@ function listMyFriends($user_id, $link_shared, $show_full_profile)
                 $friendHtml.= ' : <span>'
                     .'<a href="'.api_get_path(WEB_CODE_PATH).'social/profile_friends_and_groups.inc.php'
                     .'?view=friends&height=390&width=610&user_id='.$user_id.'"'
-                    .'class="thickbox" title="'.get_lang('SeeAll').'" >'.get_lang('SeeAll').'</a></span>';
+                    .'class="ajax" title="'.get_lang('SeeAll').'" >'.get_lang('SeeAll').'</a></span>';
             }
         }
 
@@ -853,16 +816,19 @@ function listMyFriends($user_id, $link_shared, $show_full_profile)
 
 function wallSocialAddPost()
 {
-    $html = '';
-    $html .= '<h3>' . get_lang('SocialWall') . '</h3>';
+    $html  = '<div class="panel panel-default social-wall">';
+    $html .= '<div class="panel-heading">' . get_lang('SocialWall') . '</div>';
+    $html .= '<div class="panel-body">';
     $html .=
         '<form name="social_wall_main" method="POST" enctype="multipart/form-data">
             <label for="social_wall_new_msg_main" class="hide">' . get_lang('SocialWallWhatAreYouThinkingAbout') . '</label>
         <textarea name="social_wall_new_msg_main" rows="2" cols="80" style="width: 98%" placeholder="'.get_lang('SocialWallWhatAreYouThinkingAbout').'"></textarea>
         <br />
-        <input class="" name="picture" type="file" accept="image/*">
-        <input type="submit" name="social_wall_new_msg_main_submit" value="'.get_lang('Post').'" class="float right btn btn-primary" />
+        <input class="" name="picture" type="file" accept="image/*" style="width:80%;">
+        <button type="submit" name="social_wall_new_msg_main_submit"  class="pull-right btn btn-success" />
+        <i class="fa fa-pencil"></i> '.get_lang('Post').'</button>
     </form>';
+    $html.= '</div></div>';
 
     return $html;
 }
@@ -876,7 +842,7 @@ function wallSocialPost($userId, $friendId)
         $post = $array[$i]['html'];
         $comment = SocialManager::getWallMessagesHTML($userId, $friendId, $array[$i]['id']);
 
-        $html .= SocialManager::social_wrapper_div($post.$comment, 5);
+        $html .= $post.$comment;
     }
 
     return $html;

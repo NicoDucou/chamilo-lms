@@ -30,9 +30,10 @@ class LinkAddEditForm extends FormValidator
 		// set or create link object
 		if (isset($link_object)) {
 			$link = $link_object;
-		} elseif (isset ($link_type) && isset ($category_object)) {
+		} elseif (isset($link_type) && isset($category_object)) {
 			$link = LinkFactory :: create ($link_type);
 			$link->set_course_code(api_get_course_id());
+			$link->set_category_id($category_object[0]->get_id());
 		} else {
 			die ('LinkAddEditForm error: define link_type/category_object or link_object');
 		}
@@ -62,7 +63,13 @@ class LinkAddEditForm extends FormValidator
 		if (count($category_object) == 1) {
 			$this->addElement('hidden', 'select_gradebook', $category_object[0]->get_id());
 		} else {
-			$select_gradebook = $this->addElement('select', 'select_gradebook', get_lang('SelectGradebook'), array(), array('id' => 'hide_category_id'));
+			$select_gradebook = $this->addElement(
+				'select',
+				'select_gradebook',
+				get_lang('SelectGradebook'),
+				array(),
+				array('id' => 'hide_category_id')
+			);
 			$this->addRule('select_gradebook', get_lang('ThisFieldIsRequired'), 'nonzero');
 
 			$default_weight = 0;
@@ -167,9 +174,9 @@ class LinkAddEditForm extends FormValidator
 		}
 		// submit button
 		if ($form_type == self :: TYPE_ADD) {
-			$this->addElement('style_submit_button', 'submit', get_lang('CreateLink'),'class="save"');
+			$this->addButtonCreate(get_lang('CreateLink'));
 		} else {
-			$this->addElement('style_submit_button', 'submit', get_lang('LinkMod'),'class="save"');
+			$this->addButtonUpdate(get_lang('LinkMod'));
 		}
 
 		if ($form_type == self :: TYPE_ADD) {

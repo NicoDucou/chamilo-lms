@@ -12,8 +12,7 @@
 {#  Improve usability in portal devices #}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ title_string }}</title>
-{{ css_file_to_string }}
-{{ css_style_print }}
+{{ css_static_file_to_string }}
 {{ js_file_to_string }}
 <script>
 
@@ -368,7 +367,7 @@ $(function() {
 
     // Global popup
     $('.ajax').on('click', function() {
-        var url     = this.href;
+        var url = this.href;
         var dialog  = $("#dialog");
         if ($("#dialog").length == 0) {
             dialog  = $('<div id="dialog" style="display:none"></div>').appendTo('body');
@@ -410,6 +409,27 @@ $(function() {
         return false;
     });
 
+    $('a.expand-image').on('click', function(e) {
+        e.preventDefault();
+
+        var title = $(this).attr('title');
+
+        var image = new Image();
+        image.onload = function() {
+            if (title) {
+                $('#expand-image-modal').find('.modal-title').text(title);
+            } else {
+                $('#expand-image-modal').find('.modal-title').html('&nbsp;');
+            }
+
+            $('#expand-image-modal').find('.modal-body').html(image);
+            $('#expand-image-modal').modal({
+                show: true
+            });
+        };
+        image.src = this.href;
+    });
+
     // Global confirmation
     $('.popup-confirmation').on('click', function() {
         showConfirmationPopup(this);
@@ -445,5 +465,7 @@ $(function() {
     });*/
 });
 </script>
+{{ css_custom_file_to_string }}
+{{ css_style_print }}
 {# Extra header configured in admin section, only shown to non-admins #}
 {{ header_extra_content }}

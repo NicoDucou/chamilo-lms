@@ -80,8 +80,9 @@ function clear_form () {
 
 $interbreadcrumb[] = array('url' => 'profile.php', 'name' => get_lang('SocialNetwork'));
 $interbreadcrumb[] = array('url' => '#', 'name' => get_lang('Friends'));
-
-$social_avatar_block = SocialManager::show_social_avatar_block('friends');
+//Block Social Avatar
+$user_info    = UserManager::get_user_info_by_id($user_id);
+//Block Social Menu
 $social_menu_block = SocialManager::show_social_menu('friends');
 
 $user_id = api_get_user_id();
@@ -136,11 +137,11 @@ if (count($friends) == 0) {
 }
 $social_right_content .= '</div>';
 
-
 $tpl = new Template(get_lang('Social'));
-$tpl->assign('social_avatar_block', $social_avatar_block);
+SocialManager::setSocialUserBlock($tpl, $user_id, 'friends');
+
 $tpl->assign('social_menu_block', $social_menu_block);
 $tpl->assign('social_right_content', $social_right_content);
 
-$social_layout = $tpl->get_template('layout/social_layout.tpl');
+$social_layout = $tpl->get_template('social/friends.tpl');
 $tpl->display($social_layout);

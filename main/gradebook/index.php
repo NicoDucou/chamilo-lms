@@ -378,14 +378,14 @@ if (isset ($_GET['visiblelink'])) {
 
 $course_id = api_get_course_int_id();
 
-if (isset ($_GET['deletelink'])) {
+if (isset($_GET['deletelink'])) {
     GradebookUtils::block_students();
     $get_delete_link = intval($_GET['deletelink']);
     //fixing #5229
     if (!empty($get_delete_link)) {
         $link= LinkFactory :: load($get_delete_link);
         if ($link[0] != null) {
-            // clean forum qualify
+            // Clean forum qualify
             $sql = 'UPDATE '.$tbl_forum_thread.' SET thread_qualify_max=0,thread_weight=0,thread_title_qualify=""
 					WHERE c_id = '.$course_id.' AND thread_id = (
 					    SELECT ref_id FROM '.$tbl_grade_links.'
@@ -393,7 +393,9 @@ if (isset ($_GET['deletelink'])) {
                     )';
             Database::query($sql);
             // clean attendance
-            $sql = 'UPDATE '.$tbl_attendance.' SET attendance_qualify_max=0, attendance_weight = 0, attendance_qualify_title=""
+            $sql = 'UPDATE '.$tbl_attendance.' SET
+                        attendance_weight = 0,
+                        attendance_qualify_title = ""
 				 	WHERE c_id = '.$course_id.' AND id = (
 				 	    SELECT ref_id FROM '.$tbl_grade_links.'
 				 	    WHERE id='.$get_delete_link.' AND type = '.LINK_ATTENDANCE.'
@@ -801,7 +803,7 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                 if (!empty($grade_models)) {
                     $form_grade = new FormValidator('grade_model_settings');
                     $obj->fill_grade_model_select_in_form($form_grade, 'grade_model_id', $grade_model_id);
-                    $form_grade->addElement('style_submit_button', 'submit', get_lang('Save'), 'class="save"');
+                    $form->addButtonSave(get_lang('Save'));
 
                     if ($form_grade->validate()) {
                         $value = $form_grade->exportValue('grade_model_id');

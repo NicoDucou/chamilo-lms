@@ -127,7 +127,7 @@ require_once __DIR__.'/version.php';
 
 // A protection measure for already installed systems.
 
-if (is_already_installed_system()) {
+if (isAlreadyInstalledSystem()) {
 	// The system has already been installed, so block re-installation.
 	$global_error_code = 6;
 	require '../inc/global_error_message.inc.php';
@@ -306,11 +306,13 @@ if ($encryptPassForm == '1') {
 	<title>&mdash; <?php echo get_lang('ChamiloInstallation').' &mdash; '.get_lang('Version_').' '.$new_version; ?></title>
 	<style type="text/css" media="screen, projection">
 		/*<![CDATA[*/
+        @import "../../web/assets/bootstrap/dist/css/bootstrap.min.css";
+        @import "../../web/assets/fontawesome/css/font-awesome.min.css";
 		@import "../css/base.css";
 		@import "../css/<?php echo api_get_visual_theme(); ?>/default.css";
 		/*]]>*/
 	</style>
-	<script type="text/javascript" src="../inc/lib/javascript/jquery.min.js"></script>
+	<script type="text/javascript" src="../../web/assets/jquery/dist/jquery.min.js"></script>
 	<script type="text/javascript">
 		$(document).ready( function() {
 
@@ -508,7 +510,7 @@ if ($encryptPassForm == '1') {
         $instalation_type_label  = get_lang('NewInstallation');
     }elseif ($installType == 'update') {
         $update_from_version = isset($update_from_version) ? $update_from_version : null;
-        $instalation_type_label = get_lang('UpdateFromDokeosVersion').(is_array($update_from_version) ? implode('|', $update_from_version) : '');
+        $instalation_type_label = get_lang('UpdateFromLMSVersion').(is_array($update_from_version) ? implode('|', $update_from_version) : '');
     }
     if (!empty($instalation_type_label) && empty($_POST['step6'])) {
     	echo '<div class="page-header"><h2>'.$instalation_type_label.'</h2></div>';
@@ -714,15 +716,16 @@ if (@$_POST['step2']) {
 	<table width="100%">
         <tr>
             <td>
-                <button type="submit" class="back" name="step4" value="&lt; <?php echo get_lang('Previous'); ?>" /><?php echo get_lang('Previous'); ?></button>
+                <button type="submit" class="btn btn-default" name="step4" value="&lt; <?php echo get_lang('Previous'); ?>" ><i class="fa fa-backward"> </i> <?php echo get_lang('Previous'); ?></button>
             </td>
             <td align="right">
                 <input type="hidden" name="is_executable" id="is_executable" value="-" />
                 <input type="hidden" name="step6" value="1" />
-                <button id="button_step6" class="save" type="submit" name="button_step6" value="<?php echo get_lang('InstallChamilo'); ?>">
+                <button id="button_step6" class="btn btn-success" type="submit" name="button_step6" value="<?php echo get_lang('InstallChamilo'); ?>">
+                    <i class="fa fa-floppy-o"> </i>
                     <?php echo get_lang('InstallChamilo'); ?>
                 </button>
-                <button class="save" id="button_please_wait"></button>
+                <button class="btn btn-save" id="button_please_wait"></button>
             </td>
         </tr>
 	</table>

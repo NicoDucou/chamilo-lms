@@ -63,23 +63,24 @@ class UniqueAnswerNoOption extends Question
         }
 
 		$html='<table class="data_table">
-					<tr style="text-align: center;">
-						<th width="10px">
-							'.get_lang('Number').'
-						</th>
-						<th width="10px" >
-							'.get_lang('True').'
-						</th>
-						<th width="50%">
-							'.get_lang('Answer').'
-						</th>
-							'.$comment_title.'
-							'.$feedback_title.'
-						<th width="60px">
-							'.get_lang('Weighting').'
-						</th>
-					</tr>';
-        $form -> addElement ('label', get_lang('Answers').'<br /> <img src="../img/fill_field.png">', $html);
+				<tr style="text-align: center;">
+					<th width="10px">
+						'.get_lang('Number').'
+					</th>
+					<th width="10px" >
+						'.get_lang('True').'
+					</th>
+					<th width="50%">
+						'.get_lang('Answer').'
+					</th>
+						'.$comment_title.'
+						'.$feedback_title.'
+					<th width="60px">
+						'.get_lang('Weighting').'
+					</th>
+				</tr>';
+
+        $form->addElement('label', get_lang('Answers').'<br /> <img src="../img/fill_field.png">', $html);
 
 		$defaults = array();
 		$correct = 0;
@@ -183,9 +184,9 @@ class UniqueAnswerNoOption extends Question
 
 
 			$form->addElement('radio', 'correct', null, null, $i, 'class="checkbox" style="margin-left: 0em;"');
-			$form->addElement('html_editor', 'answer['.$i.']', null, 'style="vertical-align:middle"', $editor_config);
+			$form->addElement('html_editor', 'answer['.$i.']', null, array(), $editor_config);
 
-            $form->addElement('html_editor', 'comment['.$i.']', null, 'style="vertical-align:middle"', $editor_config);
+            $form->addElement('html_editor', 'comment['.$i.']', null, array(), $editor_config);
 			$form->addElement('text', 'weighting['.$i.']', null, array('class' => "span1", 'value' => '0'));
 			$form->addElement('html', '</tr>');
             $i++;
@@ -217,12 +218,12 @@ class UniqueAnswerNoOption extends Question
         $form->addElement('hidden', 'position['.$i.']', '666');
 
         $form->addElement('radio', 'correct', null, null, $i, 'class="checkbox" style="margin-left: 0em;"');
-        $form->addElement('html_editor', 'answer['.$i.']', null, 'style="vertical-align:middle"', $editor_config);
+        $form->addElement('html_editor', 'answer['.$i.']', null, array(), $editor_config);
 
         $form->addRule('answer['.$i.']', get_lang('ThisFieldIsRequired'), 'required');
 
 
-        $form->addElement('html_editor', 'comment['.$i.']', null, 'style="vertical-align:middle"', $editor_config);
+        $form->addElement('html_editor', 'comment['.$i.']', null, array(), $editor_config);
 
         //$form->addElement('select', 'destination'.$i, get_lang('SelectQuestion').' : ',$select_question,'multiple');
 

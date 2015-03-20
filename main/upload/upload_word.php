@@ -14,7 +14,6 @@
 // 'inc.php' is automatically appended to the file name
 $language_file[] = "document"; //the document file is loaded because most of the upload vocab relates to the document tool
 $language_file[] = "learnpath";
-$language_file[] = "scormdocument";
 // global settings initialisation
 // also provides access to main api (inc/lib/main_api.lib.php)
 include '../inc/global.inc.php';
@@ -154,7 +153,7 @@ $user_file_template =
         <!-- BEGIN error --><br /><span class="form_error">{error}</span><!-- END error -->
 </div>
 EOT;
-$renderer->setElementTemplate($user_file_template);
+$renderer->setCustomElementTemplate($user_file_template);
 
 $form -> addElement ('file', 'user_file','<img src="../img/word_big.gif" align="absbottom" />');
 if (api_get_setting('search_enabled')=='true') {

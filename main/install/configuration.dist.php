@@ -286,6 +286,8 @@ $_configuration['system_stable']     = NEW_VERSION_STABLE;
 //$_configuration['exercise_max_ckeditors_in_page'] = 0;
 // Default upload option
 //$_configuration['document_if_file_exists_option'] = 'rename'; // overwrite
+// Enable add_gradebook_certificates.php cron task
+//$_configuration['add_gradebook_certificates_cron_task_enabled'] = true;
 // Which OpenBadges backpack send the badges
 //$_configuration['openbadges_backpack'] = 'https://backpack.openbadges.org/';
 // Custom name_order_conventions
@@ -305,11 +307,14 @@ $_configuration['system_stable']     = NEW_VERSION_STABLE;
 // Attach a document to a work
 //$_configuration['add_document_to_work'] = false;
 // Allow user comments in work
-//$_configuration['work_user_comments'] = false;
-
+// $_configuration['work_user_comments'] = false;
+// Allow student to enroll into a session without an approval needing
+//$_configuration['catalog_allow_session_auto_subscription'] = true;
 // Decode UTF-8 from Web Services (option passed to SOAP)
 //$_configuration['registration.soap.php.decode_utf8'] = false;
-
 // Show delete option in attendance
 //$_configuration['allow_delete_attendance'] = false;
-
+// Enable Gravatar profile image if no local image has been given
+//$_configuration['gravatar_enabled'] = true;
+// If Gravatar is enabled, tells which type of picture we want (default is "mm"). Options: mm | identicon | monsterid | wavatar
+//$_configuration['gravatar_type'] = 'mm';

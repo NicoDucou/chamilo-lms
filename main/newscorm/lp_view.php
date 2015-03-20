@@ -88,10 +88,23 @@ $(document).ready(function() {
 var chamilo_xajax_handler = window.oxajax;
 </script>';
 
+$htmlHeadXtra[] = '<script type="text/javascript">
+        $(document).ready(function(){
+            $("#icon-down").click(function(){
+                $("#icon-up").removeClass("hidden");
+                $(this).addClass("hidden");
+            });
+             $("#icon-up").click(function(){
+                $("#icon-down").removeClass("hidden");
+                $(this).addClass("hidden");
+            });
+        });
+
+</script>';
 if ($_SESSION['oLP']->mode == 'embedframe' || $_SESSION['oLP']->get_hide_toc_frame()==1 ) {
     $htmlHeadXtra[] = '<script>
     $(document).ready(function() {
-        toogle_minipanel();
+        toggle_minipanel();
     });
     </script>';
 }
@@ -349,48 +362,58 @@ echo '<div id="learning_path_main" style="width:100%;height:100%;">';
 $is_allowed_to_edit = api_is_allowed_to_edit(false, true, true, false);
 
 if ($is_allowed_to_edit) {
-    echo '<div id="learning_path_breadcrumb_zone">';
+    echo '<div class="row">';
+    echo '<div id="learning_path_breadcrumb_zone" class="col-md-12">';
     global $interbreadcrumb;
     $interbreadcrumb[] = array('url' => 'lp_controller.php?action=list&isStudentView=false', 'name' => get_lang('LearningPaths'));
     $interbreadcrumb[] = array('url' => api_get_self()."?action=add_item&type=step&lp_id=".$_SESSION['oLP']->lp_id."&isStudentView=false", 'name' => $_SESSION['oLP']->get_name());
     $interbreadcrumb[] = array('url' => '#', 'name' => get_lang('Preview'));
     echo return_breadcrumb($interbreadcrumb, null, null);
     echo '</div>';
+    echo '</div>';
 }
     echo '<div id="learning_path_left_zone" style="'.$display_none.'"> ';
-    echo '<div id="header">';
-    //echo '<a href="lp_controller.php?action=return_to_course_homepage&'.api_get_cidreq().'" target="_self" onclick="javascript: window.parent.API.save_asset();"></a>';
-
-    // Return to course home.
-    if ($is_allowed_to_edit) {
-        $url = 'lp_controller.php?isStudentView=false&action=return_to_course_homepage&' . api_get_cidreq();
-    } else {
-        $url = 'lp_controller.php?action=return_to_course_homepage&' . api_get_cidreq();
-    }
-
-    $name = get_lang('CourseHomepageLink');
-    // Return to lp list
-    if (api_get_course_setting('lp_return_link') == 1) {
-        $url .= '&redirectTo=lp_list';
-        $name = get_lang('LearningPathList');
-    }
-
-    echo Display::url(
-        $name,
-        $url,
-        array(
-            'class' => 'home btn btn-small btn-info',
-            'target' => '_self',
-            'onclick' => 'javascript: window.parent.API.save_asset();'
-        )
-    );
-    echo '</div>';
-?>
+    echo '<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">';
+    echo '<div class="panel panel-default">';
+    echo '<div class="panel-heading" role="tab" id="headingOne">
+        <a id="ui-option" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        <i id="icon-down"class="fa fa-chevron-down hidden"></i>
+        <i id="icon-up" class="fa fa-chevron-up"></i>
+        </a></div>';
+    ?>
         <!-- end header -->
 
         <!-- Author image preview -->
-        <div id="author_image">
-            <div id="author_icon">
+    <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+            <div class="panel-body">
+                <?php
+                // Return to course home.
+                if ($is_allowed_to_edit) {
+                $url = 'lp_controller.php?isStudentView=false&action=return_to_course_homepage&' . api_get_cidreq();
+                } else {
+                $url = 'lp_controller.php?action=return_to_course_homepage&' . api_get_cidreq();
+                }
+
+                $iconHome='<i class="fa fa-home"></i>';
+                $name = get_lang('CourseHomepageLink');
+                // Return to lp list
+                if (api_get_course_setting('lp_return_link') == 1) {
+                $url .= '&redirectTo=lp_list';
+                $name = get_lang('LearningPathList');
+                }
+
+                echo Display::url(
+                $iconHome.' '.$name,
+                $url,
+                array(
+                'class' => 'btn btn-success btn-block',
+                'target' => '_self',
+                'onclick' => 'javascript: window.parent.API.save_asset();'
+                )
+                );
+
+                ?>
+                <div class="image-avatar">
                 <?php
                 if ($_SESSION['oLP']->get_preview_image() != '') {
                     $picture = getimagesize(api_get_path(SYS_COURSE_PATH).api_get_course_path().'/upload/learning_path/images/'.$_SESSION['oLP']->get_preview_image());
@@ -405,33 +428,35 @@ if ($is_allowed_to_edit) {
                     echo Display :: display_icon('unknown_250_100.jpg');
                 }
                 ?>
-            </div>
-            <div id="lp_navigation_elem">
-                <?php echo $navigation_bar; ?>
-                <div id="progress_bar">
-                    <?php echo $progress_bar; ?>
                 </div>
+                <div id="lp_navigation_elem" class="navegation-bar">
+                    <?php echo $navigation_bar; ?>
+                    <div id="progress_bar">
+                        <?php echo $progress_bar; ?>
+                    </div>
+                </div>
+                <div class="description-autor">
+                    <?php echo $_SESSION['oLP']->get_author(); ?>
+                </div>
+                <?php
+                if ($show_audioplayer) {
+                    echo '<div id="lp_media_file">';
+                    echo $mediaplayer;
+                    echo '</div>';
+                }
+                ?>
             </div>
         </div>
-        <!-- end image preview Layout -->
-
-        <div id="author_name">
-            <?php echo $_SESSION['oLP']->get_author(); ?>
         </div>
 
-        <!-- media player layout -->
-        <?php
-        if ($show_audioplayer) {
-            echo '<div id="lp_media_file">';
-            echo $mediaplayer;
-            echo '</div>';
-        }
-        ?>
+    </div>
+
         <!-- end media player layout -->
 
         <!-- TOC layout -->
-        <div id="toc_id" name="toc_name" style="overflow: auto; padding:0;margin-top:0px;width:100%;float:left">
-            <div id="learning_path_toc">
+
+        <div id="toc_id" name="toc_name">
+            <div id="learning_path_toc" class="scorm-list">
                 <?php echo $_SESSION['oLP']->get_html_toc($get_toc_list); ?>
             </div>
         </div>
@@ -465,10 +490,12 @@ if ($is_allowed_to_edit) {
         var heightBreadcrumb = ($('#learning_path_breadcrumb_zone').height())? $('#learning_path_breadcrumb_zone').height() : 0 ;
         var heightControl = ($('#control').is(':visible'))? $('#control').height() : 0 ;
         var heightMedia = ($('#lp_media_file').length != 0)? $('#lp_media_file').height() : 0 ;
-        var heightTitle = ($('#scorm_title').height())? $('#scorm_title').height() : 0 ;
+        //var heightTitle = ($('#scorm_title').height())? $('#scorm_title').height() : 0 ;
         var heightAction = ($('#actions_lp').height())? $('#actions_lp').height() : 0 ;
 
-        var heightTop = heightHeader + heightAuthorImg + heightAuthorName + heightMedia + heightTitle + heightAction + 100;
+        //var heightTop = heightHeader + heightAuthorImg + heightAuthorName + heightMedia + heightTitle + heightAction + 100;
+        var heightTop = heightHeader + heightAuthorImg + heightAuthorName + heightMedia + heightAction + 100;
+
         heightTop = (heightTop < 300)? heightTop : 300;
         var innerHeight = (IE) ? document.body.clientHeight : window.innerHeight ;
         // -40 is a static adjustement for margin, spaces on the page
@@ -492,8 +519,8 @@ if ($is_allowed_to_edit) {
          }, "top.content_name",
           { load: [
               { type:"script", id:"_fr1", src:"<?php echo api_get_jquery_web_path(); ?>"},
-              { type:"script", id:"_fr4", src:"<?php echo api_get_path(WEB_LIBRARY_PATH); ?>javascript/jquery-ui/smoothness/jquery-ui-1.8.21.custom.min.js"},
-              { type:"stylesheet", id:"_fr5", src:"<?php echo api_get_path(WEB_LIBRARY_PATH); ?>javascript/jquery-ui/smoothness/jquery-ui-1.8.21.custom.css"},
+              { type:"script", id:"_fr4", src:"<?php echo api_get_jquery_ui_js_web_path(); ?>"},
+              { type:"stylesheet", id:"_fr5", src:"<?php echo api_get_jquery_ui_css_web_path(); ?>"},
               { type:"script", id:"_fr2", src:"<?php echo api_get_path(WEB_LIBRARY_PATH); ?>javascript/jquery.highlight.js"}
           ] }
           );
@@ -505,8 +532,8 @@ if ($is_allowed_to_edit) {
       {
       load: [
           { type:"script", id:"_fr1", src:"<?php echo api_get_jquery_web_path(); ?>"},
-          { type:"script", id:"_fr4", src:"<?php echo api_get_path(WEB_LIBRARY_PATH); ?>javascript/jquery-ui/smoothness/jquery-ui-1.8.21.custom.min.js"},
-          { type:"stylesheet", id:"_fr5", src:"<?php echo api_get_path(WEB_LIBRARY_PATH); ?>javascript/jquery-ui/smoothness/jquery-ui-1.8.21.custom.css"},
+          { type:"script", id:"_fr4", src:"<?php echo api_get_jquery_ui_js_web_path(); ?>"},
+          { type:"stylesheet", id:"_fr5", src:"<?php echo api_get_jquery_ui_css_web_path(); ?>"},
           { type:"script", id:"_fr2", src:"<?php echo api_get_path(WEB_LIBRARY_PATH); ?>javascript/jquery.highlight.js"}
       ]}
       );

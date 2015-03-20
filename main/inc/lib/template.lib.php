@@ -404,11 +404,11 @@ class Template
      */
     private function set_user_parameters()
     {
-        $user_info               = array();
-        $user_info['logged']     = 0;
+        $user_info = array();
+        $user_info['logged'] = 0;
         $this->user_is_logged_in = false;
         if (api_user_is_login()) {
-            $user_info           = api_get_user_info(api_get_user_id());
+            $user_info = api_get_user_info(api_get_user_id(), true);
             $user_info['logged'] = 1;
 
             $user_info['is_admin'] = 0;
@@ -417,9 +417,9 @@ class Template
             }
 
             $user_info['messages_count'] = MessageManager::get_new_messages();
-            $this->user_is_logged_in     = true;
+            $this->user_is_logged_in = true;
         }
-        //Setting the $_u array that could be use in any template
+        // Setting the $_u array that could be use in any template
         $this->assign('_u', $user_info);
     }
 
@@ -460,9 +460,11 @@ class Template
     }
 
     /**
-     * Set theme, include CSS files
+     * Set theme, include mainstream CSS files
+     * @return void
+     * @see setCssCustomFiles() for additional CSS sheets
      */
-    public function set_css_files()
+    public function setCssFiles()
     {
         global $disable_js_and_css_files;
         $css = array();
@@ -482,26 +484,42 @@ class Template
             'jquery-ui/themes/smoothness/jquery-ui.min.css',
             'jquery-ui/themes/smoothness/theme.css',
             'mediaelement/build/mediaelementplayer.min.css',
+            'jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.css'
         ];
 
         foreach ($bowerCSSFiles as $file) {
             $css[] = api_get_path(WEB_PATH).'web/assets/'.$file;
         }
 
-        // Base CSS
-        $css[] = api_get_cdn_path(api_get_path(WEB_CSS_PATH).'base.css');
-
-        //Extra CSS files
-        $css[] = api_get_path(WEB_LIBRARY_PATH).'javascript/thickbox.css';
-        $css[] = api_get_path(WEB_LIBRARY_PATH).'javascript/chosen/chosen.css';
+        $css[] = api_get_path(WEB_LIBRARY_PATH) . 'javascript/chosen/chosen.css';
 
         if (api_is_global_chat_enabled()) {
-            $css[] = api_get_path(WEB_LIBRARY_PATH).'javascript/chat/css/chat.css';
+            $css[] = api_get_path(WEB_LIBRARY_PATH) . 'javascript/chat/css/chat.css';
         }
 
         //THEME CSS STYLE
-       // $css[] = api_get_cdn_path(api_get_path(WEB_CSS_PATH).'responsive.css');
-       // $css[] = api_get_cdn_path(api_get_path(WEB_CSS_PATH).$this->theme.'/default.css');
+        // $css[] = api_get_cdn_path(api_get_path(WEB_CSS_PATH).'responsive.css');
+
+        $css_file_to_string = null;
+        foreach ($css as $file) {
+            $css_file_to_string .= api_get_css($file);
+        }
+
+        if (!$disable_js_and_css_files) {
+            $this->assign('css_static_file_to_string', $css_file_to_string);
+        }
+    }
+    /**
+     * Prepare custom CSS to be added at the very end of the <head> section
+     * @return void
+     * @see setCssFiles() for the mainstream CSS files
+     */
+    public function setCssCustomFiles()
+    {
+        global $disable_js_and_css_files;
+        // Base CSS
+        $css[] = api_get_cdn_path(api_get_path(WEB_CSS_PATH).'base.css');
+        $css[] = api_get_cdn_path(api_get_path(WEB_CSS_PATH).$this->theme.'/default.css');
 
         if ($this->show_learnpath) {
             $css[] = api_get_path(WEB_CSS_PATH).$this->theme.'/learnpath.css';
@@ -540,9 +558,13 @@ class Template
         }
 
         if (!$disable_js_and_css_files) {
-            $this->assign('css_file_to_string', $css_file_to_string);
+            $this->assign('css_custom_file_to_string', $css_file_to_string);
 
-            $style_print = api_get_css(api_get_cdn_path(api_get_path(WEB_CSS_PATH).$this->theme.'/print.css'), 'print');
+            $style_print = '';
+            if (is_readable(api_get_path(SYS_CSS_PATH).$this->theme.'/print.css')) {
+                $style_print = api_get_css(api_get_cdn_path(api_get_path(WEB_CSS_PATH) . $this->theme . '/print.css'),
+                    'print');
+            }
             $this->assign('css_style_print', $style_print);
         }
 
@@ -561,12 +583,7 @@ class Template
 
         //JS files
         $js_files = array(
-            //'jquery.min.js',
-            //'fullcalendar/lib/moment.min.js',
-            //'daterange/daterangepicker.js',
             'chosen/chosen.jquery.min.js',
-            'thickbox.js',
-            //'mediaelement/mediaelement-and-player.min.js'
         );
 
         if (api_is_global_chat_enabled()) {
@@ -585,28 +602,33 @@ class Template
         }
 
         $js_file_to_string = null;
-
+        $isoCode = api_get_language_isocode();
 
         $bowerJsFiles = [
             'modernizr/modernizr.js',
             'jquery/dist/jquery.min.js',
+            'moment/min/moment-with-locales.min.js',
             'jquery-ui/jquery-ui.min.js',
             'bootstrap/dist/js/bootstrap.min.js',
             'ckeditor/ckeditor.js',
             'bootstrap-daterangepicker/daterangepicker.js',
             'jquery-timeago/jquery.timeago.js',
-            'moment/min/moment-with-locales.min.js',
-            'mediaelement/build/mediaelement-and-player.min.js'
+            'mediaelement/build/mediaelement-and-player.min.js',
+            'jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js'
         ];
 
+        if ($isoCode != 'en') {
+            $bowerJsFiles[] = 'jqueryui-timepicker-addon/dist/i18n/jquery-ui-timepicker-' . $isoCode . '.js';
+            $bowerJsFiles[] = 'jquery-ui/ui/minified/i18n/datepicker-' . $isoCode . '.min.js';
+        }
+
         foreach ($bowerJsFiles as $file) {
-            $js_file_to_string .= '<script type="text/javascript" src="'.api_get_path(WEB_PATH).'web/assets/'.$file.'"></script>';
+            $js_file_to_string .= '<script type="text/javascript" src="'.api_get_path(WEB_PATH).'web/assets/'.$file.'"></script>'."\n";
         }
 
         foreach ($js_files as $file) {
             $js_file_to_string .= api_get_js($file);
         }
-
 
         // Loading email_editor js
         if (!api_is_anonymous() && api_get_setting('allow_email_editor') == 'true') {
@@ -709,8 +731,9 @@ class Template
         $this->assign('title_string', $title_string);
 
         //Setting the theme and CSS files
-        $this->set_css_files();
+        $css = $this->setCssFiles();
         $this->set_js_files();
+        $this->setCssCustomFiles($css);
         //$this->set_js_files_post();
 
         $browser = api_browser_support('check_browser');

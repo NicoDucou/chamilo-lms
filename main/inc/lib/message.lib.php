@@ -1329,8 +1329,8 @@ class MessageManager
 
     /**
      * Get array of links (download) for message attachment files
-     * @param int  		message id
-     * @param string	type message list (inbox/outbox)
+     * @param int  		$message_id
+     * @param string	$type message list (inbox/outbox)
      * @return array
      */
     public static function get_links_message_attachment_files($message_id, $type = '')
@@ -1342,7 +1342,8 @@ class MessageManager
         $links_attach_file = array();
         if (!empty($message_id)) {
 
-            $sql = "SELECT * FROM $tbl_message_attach WHERE message_id = '$message_id'";
+            $sql = "SELECT * FROM $tbl_message_attach
+                    WHERE message_id = '$message_id'";
 
             $rs_file = Database::query($sql);
             if (Database::num_rows($rs_file) > 0) {
@@ -1363,14 +1364,15 @@ class MessageManager
 
     /**
      * Get message list by id
-     * @param int  message id
+     * @param int  $message_id
      * @return array
      */
     public static function get_message_by_id($message_id)
     {
         $tbl_message = Database::get_main_table(TABLE_MESSAGE);
         $message_id = intval($message_id);
-        $sql = "SELECT * FROM $tbl_message WHERE id = '$message_id' AND msg_status <> '".MESSAGE_STATUS_DELETED."' ";
+        $sql = "SELECT * FROM $tbl_message
+                WHERE id = '$message_id' AND msg_status <> '".MESSAGE_STATUS_DELETED."' ";
         $res = Database::query($sql);
         $item = array();
         if (Database::num_rows($res) > 0) {
@@ -1386,20 +1388,19 @@ class MessageManager
      */
     public static function generate_message_form($id, $params = array())
     {
-        $form = new FormValidator('send_message', null, 'post', null, array('id' => $id.'_form', 'class' => 'form-vertical'));
-        $form->addElement('text', 'subject', get_lang('Subject'), array('id' => 'subject_id', 'class' => 'span5'));
-        $form->addElement('textarea', 'content', get_lang('Message'), array('id' => 'content_id', 'rows' => '5', 'class' => 'span5'));
-        $div = Display::div($form->return_form(), array('id' => $id.'_div', 'style' => 'display:none'));
-        return $div;
+        $form = new FormValidator('send_message');
+        $form->addText('subject', get_lang('Subject'), false, ['id' => 'subject_id']);
+        $form->addTextarea('content', get_lang('Message'), ['id' => 'content_id', 'rows' => '5']);
+
+        return $form->return_form();
     }
 
     public static function generate_invitation_form($id, $params = array())
     {
-        $form = new FormValidator('send_invitation', null, 'post', null, array('id' => $id.'_form', 'class' => 'form-vertical'));
+        $form = new FormValidator('send_invitation');
         //$form->addElement('text', 'subject', get_lang('Subject'), array('id' => 'subject_id'));
-        $form->addElement('textarea', 'content', get_lang('AddPersonalMessage'), array('id' => 'content_invitation_id', 'rows' => '5', 'class' => 'span5'));
-        $div = Display::div($form->return_form(), array('id' => $id.'_div', 'style' => 'display:none'));
-        return $div;
+        $form->addTextarea('content', get_lang('AddPersonalMessage'), ['id' => 'content_invitation_id', 'rows' => 5]);
+        return $form->return_form();
     }
 
     //@todo this functions should be in the message class
@@ -1493,7 +1494,14 @@ class MessageManager
         }
 
         // display sortable table with messages of the current user
-        $table = new SortableTable('message_outbox', array('MessageManager', 'get_number_of_messages_sent'), array('MessageManager', 'get_message_data_sent'), 3, 20, 'DESC');
+        $table = new SortableTable(
+            'message_outbox',
+            array('MessageManager', 'get_number_of_messages_sent'),
+            array('MessageManager', 'get_message_data_sent'),
+            3,
+            20,
+            'DESC'
+        );
 
         $parameters['f'] = isset($_GET['f']) && $_GET['f'] == 'social' ? 'social' : null;
         $table->set_additional_parameters($parameters);
@@ -1505,6 +1513,7 @@ class MessageManager
 
         $table->set_form_actions(array('delete' => get_lang('DeleteSelectedMessages')));
         $html .= $table->return_table();
+
         return $html;
     }
 

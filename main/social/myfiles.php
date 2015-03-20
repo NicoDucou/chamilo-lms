@@ -5,7 +5,7 @@
  * @package chamilo.social
  */
 
-$language_file = array('messages', 'userInfo');
+$language_file = array('userInfo');
 $cidReset = true;
 require_once '../inc/global.inc.php';
 
@@ -129,8 +129,10 @@ if (is_array($_GET) && count($_GET) > 0) {
         }
     }
 }
+//Social Avatar BLock
+$user_info    = UserManager::get_user_info_by_id($user_id);
 
-$social_avatar_block = SocialManager::show_social_avatar_block('myfiles');
+//Social Menu Block
 $social_menu_block = SocialManager::show_social_menu('myfiles');
 $actions = null;
 
@@ -153,19 +155,14 @@ if (isset($_GET['cidReq'])) {
         ) . '</a>';
 }
 $tpl = new Template();
+SocialManager::setSocialUserBlock($tpl, $user_id, 'myfiles');
 $editor = new \Chamilo\CoreBundle\Component\Editor\Editor();
-
 $editor = $tpl->fetch('default/'.$editor->getEditorStandAloneTemplate());
-$social_right_content = '<div class="span9">';
-$social_right_content .= $editor;
-$social_right_content .= '</div>';
 
-$tpl->assign('social_avatar_block', $social_avatar_block);
+$tpl->assign('social_right_content', $editor);
 $tpl->assign('social_menu_block', $social_menu_block);
-$tpl->assign('social_right_content', $social_right_content);
-
 $tpl->assign('actions', $actions);
 $tpl->assign('message', $show_message);
 
-$social_layout = $tpl->get_template('layout/social_layout.tpl');
+$social_layout = $tpl->get_template('social/myfiles.tpl');
 $tpl->display($social_layout);

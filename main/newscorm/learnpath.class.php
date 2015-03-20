@@ -1908,7 +1908,7 @@ class learnpath
 
         if ($this->mode == 'fullscreen') {
             $navbar = '
-                  <div class="buttons">
+                  <div class="buttons well">
                     <a href="lp_controller.php?action=stats&'.api_get_cidreq(true).'&lp_id='.$lp_id.'" onClick="window.parent.API.save_asset();return true;" target="content_name_blank" title="stats" id="stats_link"><img border="0" src="../img/btn_stats.png" title="' . get_lang('Reporting') . '"></a>
                     <a href="" onClick="switch_item(' . $mycurrentitemid . ',\'previous\');return false;" title="previous"><img border="0" src="../img/btn_previous.png" title="' . get_lang('ScormPrevious') . '"></a>
                     <a href="" onClick="switch_item(' . $mycurrentitemid . ',\'next\');return false;" title="next"  ><img border="0" src="../img/btn_next.png" title="' . get_lang('ScormNext') . '"></a>.
@@ -1917,7 +1917,7 @@ class learnpath
 
         } else {
             $navbar = '
-                  <div class="buttons">
+                  <div class="buttons well">
                     <a href="lp_controller.php?action=stats&'.api_get_cidreq(true).'&lp_id='.$lp_id.'" onClick="window.parent.API.save_asset();return true;" target="content_name" title="stats" id="stats_link"><img border="0" src="../img/btn_stats.png" title="' . get_lang('Reporting') . '"></a>
                     <a href="" onClick="switch_item(' . $mycurrentitemid . ',\'previous\');return false;" title="previous"><img border="0" src="../img/btn_previous.png" title="' . get_lang('ScormPrevious') . '"></a>
                     <a href="" onClick="switch_item(' . $mycurrentitemid . ',\'next\');return false;" title="next"  ><img border="0" src="../img/btn_next.png" title="' . get_lang('ScormNext') . '"></a>
@@ -2432,7 +2432,9 @@ class learnpath
     {
         $text = $percentage . $text_add;
         $output = '<div class="progress">
-                        <div id="progress_bar_value" class="bar" style="width: '.$text.';"><span id="progress_text">'. $text .'</span></div>
+                        <div id="progress_bar_value" class="progress-bar" role="progressbar" aria-valuenow="' .$percentage. '" aria-valuemin="0" aria-valuemax="100" style="width: '.$text.';">
+                        '. $text .'
+                        </div>
                     </div>';
 
         return $output;
@@ -3129,8 +3131,8 @@ class learnpath
         if (empty($toc_list)) {
             $toc_list = $this->get_toc();
         }
-        $html = '<div id="scorm_title" class="scorm_title">'.Security::remove_XSS($this->get_name()) . '</div>';
-
+        $html = '<div id="scorm_title" class="scorm-heading">'.Security::remove_XSS($this->get_name()) . '</div>';
+        $html .= '<div class="scorm-body">';
         $hide_teacher_icons_lp = isset($_configuration['hide_teacher_icons_lp']) ? $_configuration['hide_teacher_icons_lp'] : true;
 
         if ($is_allowed_to_edit && $hide_teacher_icons_lp == false) {
@@ -3187,7 +3189,7 @@ class learnpath
             $dirTypes = self::getChapterTypes();
 
             if (in_array($item['type'], $dirTypes)) {
-                $scorm_color_background =' scorm_item_section ';
+                $scorm_color_background ='scorm_item_section ';
                 $style_item = '';
             }
             if ($item['id'] == $this->current) {
@@ -3236,6 +3238,7 @@ class learnpath
 
             $color_counter++;
         }
+        $html .= "</div>";
         $html .= "</div>";
         return $html;
     }
@@ -5384,12 +5387,12 @@ class learnpath
         } else {
             $return_audio = '<table class="data_table">';
             $return_audio .= '<tr>';
-            $return_audio .= '<th width="60%">' . get_lang('Title') . '</th>';
+            $return_audio .= '<th width="40%">' . get_lang('Title') . '</th>';
             $return_audio .= '<th>' . get_lang('Audio') . '</th>';
             $return_audio .= '</tr>';
 
             if ($update_audio != 'true') {
-                $return .= '<div class="span12">';
+                $return .= '<div class="col-md-12">';
                 $return .= self::return_new_tree($update_audio);
                 $return .='</div>';
                 $return .= Display::div(Display::url(get_lang('Save'), '#', array('id'=>'listSubmit', 'class'=>'btn')), array('style'=>'float:left; margin-top:15px;width:100%'));
@@ -5400,7 +5403,7 @@ class learnpath
 
             // We need to close the form when we are updating the mp3 files.
             if ($update_audio == 'true') {
-                $return .= '<div style="margin:40px 0; float:right;"><button class="save" type="submit" name="save_audio" id="save_audio">' . get_lang('SaveAudioAndOrganization') . '</button></div>'; // TODO: What kind of language variable is this?
+                $return .= '<div><button class="save" type="submit" name="save_audio" id="save_audio">' . get_lang('SaveAudioAndOrganization') . '</button></div>'; // TODO: What kind of language variable is this?
             }
         }
 
@@ -5618,9 +5621,10 @@ class learnpath
             }
         }
 
-        $return .= '<div class="lp_tree well">';
+        $return .= '<div class="panel panel-default">';
+        $return .= '<div class="panel-heading">'.$this->name.'</div>';
+        $return .= '<div class="panel-body">';
         $return .= '<ul id="lp_item_list">';
-        $return .='<h4>'.$this->name.'</h4><br>';
 
         $tree = self::print_recursive($elements, $default_data, $default_content);
 
@@ -5635,7 +5639,7 @@ class learnpath
         if ($update_audio == 'true') {
             $return = $return_audio;
         } else {
-            $return .= '</div>';
+            $return .= '</div></div>';
         }
         return $return;
     }
@@ -7228,7 +7232,7 @@ class learnpath
             reset($arrLP);
         }
 
-        $form->addElement('style_submit_button', 'submit_button', get_lang('SaveSection'), 'class="save"');
+        $form->addButtonSave(get_lang('SaveSection'), 'submit_button');
 
         if ($item_type == 'module' || $item_type == 'dokeos_module') {
             $form->addElement('hidden', 'parent', '0');
@@ -7356,7 +7360,7 @@ class learnpath
         $result = Database::query($sql);
         $arrLP = array ();
         while ($row = Database :: fetch_array($result)) {
-            $arrLP[] = array (
+            $arrLP[] = array(
                 'id' 				=> $row['id'],
                 'item_type' 		=> $row['item_type'],
                 'title' 			=> $row['title'],
@@ -7544,26 +7548,28 @@ class learnpath
                             $relative_prefix = '../../';
                         }
 
-                        $editor_config = array( 'ToolbarSet' 			=> 'LearningPathDocuments',
+                        $editor_config = array(
+                            'ToolbarSet'=> 'LearningPathDocuments',
                             'Width' 				=> '100%',
                             'Height' 				=> '500',
                             'FullPage' 				=> true,
                             'CreateDocumentDir' 	=> $relative_prefix,
                             'CreateDocumentWebDir' 	=> api_get_path(WEB_COURSE_PATH) . api_get_course_path().'/document/',
                             'BaseHref' 				=> api_get_path(WEB_COURSE_PATH) . api_get_course_path().'/document/'.$relative_path
-
                         );
 
                         if ($_GET['action'] == 'add_item') {
                             $class = 'add';
                             $text = get_lang('LPCreateDocument');
-                        } else
+                        } else {
                             if ($_GET['action'] == 'edit_item') {
                                 $class = 'save';
                                 $text = get_lang('SaveDocument');
                             }
+                        }
 
-                        $form->addElement('style_submit_button', 'submit_button', $text, 'class="' . $class . '"');
+                        //$form->addElement('style_submit_button', 'submit_button', $text, 'class="' . $class . '"');
+                        $form->addButtonSave($text, 'submit_button');
                         $renderer = $form->defaultRenderer();
                         $renderer->setElementTemplate('<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{label}<br />{element}', 'content_lp');
                         $form->addElement('html', '<div>');
@@ -7572,7 +7578,8 @@ class learnpath
                         $defaults['content_lp'] = $content;
                     }
                 } elseif (is_numeric($extra_info)) {
-                    $form->addElement('style_submit_button', 'submit_button', get_lang('SaveDocument'), 'class="save"');
+                    $form->addButtonSave(get_lang('SaveDocument'), 'submit_button');
+
                     $return = $this->display_document($extra_info, true, true, true);
                     $form->addElement('html', $return);
                 }
@@ -7584,15 +7591,16 @@ class learnpath
             $form->addElement('hidden', 'description', $item_description);
         }
         if (is_numeric($extra_info)) {
-            $form->addElement('style_submit_button', 'submit_button', get_lang('SaveDocument'), 'value="submit_button", class="save"');
+            $form->addButtonSave(get_lang('SaveDocument'), 'submit_button');
             $form->addElement('hidden', 'path', $extra_info);
         } elseif (is_array($extra_info)) {
-            $form->addElement('style_submit_button', 'submit_button', get_lang('SaveDocument'), 'class="save"');
+            $form->addButtonSave(get_lang('SaveDocument'), 'submit_button');
             $form->addElement('hidden', 'path', $extra_info['path']);
         }
         $form->addElement('hidden', 'type', TOOL_DOCUMENT);
         $form->addElement('hidden', 'post_time', time());
         $form->setDefaults($defaults);
+
         return $form->return_form();
     }
 
@@ -8245,6 +8253,7 @@ class learnpath
 
     /**
      * Return HTML form to allow prerequisites selection
+     * @todo use FormValidator
      * @param	integer Item ID
      * @return	string	HTML form
      */
@@ -8326,7 +8335,7 @@ class learnpath
             $return .= '<tr>';
             $return .= '<td class="radio"' . (($item['item_type'] != TOOL_QUIZ && $item['item_type'] != TOOL_HOTPOTATOES) ? ' colspan="3"' : '') . '>';
             $return .= '<label for="id' . $item['id'] . '">';
-            $return .= '<input' . (($item['id'] == $prerequisiteId) ? ' checked="checked" ' : '') . (($item['item_type'] == 'dokeos_module' || $item['item_type'] == 'dokeos_chapter') ? ' disabled="disabled" ' : ' ') . 'id="id' . $item['id'] . '" name="prerequisites" style="margin-left:' . $item['depth'] * 10 . 'px; margin-right:10px;" type="radio" value="' . $item['id'] . '" />';
+            $return .= '<input' . (in_array($prerequisiteId, array($item['id'], $item['ref'])) ? ' checked="checked" ' : '') . (($item['item_type'] == 'dokeos_module' || $item['item_type'] == 'dokeos_chapter') ? ' disabled="disabled" ' : ' ') . 'id="id' . $item['id'] . '" name="prerequisites" style="margin-left:' . $item['depth'] * 10 . 'px; margin-right:10px;" type="radio" value="' . $item['id'] . '" />';
             $icon_name = str_replace(' ', '', $item['item_type']);
 
             if (file_exists('../img/lp_' . $icon_name . '.png')) {
@@ -8373,7 +8382,7 @@ class learnpath
         $return .= '</tr>';
         $return .= '</table>';
         $return .= '<div style="padding-top:3px;">';
-        $return .= '<button class="save" name="submit_button" type="submit">' . get_lang('ModifyPrerequisites') . '</button>';
+        $return .= '<button class="btn btn-default" name="submit_button" type="submit">' . get_lang('ModifyPrerequisites') . '</button>';
         $return .= '</form>';
 
         return $return;
@@ -8402,7 +8411,7 @@ class learnpath
                 ORDER BY display_order ";
         $rs = Database::query($sql);
         $return = '';
-        $return .= '<select name="prerequisites" >';
+        $return .= '<select name="prerequisites" class="form-control">';
         $return .= '<option value="0">'.get_lang('None').'</option>';
         if (Database::num_rows($rs) > 0) {
             while ($row = Database::fetch_array($rs)) {
@@ -9535,6 +9544,10 @@ EOD;
                         case 'document':
                             //Getting documents from a LP with chamilo documents
                             $file_data = DocumentManager::get_document_data_by_id($item->path, $this->cc);
+                            // Try loading document from the base course.
+                            if (empty($file_data) && !empty($sessionId)) {
+                                $file_data = DocumentManager::get_document_data_by_id($item->path, $this->cc, false, 0);
+                            }
                             $file_path = api_get_path(SYS_COURSE_PATH).$course_data['path'].'/document'.$file_data['path'];
                             if (file_exists($file_path)) {
                                 $files_to_export[] = array('title'=>$item->get_title(),'path'=>$file_path);

@@ -3,7 +3,7 @@
 /**
 *	@package chamilo.messages
 */
-$language_file = array('registration','messages','userInfo');
+$language_file = array('registration', 'userInfo');
 $cidReset= true;
 require_once '../inc/global.inc.php';
 api_block_anonymous_users();
@@ -53,8 +53,9 @@ if (empty($_GET['id'])) {
 $message  = '';
 
 //LEFT COLUMN
+$userInfo    = UserManager::get_user_info_by_id($user_id);
 if (api_get_setting('allow_social_tool') == 'true') {
-    $social_avatar_block = SocialManager::show_social_avatar_block($show_menu);
+    //Block Social Menu
     $social_menu_block = SocialManager::show_social_menu($show_menu);
     $message .='<div class="span9">';
 }
@@ -71,11 +72,14 @@ if (!empty($message)) {
     api_not_allowed();
 }
 $tpl = new Template(get_lang('View'));
+// Block Social Avatar
+SocialManager::setSocialUserBlock($tpl, $user_id, $show_menu);
+
 if (api_get_setting('allow_social_tool') == 'true') {
     $tpl->assign('social_avatar_block', $social_avatar_block);
     $tpl->assign('social_menu_block', $social_menu_block);
     $tpl->assign('social_right_content', $social_right_content);
-    $social_layout = $tpl->get_template('layout/social_layout.tpl');
+    $social_layout = $tpl->get_template('social/inbox.tpl');
     $tpl->display($social_layout);
 } else {
     $content = $social_right_content;

@@ -22,12 +22,8 @@ if (isset($_GET['action'])) {
         $language_file[] = 'hotspot';
     }
 }
-$language_file[] = 'course_home';
-$language_file[] = 'scormdocument';
 $language_file[] = 'document';
-$language_file[] = 'scorm';
 $language_file[] = 'learnpath';
-$language_file[] = 'resourcelinker';
 $language_file[] = 'registration';
 $language_file[] = 'exercice';
 
@@ -47,8 +43,8 @@ if ($showGlossary) {
         var jQueryFrameReadyConfigPath = \'' . api_get_jquery_web_path() . '\';
     -->
     </script>';
-            $htmlHeadXtra[] = '<script src="' . api_get_path(WEB_LIBRARY_PATH) . 'javascript/jquery.frameready.js" type="text/javascript" language="javascript"></script>';
-            $htmlHeadXtra[] = '<script src="' . api_get_path(WEB_LIBRARY_PATH) . 'javascript/jquery.highlight.js" type="text/javascript" language="javascript"></script>';
+    $htmlHeadXtra[] = '<script src="' . api_get_path(WEB_LIBRARY_PATH) . 'javascript/jquery.frameready.js" type="text/javascript" language="javascript"></script>';
+    $htmlHeadXtra[] = '<script src="' . api_get_path(WEB_LIBRARY_PATH) . 'javascript/jquery.highlight.js" type="text/javascript" language="javascript"></script>';
     }
 }
 
@@ -532,7 +528,7 @@ switch ($action) {
                     // TODO: Maybe create a first module directly to avoid bugging the user with useless queries
                     $_SESSION['oLP'] = new learnpath(api_get_course_id(),$new_lp_id,api_get_user_id());
                     //require 'lp_build.php';
-                    $url = api_get_self().'?action=add_item&type=step&lp_id='.intval($new_lp_id);
+                    $url = api_get_self().'?action=add_item&type=step&lp_id='.intval($new_lp_id).'&'.api_get_cidreq();
                     header("Location: $url&isStudentView=false");
                     exit;
                 }

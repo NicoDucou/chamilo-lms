@@ -10,7 +10,7 @@
 $pathopen = isset($_REQUEST['pathopen']) ? $_REQUEST['pathopen'] : null;
 
 // Language files that need to be included.
-$language_file = array('admin', 'tracking', 'scorm', 'exercice');
+$language_file = array('admin', 'tracking', 'exercice');
 
 // Including the global initialization file
 require_once '../inc/global.inc.php';
@@ -106,7 +106,7 @@ $form = new FormValidator(
     false
 );
 $renderer = $form->defaultRenderer();
-$renderer->setElementTemplate('<span>{element}</span>');
+$renderer->setCustomElementTemplate('<span>{element}</span>');
 $form->addElement('text', 'keyword', get_lang('keyword'));
 $form->addElement('hidden', 'cidReq', api_get_course_id());
 $form->addElement('hidden', 'id_session', $session_id);

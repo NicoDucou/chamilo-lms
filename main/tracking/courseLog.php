@@ -8,7 +8,7 @@
 $pathopen = isset($_REQUEST['pathopen']) ? $_REQUEST['pathopen'] : null;
 
 // Language files that need to be included.
-$language_file = array('admin', 'tracking', 'scorm', 'exercice');
+$language_file = array('admin', 'tracking', 'exercice');
 
 // Including the global initialization file
 require_once '../inc/global.inc.php';
@@ -263,7 +263,7 @@ $form_search = new FormValidator(
     FormValidator::LAYOUT_INLINE
 );
 $renderer = $form_search->defaultRenderer();
-$renderer->setElementTemplate('<span>{element}</span>');
+$renderer->setCustomElementTemplate('<span>{element}</span>');
 $form_search->addElement('hidden', 'from', Security::remove_XSS($from));
 $form_search->addElement('hidden', 'session_id', $sessionId);
 $form_search->addElement('hidden', 'id_session', $sessionId);

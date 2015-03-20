@@ -1214,10 +1214,11 @@ function api_protect_teacher_script($allow_sessions_admins = false) {
  *
  * @author Roan Embrechts
  */
-function api_block_anonymous_users($print_headers = true) {
+function api_block_anonymous_users($printHeaders = true)
+{
     $_user = api_get_user_info();
     if (!(isset($_user['user_id']) && $_user['user_id']) || api_is_anonymous($_user['user_id'], true)) {
-        api_not_allowed($print_headers);
+        api_not_allowed($printHeaders);
         return false;
     }
 
@@ -1403,9 +1404,9 @@ function _api_format_user($user, $add_password = false)
     // Getting user avatar.
 
     $picture_filename   = trim($result['picture_uri']);
-    $avatar             = api_get_path(WEB_CODE_PATH).'img/unknown.jpg';
-    $avatar_small       = api_get_path(WEB_CODE_PATH).'img/unknown_22.jpg';
-    $avatar_sys_path    = api_get_path(SYS_CODE_PATH).'img/unknown.jpg';
+    $result['avatar']             = api_get_path(WEB_CODE_PATH).'img/unknown.jpg';
+    $result['avatar_small']       = api_get_path(WEB_CODE_PATH).'img/unknown_22.jpg';
+    $result['avatar_sys_path']    = api_get_path(SYS_CODE_PATH).'img/unknown.jpg';
     $dir                = 'upload/users/'.$user_id.'/';
 
     //if (!empty($picture_filename) && api_is_anonymous() ) {  //Why you have to be anonymous?
@@ -1416,15 +1417,28 @@ function _api_format_user($user, $add_password = false)
     }
     $image_sys_path = api_get_path(SYS_CODE_PATH).$dir.$picture_filename;
 
-    if (file_exists($image_sys_path) && !is_dir($image_sys_path)) {
-        $avatar = api_get_path(WEB_CODE_PATH).$dir.$picture_filename;
-        $avatar_small = api_get_path(WEB_CODE_PATH).$dir.'small_'.$picture_filename;
-        $avatar_sys_path = api_get_path(SYS_CODE_PATH).$dir.$picture_filename;
+    if ($picture_filename) {
+        if (file_exists($image_sys_path)) {
+            $result['avatar'] = api_get_path(WEB_CODE_PATH).$dir.$picture_filename;
+            $result['avatar_small'] = api_get_path(WEB_CODE_PATH).$dir.'small_'.$picture_filename;
+            $result['avatar_sys_path'] = api_get_path(SYS_CODE_PATH).$dir.$picture_filename;
+        } else if (api_get_configuration_value('gravatar_enabled')) {
+            $userEmail = isset($user['email']) ? $user['email'] : '';
+            $gravatarType = api_get_configuration_value('gravatar_type');
+            $avatarPaths = array(
+                'avatar' => $result['avatar'],
+                'avatar_small' => $result['avatar_small'],
+                'avatar_sys_path' => $result['avatar_sys_path']
+            );
+            foreach ($avatarPaths as $key => $value) {
+                $avatarSize = api_getimagesize($value);
+                $avatarSize = $avatarSize['width'] > $avatarSize['height'] ?
+                    $avatarSize['width'] :
+                    $avatarSize['height'];
+                $result[$key] = UserManager::getGravatar($userEmail, $avatarSize, $gravatarType);
+            }
+        }
     }
-
-    $result['avatar'] = $avatar;
-    $result['avatar_sys_path'] = $avatar_sys_path;
-    $result['avatar_small'] = $avatar_small;
 
     if (isset($user['user_is_online'])) {
         $result['user_is_online'] = $user['user_is_online'] == true ? 1 : 0;
@@ -1451,7 +1465,11 @@ function _api_format_user($user, $add_password = false)
  */
 function api_get_user_info($user_id = '', $check_if_user_is_online = false, $show_password = false) {
     if ($user_id == '') {
-        return _api_format_user($GLOBALS['_user']);
+        if (isset($GLOBALS['_user'])) {
+            return _api_format_user($GLOBALS['_user']);
+        }
+        // @todo trigger an exception here
+        return false;
     }
     $sql = "SELECT * FROM ".Database :: get_main_table(TABLE_MAIN_USER)."
             WHERE user_id='".intval($user_id)."'";
@@ -1714,6 +1732,15 @@ function api_get_course_info_by_id($id = null) {
     return $_course;
 }
 
+/**
+ * Reformat the course array (output by api_get_course_info()) in order, mostly,
+ * to switch from 'code' to 'id' in the array. This is a legacy feature and is
+ * now possibly causing massive confusion as a new "id" field has been added to
+ * the course table in 1.9.0.
+ * @param $course_data
+ * @return array
+ * @todo eradicate the false "id"=code field of the $_course array and use the int id
+ */
 function api_format_course_array($course_data) {
     global $_configuration;
 
@@ -2732,7 +2759,7 @@ function api_is_coach($session_id = 0, $course_code = null, $check_student_view 
  * @return boolean True if current user is a course administrator
  */
 function api_is_session_admin() {
-    global $_user;
+    $_user = api_get_user_info();
     return isset($_user['status']) && $_user['status'] == SESSIONADMIN;
 }
 
@@ -2741,7 +2768,7 @@ function api_is_session_admin() {
  * @return boolean True if current user is a human resources manager
  */
 function api_is_drh() {
-    global $_user;
+    $_user = api_get_user_info();
     return isset($_user['status']) && $_user['status'] == DRH;
 }
 
@@ -2750,7 +2777,7 @@ function api_is_drh() {
  * @return boolean True if current user is a human resources manager
  */
 function api_is_student() {
-    global $_user;
+    $_user = api_get_user_info();
     return isset($_user['status']) && $_user['status'] == STUDENT;
 
 }
@@ -2759,7 +2786,7 @@ function api_is_student() {
  * @return boolean True if current user is a human resources manager
  */
 function api_is_teacher() {
-    global $_user;
+    $_user = api_get_user_info();
     return isset($_user['status']) && $_user['status'] == COURSEMANAGER;
 }
 
@@ -2768,7 +2795,7 @@ function api_is_teacher() {
  * @return boolean
  */
 function api_is_invitee() {
-    global $_user;
+    $_user = api_get_user_info();
 
     return isset($_user['status']) && $_user['status'] == INVITEE;
 }
@@ -3299,10 +3326,10 @@ function api_not_allowed($print_headers = false, $message = null)
         // If the user has no user ID, then his session has expired
         $action = api_get_self().'?'.Security::remove_XSS($_SERVER['QUERY_STRING']);
         $action = str_replace('&amp;', '&', $action);
-        $form = new FormValidator('formLogin', 'post', $action, null, array('class'=>'form-stacked'));
-        $form->addElement('text', 'login', null, array('placeholder' => get_lang('UserName'), 'class' => 'span3 autocapitalize_off')); //new
-        $form->addElement('password', 'password', null, array('placeholder' => get_lang('Password'), 'class' => 'span3')); //new
-        $form->addElement('style_submit_button', 'submitAuth', get_lang('LoginEnter'), array('class' => 'btn span3'));
+        $form = new FormValidator('formLogin', 'post', $action, null, array(), FormValidator::LAYOUT_BOX_NO_LABEL);
+        $form->addElement('text', 'login', null, array('placeholder' => get_lang('UserName'), 'class' => 'autocapitalize_off'));
+        $form->addElement('password', 'password', null, array('placeholder' => get_lang('Password')));
+        $form->addButton('submitAuth', get_lang('LoginEnter'), '', 'primary');
 
         // see same text in auth/gotocourse.php and main_api.lib.php function api_not_allowed (above)
         $content = Display::return_message(get_lang('NotAllowed'), 'error', false);
@@ -3596,7 +3623,7 @@ function api_item_property_update(
 
     $filter = " c_id = $course_id AND tool='$tool' AND ref='$item_id' $condition_session ";
 
-    if ($item_id == '*') {
+    if ($item_id === '*') {
         // For all (not deleted) items of the tool
         $filter = " c_id = $course_id  AND tool = '$tool' AND visibility<>'2' $condition_session";
     }
@@ -6426,7 +6453,8 @@ function api_get_css($file, $media = 'screen') {
 /**
  * Returns the js header to include the jquery library
  */
-function api_get_jquery_js() {
+function api_get_jquery_js()
+{
     return api_get_asset('jquery/dist/jquery.min.js');
 }
 
@@ -6434,11 +6462,26 @@ function api_get_jquery_js() {
  * Returns the jquery path
  * @return string
  */
-function api_get_jquery_web_path() {
+function api_get_jquery_web_path()
+{
     return api_get_path(WEB_PATH).'web/assets/jquery/dist/jquery.min.js';
 }
 
+/**
+ * @return string
+ */
+function api_get_jquery_ui_js_web_path()
+{
+    return api_get_path(WEB_PATH).'web/assets/jquery-ui/jquery-ui.min.js';
+}
 
+/**
+ * @return string
+ */
+function api_get_jquery_ui_css_web_path()
+{
+    return api_get_path(WEB_PATH).'web/assets/jquery-ui/themes/smoothness/jquery-ui.min.css';
+}
 
 /**
  * Returns the jquery-ui library js headers
@@ -6447,7 +6490,7 @@ function api_get_jquery_web_path() {
  *
  */
 function api_get_jquery_ui_js($include_jqgrid = false) {
-    $libraries = array('jquery-ui');
+    $libraries = array();
     if ($include_jqgrid) {
        $libraries[]='jqgrid';
     }
@@ -6458,9 +6501,6 @@ function api_get_jqgrid_js() {
     return api_get_jquery_libraries_js(array('jqgrid'));
 }
 
-function api_get_datepicker_js() {
-    return api_get_jquery_libraries_js(array('datepicker'));
-}
 
 /**
  * Returns the jquery library js and css headers
@@ -6498,17 +6538,6 @@ function api_get_jquery_libraries_js($libraries) {
         $js .= api_get_js('jquery-upload/jquery.fileupload.js');
         $js .= api_get_js('jquery-upload/jquery.fileupload-ui.js');
         $js .= api_get_css($js_path.'jquery-upload/jquery.fileupload-ui.css');
-    }
-
-    //jquery-ui css changes for Chamilo
-    if (in_array('jquery-ui',$libraries)) {
-        //Adding default CSS changes of the jquery-ui themes for Chamilo in order to preserve the original jquery-ui css
-        //$js .= api_get_css($js_path.'jquery-ui/default.css');
-    }
-
-    if (in_array('bxslider',$libraries)) {
-        $js .= api_get_js('bxslider/jquery.bxSlider.min.js');
-        $js .= api_get_css($js_path.'bxslider/bx_styles/bx_styles.css');
     }
 
     // jquery datepicker
@@ -6909,18 +6938,6 @@ function api_set_default_visibility($item_id, $tool_id, $group_id = null) {
 function api_get_security_key() {
     global $_configuration;
     return $_configuration['security_key'];
-}
-
-function api_get_datetime_picker_js($htmlHeadXtra) {
-
-    $htmlHeadXtra[] = '<script src="'.api_get_path(WEB_LIBRARY_PATH).'javascript/datetimepicker/jquery-ui-timepicker-addon.js" type="text/javascript" language="javascript"></script>';
-    $htmlHeadXtra[] = '<link  href="'.api_get_path(WEB_LIBRARY_PATH).'javascript/datetimepicker/jquery-ui-timepicker-addon.css" rel="stylesheet" type="text/css" />';
-
-    $isocode = api_get_language_isocode();
-    if ($isocode != 'en') {
-        $htmlHeadXtra[] = '<script src="'.api_get_path(WEB_LIBRARY_PATH).'javascript/datetimepicker/i18n/jquery-ui-timepicker-'.$isocode.'.js" type="text/javascript" language="javascript"></script>';
-    }
-    return $htmlHeadXtra;
 }
 
 function api_detect_user_roles($user_id, $course_code, $session_id = 0) {
@@ -7672,12 +7689,13 @@ function api_register_campus($listCampus = true) {
  * @global array $_user
  * @return boolean
  */
-function api_is_student_boss ()
+function api_is_student_boss()
 {
-    global $_user;
+    $_user = api_get_user_info();
 
     return isset($_user['status']) && $_user['status'] == STUDENT_BOSS;
 }
+
 /**
  * Check whether the user type should be exclude.
  * Such as invited or anonymous users
@@ -8014,4 +8032,26 @@ function api_protect_course_group($tool, $showHeader = true)
             api_not_allowed($showHeader);
         }
     }
+}
+
+/**
+ * Check if Chmailo is installed correctly. If so, return the version
+ * @return array ('installed' => 0/1, 'message' => error/db version)
+ */
+function apiIsSystemInstalled()
+{
+    $root = __DIR__.'/../../../';
+    $configFile = $root.'main/inc/conf/configuration.php';
+    if (!is_readable($configFile)) {
+        return array ('installed' => 0, 'message' => 'No config file');
+    }
+    $result = Database::query(
+        "SELECT selected _value FROM settings_current WHERE variable = 'chamilo_database_version'"
+    );
+    if ($result == false) {
+        return array ('installed' => 0, 'message' => 'No way to recover version');
+    }
+    $settingsRow = Database::fetch_assoc($result);
+    $version = $settingsRow['selected_value'];
+    return array('installed' => 1, 'message' => $version);
 }

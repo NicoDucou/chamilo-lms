@@ -14,8 +14,6 @@
  */
 /* INIT SECTION */
 
-//$language_file = 'resourcelinker';
-
 // Flag to allow for anonymous user - needs to be set before global.inc.php.
 
 use \ChamiloSession as Session;
@@ -23,7 +21,6 @@ use \ChamiloSession as Session;
 $use_anonymous = true;
 
 require_once '../inc/global.inc.php';
-require_once api_get_path(SYS_CODE_PATH).'lang/english/resourcelinker.inc.php';
 if (!empty($_course['language'])){
     $resource_linker_file =  api_get_path(SYS_CODE_PATH).'lang/'.$_course['language'].'/resourcelinker.inc.php';
     if (file_exists($resource_linker_file)) {

@@ -491,7 +491,7 @@ if (isset($list_ordered) && !empty($list_ordered)) {
     }
     $exercise_list = $new_question_list;
 }
-
+echo '<div class="table-responsive">';
 echo '<table class="'.Display::return_default_table_class().'">';
 
 /*  Listing exercises  */
@@ -509,7 +509,7 @@ if (!empty($exercise_list)) {
         if ($is_allowedToEdit) {
             $headers = array(
                 array('name' => get_lang('ExerciseName')),
-                array('name' => get_lang('QuantityQuestions'), 'params' => array('width' => '100px')),
+                array('name' => get_lang('QuantityQuestions'), 'params' => array('width' => '170px')),
                 array('name' => get_lang('Actions'), 'params' => array('width' => '180px')));
         } else {
             $headers = array(
@@ -1031,14 +1031,15 @@ if (isset($attribute['path']) && is_array($attribute['path'])) {
     }
 }
 echo '</table>';
+echo '</div>';
 
 if (empty($exercise_list) && $hotpotatoes_exist == false) {
     if ($is_allowedToEdit && $origin != 'learnpath') {
         echo '<div id="no-data-view">';
-        echo '<h2>'.get_lang('Quiz').'</h2>';
+        echo '<h3>'.get_lang('Quiz').'</h3>';
         echo Display::return_icon('quiz.png', '', array(), 64);
         echo '<div class="controls">';
-        echo Display::url(get_lang('NewEx'), 'exercise_admin.php?'.api_get_cidreq(), array('class' => 'btn'));
+        echo Display::url('<i class="fa fa-plus"></i> '.get_lang('NewEx'), 'exercise_admin.php?'.api_get_cidreq(), array('class' => 'btn btn-primary'));
         echo '</div>';
         echo '</div>';
     }

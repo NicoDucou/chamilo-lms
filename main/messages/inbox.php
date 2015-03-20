@@ -5,7 +5,7 @@
  */
 
 // name of the language file that needs to be included
-$language_file = array('registration', 'messages', 'userInfo');
+$language_file = array('registration', 'userInfo');
 $cidReset = true;
 
 require_once '../inc/global.inc.php';
@@ -127,10 +127,10 @@ if (isset($_GET['f']) && $_GET['f'] == 'social' || api_get_setting('allow_social
         $actions .= '<a href="'.api_get_path(WEB_PATH).'main/messages/outbox.php">'.Display::return_icon('outbox.png', get_lang('Outbox')).'</a>';
     }
 }
-
+$userInfo    = UserManager::get_user_info_by_id($user_id);
 //LEFT CONTENT
 if (api_get_setting('allow_social_tool') == 'true') {
-    $social_avatar_block = SocialManager::show_social_avatar_block('messages');
+    //Block Social Menu
     $social_menu_block = SocialManager::show_social_menu('messages');
 }
 
@@ -138,13 +138,13 @@ if (api_get_setting('allow_social_tool') == 'true') {
 $social_right_content = null;
 
 if (api_get_setting('allow_social_tool') == 'true') {
-    $social_right_content .= '<div class="col-md-9">';
+    $social_right_content .= '<div class="col-md-12">';
     $social_right_content .= '<div class="actions">';
     $social_right_content .= '<a href="'.api_get_path(WEB_PATH).'main/messages/new_message.php?f=social">'.Display::return_icon('compose_message.png', get_lang('ComposeMessage'), array(), 32).'</a>';
     $social_right_content .= '<a href="'.api_get_path(WEB_PATH).'main/messages/outbox.php?f=social">'.Display::return_icon('outbox.png', get_lang('Outbox'), array(), 32).'</a>';
     $social_right_content .= '</div>';
     $social_right_content .= '</div>';
-    $social_right_content .= '<div class="span9">';
+    $social_right_content .= '<div class="col-md-12">';
 }
 //MAIN CONTENT
 
@@ -166,11 +166,12 @@ if (api_get_setting('allow_social_tool') == 'true') {
 }
 
 $tpl = new Template(null);
+// Block Social Avatar
+SocialManager::setSocialUserBlock($tpl, $user_id, 'messages');
 if (api_get_setting('allow_social_tool') == 'true') {
-    $tpl->assign('social_avatar_block', $social_avatar_block);
     $tpl->assign('social_menu_block', $social_menu_block);
     $tpl->assign('social_right_content', $social_right_content);
-    $social_layout = $tpl->get_template('layout/social_layout.tpl');
+    $social_layout = $tpl->get_template('social/inbox.tpl');
     $tpl->display($social_layout);
 } else {
     $content = $social_right_content;

@@ -33,6 +33,7 @@ class UserManager
 
     /**
      * The default constructor only instanciates an empty user object
+     * @assert () === null
      */
     public function __construct()
     {
@@ -1243,43 +1244,66 @@ class UserManager
                 $base = '';
         }
 
+        $noPicturePath = array('dir' => $base.'img/', 'file' => 'unknown.jpg');
+
         if (empty($id) || empty($type)) {
-            return $anonymous ? array('dir' => $base.'img/', 'file' => 'unknown.jpg') : array('dir' => '', 'file' => '');
+            return $anonymous ? $noPicturePath : array('dir' => '', 'file' => '');
         }
 
         $user_id = intval($id);
 
         $user_table = Database :: get_main_table(TABLE_MAIN_USER);
-        $sql = "SELECT picture_uri FROM $user_table WHERE user_id=".$user_id;
+        $sql = "SELECT email, picture_uri FROM $user_table WHERE user_id=".$user_id;
         $res = Database::query($sql);
 
         if (!Database::num_rows($res)) {
-            return $anonymous ? array('dir' => $base.'img/', 'file' => 'unknown.jpg') : array('dir' => '', 'file' => '');
+            return $anonymous ? $noPicturePath : array('dir' => '', 'file' => '');
         }
 
         $user = Database::fetch_array($res);
+
         $picture_filename = trim($user['picture_uri']);
 
         if (api_get_setting('split_users_upload_directory') === 'true') {
-            /*if (!empty($picture_filename) or $preview) {
-                $dir = $base.'upload/users/'.substr((string) $user_id, 0, 1).'/'.$user_id.'/';
-            } else {
-                $dir = $base.'upload/users/'.$user_id.'/';
-            }*/
-            $dir = $base.'upload/users/'.substr((string) $user_id, 0, 1).'/'.$user_id.'/';
+            $userPath = 'upload/users/'.substr((string) $user_id, 0, 1).'/'.$user_id.'/';
+            $systemImagePath = api_get_path(SYS_CODE_PATH).$userPath;
+            $dir = $base.$userPath;
         } else {
-            $dir = $base.'upload/users/'.$user_id.'/';
+            $userPath = 'upload/users/'.$user_id.'/';
+            $systemImagePath = api_get_path(SYS_CODE_PATH).$userPath;
+            $dir = $base.$userPath;
         }
-        if (empty($picture_filename) && $anonymous) {
-            return array('dir' => $base.'img/', 'file' => 'unknown.jpg');
+
+        if (empty($picture_filename) ||
+            (!empty($picture_filename) && !file_exists($systemImagePath.$picture_filename))
+        ) {
+            if ($anonymous) {
+                return $noPicturePath;
+            }
+
+            if (api_get_configuration_value('gravatar_enabled')) {
+                $avatarSize = api_getimagesize($noPicturePath['dir'].$noPicturePath['file']);
+                $avatarSize = $avatarSize['width'] > $avatarSize['height'] ?
+                    $avatarSize['width'] :
+                    $avatarSize['height'];
+                return array(
+                    'dir' => '',
+                    'file' => self::getGravatar(
+                        $user['email'],
+                        $avatarSize,
+                        api_get_configuration_value('gravatar_type')
+                    )
+                );
+            }
         }
+
         return array('dir' => $dir, 'file' => $picture_filename);
     }
 
     /**
      * Creates new user photos in various sizes of a user, or deletes user photos.
      * Note: This method relies on configuration setting from main/inc/conf/profile.conf.php
-     * @param     int $user_id        The user internal identitfication number.
+     * @param     int $user_id        The user internal identification number.
      * @param     string $file        The common file name for the newly created photos.
      *                                 It will be checked and modified for compatibility with the file system.
      *                                 If full name is provided, path component is ignored.
@@ -1748,7 +1772,16 @@ class UserManager
         $fields = array();
         $t_uf = Database :: get_main_table(TABLE_MAIN_USER_FIELD);
         $t_ufo = Database :: get_main_table(TABLE_MAIN_USER_FIELD_OPTIONS);
-        $columns = array('id', 'field_variable', 'field_type', 'field_display_text', 'field_default_value', 'field_order', 'field_filter', 'tms');
+        $columns = array(
+            'id',
+            'field_variable',
+            'field_type',
+            'field_display_text',
+            'field_default_value',
+            'field_order',
+            'field_filter',
+            'tms'
+        );
         $column = intval($column);
         $sort_direction = '';
         if (in_array(strtoupper($direction), array('ASC', 'DESC'))) {
@@ -1787,7 +1820,9 @@ class UserManager
                     10 => '<a name="'.$rowf['id'].'"></a>',
                 );
 
-                $sqlo = "SELECT * FROM $t_ufo WHERE field_id = ".$rowf['id']." ORDER BY option_order ASC";
+                $sqlo = "SELECT * FROM $t_ufo
+                        WHERE field_id = ".$rowf['id']."
+                        ORDER BY option_order ASC";
                 $reso = Database::query($sqlo);
                 if (Database::num_rows($reso) > 0) {
                     while ($rowo = Database::fetch_array($reso)) {
@@ -3749,16 +3784,17 @@ class UserManager
     }
 
     /**
-      * Get extra filtrable user fields (type select)
+      * Get extra filtrable user fields (only type select)
       * @return array
       */
     public static function get_extra_filtrable_fields()
     {
         $extraFieldList = UserManager::get_extra_fields();
+
         $extraFiltrableFields = array();
         if (is_array($extraFieldList)) {
             foreach ($extraFieldList as $extraField) {
-                //if is enabled to filter and is a "<select>" field type
+                // If is enabled to filter and is a "<select>" field type
                 if ($extraField[8] == 1 && $extraField[2] == 4) {
                     $extraFiltrableFields[] = array(
                         'name' => $extraField[3],
@@ -3769,7 +3805,7 @@ class UserManager
             }
         }
 
-        if (is_array($extraFiltrableFields) && count($extraFiltrableFields) > 0 ) {
+        if (is_array($extraFiltrableFields) && count($extraFiltrableFields) > 0) {
             return $extraFiltrableFields;
         }
     }
@@ -3789,7 +3825,10 @@ class UserManager
                 if (UserManager::is_extra_field_available($extraField['variable'])) {
                     if (isset($_GET[$varName]) && $_GET[$varName]!='0') {
                         $useExtraFields = true;
-                        $extraFieldResult[]= UserManager::get_extra_user_data_by_value($extraField['variable'], $_GET[$varName]);
+                        $extraFieldResult[]= UserManager::get_extra_user_data_by_value(
+                            $extraField['variable'],
+                            $_GET[$varName]
+                        );
                     }
                 }
             }
@@ -3825,35 +3864,74 @@ class UserManager
      */
     public static function get_search_form($query)
     {
-        $extraFiltrableFields = UserManager::get_extra_filtrable_fields();
-        $extraFields = null;
-        if (is_array($extraFiltrableFields) && count($extraFiltrableFields)>0 ) {
-            foreach ($extraFiltrableFields as $extraField) {
-                $extraFields .=  '<label class="extra_field">'.$extraField['name'].'</label>';
+        $searchType = isset($_GET['search_type']) ? $_GET['search_type'] : null;
+        $form = new FormValidator(
+            'search_user',
+            'get',
+            api_get_path(WEB_PATH).'main/social/search.php',
+            '',
+            array(),
+            FormValidator::LAYOUT_INLINE
+        );
+
+        $form->addText('q', get_lang('UsersGroups'));
+        $options = array(
+            0 => get_lang('Select'),
+            1 => get_lang('User'),
+            2 => get_lang('Group'),
+        );
+        $form->addSelect(
+            'search_type',
+            get_lang('Type'),
+            $options,
+            array('onchange' => 'javascript: extra_field_toogle();')
+        );
+
+        // Extra fields
+
+        $extraFields = UserManager::get_extra_filtrable_fields();
+        $defaults = [];
+        if (is_array($extraFields) && count($extraFields) > 0) {
+            foreach ($extraFields as $extraField) {
                 $varName = 'field_'.$extraField['variable'];
-                $extraFields .=  '&nbsp;<select name="'.$varName.'" class="extra_field">';
-                $extraFields .=  '<option value="0">--'.get_lang('Select').'--</option>';
+
+                $options = [
+                    0 => get_lang('Select')
+                ];
                 foreach ($extraField['data'] as $option) {
-                    $checked='';
+                    $checked = '';
                     if (isset($_GET[$varName])) {
-                        if ($_GET[$varName]==$option[1]) {
-                            $checked = 'selected="true"';
+                        if ($_GET[$varName] == $option[1]) {
+                            $defaults[$option[1]] = true;
                         }
                     }
-                    $extraFields .=  '<option value="'.$option[1].'" '.$checked.'>'.$option[1].'</option>';
+
+                    $options[$option[1]] = $option[1];
                 }
-                $extraFields .=  '</select>';
-                $extraFields .=  '&nbsp;&nbsp;';
+                $form->addSelect($varName, $extraField['name'], $options);
             }
         }
 
-        $searchType = isset($_GET['search_type']) ? $_GET['search_type'] : null;
+        $defaults['search_type'] = intval($searchType);
+        $defaults['q'] = api_htmlentities(Security::remove_XSS($query));
+        $form->setDefaults($defaults);
+
+        $form->addButtonSearch(get_lang('Search'));
+
+        $js = '<script>
+        extra_field_toogle();
+        function extra_field_toogle() {
+            if (jQuery("select[name=search_type]").val() != "1") { jQuery(".extra_field").hide(); } else { jQuery(".extra_field").show(); }
+        }
+        </script>';
+
+        return $js.$form->returnForm();
 
         return '
-        <form method="GET" class="well form-search" action="'.api_get_path(WEB_PATH).'main/social/search.php">
-                <input placeholder="'.get_lang('UsersGroups').'" type="text" class="input-small" value="'.api_htmlentities(Security::remove_XSS($query)).'" name="q"/> &nbsp;
+        <form method="GET" class="form-search" action="'.api_get_path(WEB_PATH).'main/social/search.php">
+                <input placeholder="'.get_lang('UsersGroups').'" type="text" value="'.api_htmlentities(Security::remove_XSS($query)).'" name="q"/> &nbsp;
                 ' . get_lang('Type') .'
-                <select name="search_type" onchange="javascript: extra_field_toogle();">
+
                 <option value="0">--'.get_lang('Select').'--</option>
                 <option value="1"' . (($searchType=='1')?'selected="selected"':"") . '>--' . get_lang('User') .'--</option>
                 <option value="2"' . (($searchType=='2')?'selected="selected"':"") . '>--' . get_lang('Group') . '--</option>
@@ -3861,13 +3939,7 @@ class UserManager
                 '.$extraFields.'
                 <button class="btn" type="submit" value="search">'.get_lang('Search').'</button>
         </form>
-        <script>
-        extra_field_toogle();
-        function extra_field_toogle()
-        {
-            if (jQuery("select[name=search_type]").val() != "1") { jQuery(".extra_field").hide(); } else { jQuery(".extra_field").show(); }
-        }
-        </script>
+
         ';
     }
 
@@ -5195,5 +5267,30 @@ EOF;
         }
 
         return false;
+    }
+
+    /**
+     * Get either a Gravatar URL or complete image tag for a specified email address.
+     *
+     * @param string $email The email address
+     * @param string $s Size in pixels, defaults to 80px [ 1 - 2048 ]
+     * @param string $d Default imageset to use [ 404 | mm | identicon | monsterid | wavatar ]
+     * @param string $r Maximum rating (inclusive) [ g | pg | r | x ]
+     * @param boole $img True to return a complete IMG tag False for just the URL
+     * @param array $atts Optional, additional key/value attributes to include in the IMG tag
+     * @return String containing either just a URL or a complete image tag
+     * @source http://gravatar.com/site/implement/images/php/
+     */
+    public static function getGravatar( $email, $s = 80, $d = 'mm', $r = 'g', $img = false, $atts = array() ) {
+        $url = 'http://www.gravatar.com/avatar/';
+        $url .= md5( strtolower( trim( $email ) ) );
+        $url .= "?s=$s&d=$d&r=$r";
+        if ( $img ) {
+            $url = '<img src="' . $url . '"';
+            foreach ( $atts as $key => $val )
+                $url .= ' ' . $key . '="' . $val . '"';
+            $url .= ' />';
+        }
+        return $url;
     }
 }

@@ -102,8 +102,8 @@ $installation_settings['{ORGANISATIONNAME}']                = $institutionForm;
 $installation_settings['{ORGANISATIONURL}']                 = $institutionUrlForm;
 $installation_settings['{CAMPUSNAME}']                      = $campusForm;
 $installation_settings['{PLATFORMLANGUAGE}']                = $languageForm;
-$installation_settings['{ALLOWSELFREGISTRATION}']           = true_false($allowSelfReg);
-$installation_settings['{ALLOWTEACHERSELFREGISTRATION}']    = true_false($allowSelfRegProf);
+$installation_settings['{ALLOWSELFREGISTRATION}']           = trueFalse($allowSelfReg);
+$installation_settings['{ALLOWTEACHERSELFREGISTRATION}']    = trueFalse($allowSelfRegProf);
 $installation_settings['{ADMINLASTNAME}']                   = $adminLastName;
 $installation_settings['{ADMINFIRSTNAME}']                  = $adminFirstName;
 $installation_settings['{ADMINLOGIN}']                      = $loginForm;
@@ -114,11 +114,9 @@ $installation_settings['{PLATFORM_AUTH_SOURCE}']            = PLATFORM_AUTH_SOUR
 $installation_settings['{ADMINLANGUAGE}']                   = $languageForm;
 $installation_settings['{HASHFUNCTIONMODE}']                = $encryptPassForm;
 
-load_main_database($installation_settings);
-
 AddCourse::drop_course_tables();
 
-AddCourse::create_course_tables();
+load_main_database($installation_settings);
 
 $track_countries_table = "track_c_countries";
 fill_track_countries_table($track_countries_table);

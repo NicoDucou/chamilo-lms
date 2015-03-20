@@ -34,9 +34,9 @@ $is_allowed_to_edit = api_is_allowed_to_edit(null, true);
 $tbl_lp      = Database::get_course_table(TABLE_LP_MAIN);
 $tbl_lp_item = Database::get_course_table(TABLE_LP_ITEM);
 
-$isStudentView  = (int) $_REQUEST['isStudentView'];
+$isStudentView  = isset($_REQUEST['isStudentView']) ? (int) $_REQUEST['isStudentView'] : null;
 $learnpath_id   = (int) $_REQUEST['lp_id'];
-$submit			= $_POST['submit_button'];
+$submit			= isset($_POST['submit_button']) ? $_POST['submit_button'] : null;
 
 /* MAIN CODE */
 
@@ -277,12 +277,12 @@ function confirmation(name) {
 
 echo $_SESSION['oLP']->build_action_menu();
 
-echo '<div class="row-fluid">';
-echo '<div class="span3">';
+echo '<div class="row">';
+echo '<div class="col-md-4">';
 echo $_SESSION['oLP']->return_new_tree(null, true);
 echo '</div>';
 
-echo '<div class="span9">';
+echo '<div class="col-md-8">';
 switch ($_GET['action']) {
     case 'edit_item':
         if (isset($is_success) && $is_success === true) {

@@ -874,8 +874,8 @@ function savedata(item_id) {
         olms.lms_user_id,
         olms.lms_view_id,
         item_to_save,
-        olms.session_id,
-        olms.course_id,
+        olms.lms_session_id,
+        olms.lms_course_id,
         olms.finishSignalReceived,
         olms.userNavigatesAway,
         olms.statusSignalReceived
@@ -1186,30 +1186,29 @@ function logit_scorm(message, priority) {
 }
 
 function log_in_log(message, priority) {
-    var ua = $.browser;
-    if (ua.mozilla || ua.webkit) {
-        // Colorize a little
-        var color = "color: black";
-        switch (priority) {
-            case 0:
-                color = "color:red;font-weight:bold";
-                break;
-            case 1:
-                color = "color:orange";
-                break;
-            case 2:
-                color = "color:green";
-                break;
-            case 3:
-                color = "color:blue";
+
+    // Colorize a little
+    var color = "color: black";
+    switch (priority) {
+        case 0:
+            color = "color:red;font-weight:bold";
             break;
-        }
+        case 1:
+            color = "color:orange";
+            break;
+        case 2:
+            color = "color:green";
+            break;
+        case 3:
+            color = "color:blue";
+        break;
+    }
+
+    if (this.console) {
         // Log in console with syntax colouring
         console.log("%c"+message, color);
     } else {
-        if (window.console) {
-            window.console.log(message);
-        }
+        window.console.log(message);
     }
 }
 
@@ -1220,7 +1219,7 @@ function log_in_log(message, priority) {
  */
 function logit_lms(message, priority){
     if (scorm_logs) {
-        log_in_log("LMS: " + message, priority);
+        log_in_log("LMS: " + message + ' (# lms_item_id = '+olms.lms_item_id+')', priority);
     }
     return false;
 }
@@ -1333,7 +1332,6 @@ function update_progress_bar(nbr_complete, nbr_total, mode) {
     var percentage = (nbr_complete/nbr_total)*100;
     percentage = Math.round(percentage);
 
-    var pr_text = $("#progress_text");
     var progress_bar = $("#progress_bar_value");
     progress_bar.css('width', percentage + "%");
 
@@ -1347,7 +1345,7 @@ function update_progress_bar(nbr_complete, nbr_total, mode) {
             mytext = percentage + '%';
             break;
     }
-    pr_text.html(mytext);
+    progress_bar.html(mytext);
     return true;
 }
 
@@ -1471,8 +1469,8 @@ function switch_item(current_item, next_item){
             olms.lms_user_id,
             olms.lms_view_id,
             olms.lms_item_id,
-            olms.session_id,
-            olms.course_id,
+            olms.lms_session_id,
+            olms.lms_course_id,
             olms.finishSignalReceived,
             1,
             olms.statusSignalReceived

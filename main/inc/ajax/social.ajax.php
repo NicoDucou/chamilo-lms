@@ -3,7 +3,7 @@
 /**
  * Responses to AJAX calls
  */
-$language_file = array('messages','userInfo');
+$language_file = array('userInfo');
 require_once '../global.inc.php';
 
 $action = isset($_GET['a']) ? $_GET['a'] : null;
@@ -196,7 +196,7 @@ switch ($action) {
             for($i = 0; $i < count($array); $i++) {
                 $post = $array[$i]['html'];
                 $comment = SocialManager::getWallMessagesHTML($userId, $friendId, $array[$i]['id']);
-                $html .= '<div class="well_border">'.$post.$comment.'</div>';
+                $html .= '<div class="panel panel-info"><div class="panel-body">'.$post.$comment.'</div></div>';
             }
             $html .= Display::div(
                 Display::url(

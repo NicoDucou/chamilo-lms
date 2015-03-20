@@ -296,9 +296,6 @@ if (defined('SYSTEM_INSTALLATION')) {
 
     global $_configuration;
 
-    AddCourse::drop_course_tables();
-    AddCourse::create_course_tables();
-
     $prefix = '';
     if ($singleDbForm) {
         $prefix =  get_config_param('table_prefix');

@@ -1254,7 +1254,7 @@ abstract class Question
 			<a href="javascript://" onclick=" return show_media()"><span id="media_icon"><img style="vertical-align: middle;" src="../img/looknfeel.png" alt="" />&nbsp;'.get_lang('EnrichQuestion').'</span></a>
 		');
 
-        $form->addElement ('html','<div class="HideFCKEditor" id="HiddenFCKquestionDescription" >');
+        $form->addElement ('html','<div class="HideFCKEditor" id="HiddenFCKquestionDescription" style="display: none;" >');
         $form->addHtmlEditor('questionDescription', get_lang('QuestionDescription'), false, false, $editor_config);
         $form->addElement ('html','</div>');
 
@@ -1289,7 +1289,7 @@ abstract class Question
             //$course_medias = Question::prepare_course_media_select(api_get_course_int_id());
             //$form->addElement('select', 'parent_id', get_lang('AttachToMedia'), $course_medias);
 
-            $form->addElement('html','</div>');
+            $form->addElement('html', '</div>');
         }
 
         if (!isset($_GET['fromExercise'])) {
@@ -1318,10 +1318,10 @@ abstract class Question
 
         // default values
         $defaults = array();
-        $defaults['questionName']           = $this -> question;
-        $defaults['questionDescription']    = $this -> description;
-        $defaults['questionLevel']          = $this -> level;
-        $defaults['questionCategory']       = $this->category;
+        $defaults['questionName'] = $this->question;
+        $defaults['questionDescription'] = $this->description;
+        $defaults['questionLevel'] = $this->level;
+        $defaults['questionCategory'] = $this->category;
 
         //$defaults['questionCategory']       = $this->category_list;
         //$defaults['parent_id']              = $this->parent_id;
@@ -1345,7 +1345,7 @@ abstract class Question
      * @param FormValidator $form
      * @param Exercise $objExercise
      */
-    public function processCreation ($form, $objExercise = null)
+    public function processCreation($form, $objExercise = null)
     {
         //$this->updateParentId($form->getSubmitValue('parent_id'));
         $this->updateTitle($form->getSubmitValue('questionName'));
@@ -1365,13 +1365,13 @@ abstract class Question
 
     /**
      * abstract function which creates the form to create / edit the answers of the question
-     * @param the formvalidator instance
+     * @param the FormValidator instance
      */
     abstract function createAnswersForm ($form);
 
     /**
      * abstract function which process the creation of answers
-     * @param the formvalidator instance
+     * @param the FormValidator instance
      */
     abstract function processAnswersCreation ($form);
 
@@ -1401,7 +1401,7 @@ abstract class Question
             unset($question_type_custom_list[HOT_SPOT_DELINEATION]);
         }
 
-        echo '<div class="actionsbig">';
+        echo '<div class="well">';
         echo '<ul class="question_menu">';
 
         foreach ($question_type_custom_list as $i => $a_type) {
@@ -1412,7 +1412,7 @@ abstract class Question
             eval('$img = '.$a_type[1].'::$typePicture;');
             eval('$explanation = get_lang('.$a_type[1].'::$explanationLangVar);');
             echo '<li>';
-            echo '<div class="icon_image_content">';
+            echo '<div class="icon-image">';
             if ($objExercise->exercise_was_added_in_lp == true) {
                 $img = pathinfo($img);
                 $img = $img['filename'].'_na.'.$img['extension'];

@@ -1,6 +1,8 @@
 <?php
 /* For licensing terms, see /license.txt */
-$language_file = 'agenda';
+/**
+ * @deprecated code use DatePicker or DateTimePicker
+ */
 require_once dirname(__FILE__).'/../../../global.inc.php';
 
 //session

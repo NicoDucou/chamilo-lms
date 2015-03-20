@@ -325,12 +325,12 @@ class IndexManager
         if (api_get_setting('allow_skills_tool') == 'true') {
             $content = '<ul class="nav nav-pills nav-stacked">';
 
-            $content .= Display::tag('li', Display::url(get_lang('MySkills'), api_get_path(WEB_CODE_PATH).'social/my_skills_report.php'));
+            $content .= Display::tag('li', Display::url(Display::return_icon('skill-badges.png',get_lang('MySkills'),null,ICON_SIZE_SMALL).get_lang('MySkills'), api_get_path(WEB_CODE_PATH).'social/my_skills_report.php'));
 
             $allowSkillsManagement = api_get_setting('allow_hr_skills_management') == 'true';
 
             if (($allowSkillsManagement && api_is_drh()) || api_is_platform_admin()) {
-                $content .= Display::tag('li', Display::url(get_lang('ManageSkills'), api_get_path(WEB_CODE_PATH).'admin/skills_wheel.php'));
+                $content .= Display::tag('li', Display::url(Display::return_icon('edit-skill.png',get_lang('MySkills'),null,ICON_SIZE_SMALL).get_lang('ManageSkills'), api_get_path(WEB_CODE_PATH).'admin/skills_wheel.php'));
             }
             $content .= '</ul>';
             $html = self::show_right_block(get_lang("Skills"), $content, 'skill_block');
@@ -694,33 +694,40 @@ class IndexManager
      * Adds a form to let users login
      * @version 1.1
      */
-    function display_login_form()
+    public function display_login_form()
     {
+        $form = new FormValidator(
+            'formLogin',
+            'POST',
+            null,
+            null,
+            null,
+            FormValidator::LAYOUT_BOX_NO_LABEL
+        );
 
-        $form = new FormValidator('formLogin', 'POST', null,  null, array('class'=>'form-inline'));
-        $form->addElement('label',get_lang('UserName'));
-        $form->addHtml('<div class="input-group">');
-        $form->addHtml('<span class="input-group-addon"><i class="fa fa-user"></i></span>');
-        $form->addElement('text', 'login','', array('id' => 'login', 'class' => 'form-control autocapitalize_off', 'autofocus' => 'autofocus'));
-        $form->addHtml('</div>');
-        $form->addElement('label',get_lang('Pass'));
-        $form->addHtml('<div class="input-group">');
-        $form->addHtml('<span class="input-group-addon"><i class="fa fa-lock"></i></span>');
-        $form->addElement('password', 'password','', array('id' => 'password', 'class' => 'form-control'));
-        $form->addHtml('</div>');
+        $form->addText(
+            'login',
+            get_lang('UserName'),
+            true,
+            array('id' => 'login', 'autofocus' => 'autofocus', 'icon' => 'user')
+        );
+
+        $form->addElement(
+            'password',
+            'password',
+            get_lang('Pass'),
+            array('id' => 'password', 'icon' => 'lock')
+        );
+
         global $_configuration;
 
         // Captcha
         $allowCaptcha = isset($_configuration['allow_captcha']) ? $_configuration['allow_captcha'] : false;
 
         if ($allowCaptcha) {
-
             $useCaptcha = isset($_SESSION['loginFailed']) ? $_SESSION['loginFailed'] : null;
-
             if ($useCaptcha) {
-
                 $ajax = api_get_path(WEB_AJAX_PATH).'form.ajax.php?a=get_captcha';
-
                 $options = array(
                     'width'        => 250,
                     'height'       => 90,
@@ -737,20 +744,18 @@ class IndexManager
                 // Minimum options using all defaults (including defaults for Image_Text):
                 //$options = array('callback' => 'qfcaptcha_image.php');
 
-                $captcha_question =  $form->addElement('CAPTCHA_Image', 'captcha_question', '', $options);
+                $captcha_question = $form->addElement('CAPTCHA_Image', 'captcha_question', '', $options);
                 $form->addElement('static', null, null, get_lang('ClickOnTheImageForANewOne'));
 
                 $form->addElement('text', 'captcha', get_lang('EnterTheLettersYouSee'));
                 $form->addRule('captcha', get_lang('EnterTheCharactersYouReadInTheImage'), 'required', null, 'client');
-
                 $form->addRule('captcha', get_lang('TheTextYouEnteredDoesNotMatchThePicture'), 'CAPTCHA', $captcha_question);
             }
         }
-        $form->addHtml('<div class="form-button-login">');
-        $form->addElement('style_submit_button','submitAuth', get_lang('LoginEnter'), array('class' => 'btn-primary btn-block'));
-        $form->addHtml('</div>');
 
-        $html = $form->return_form();
+        $form->addButton('submitAuth', get_lang('LoginEnter'), null, 'primary', null, 'btn-block');
+
+        $html = $form->returnForm();
         // The validation is located in the local.inc
         /*if ($form->validate()) {
             // Prevent re-use of the same CAPTCHA phrase
@@ -761,10 +766,16 @@ class IndexManager
             include_once 'main/auth/openid/login.php';
             $html .= '<div>'.openid_form().'</div>';
         }
+
         return $html;
     }
 
-    function return_search_block() {
+    /**
+     * @todo use FormValidator
+     * @return string
+     */
+    public function return_search_block()
+    {
         $html = '';
         if (api_get_setting('search_enabled') == 'true') {
             $search_btn = get_lang('Search');
@@ -775,10 +786,14 @@ class IndexManager
                 </div></form>';
             $html .= self::show_right_block(get_lang('Search'), $search_content, 'search_block');
         }
+
         return $html;
     }
 
-    function return_classes_block()
+    /**
+     * @return string
+     */
+    public function return_classes_block()
     {
         $html = '';
         if (api_get_setting('show_groups_to_users') == 'true') {
@@ -793,24 +808,15 @@ class IndexManager
                 }
             }
             if (api_is_platform_admin()) {
-                $classes .= Display::tag('li',  Display::url(get_lang('AddClasses') ,api_get_path(WEB_CODE_PATH).'admin/usergroups.php?action=add'));
+                $classes .= Display::tag(
+                    'li',
+                    Display::url(get_lang('AddClasses') ,api_get_path(WEB_CODE_PATH).'admin/usergroups.php?action=add')
+                );
             }
             if (!empty($classes)) {
                 $classes = Display::tag('ul', $classes, array('class'=>'nav nav-pills nav-stacked'));
                 $html .= self::show_right_block(get_lang('Classes'), $classes, 'classes_block');
             }
-        }
-        return $html;
-    }
-
-    function return_reservation_block() {
-        $html = '';
-        $booking_content = null;
-        if (api_get_setting('allow_reservation') == 'true' && api_is_allowed_to_create_course()) {
-            $booking_content .='<ul class="nav nav-pills nav-stacked">';
-            $booking_content .='<a href="main/reservation/reservation.php">'.get_lang('ManageReservations').'</a><br />';
-            $booking_content .='</ul>';
-            $html .= self::show_right_block(get_lang('Booking'), $booking_content, 'reservation_block');
         }
         return $html;
     }
@@ -849,7 +855,10 @@ class IndexManager
         return $html;
     }
 
-    function return_profile_block()
+    /**
+     * @return null|string|void
+     */
+    public function return_profile_block()
     {
         global $_configuration;
         $user_id = api_get_user_id();
@@ -891,23 +900,7 @@ class IndexManager
             }
         }
 
-        $editProfileUrl = api_get_path(WEB_CODE_PATH) . 'auth/profile.php';
-
-        if (api_get_setting('sso_authentication') === 'true') {
-            $subSSOClass = api_get_setting('sso_authentication_subclass');
-            $objSSO = null;
-
-            if (!empty($subSSOClass)) {
-                require_once api_get_path(SYS_CODE_PATH) . 'auth/sso/sso.' . $subSSOClass . '.class.php';
-
-                $subSSOClass = 'sso' . $subSSOClass;
-                $objSSO = new $subSSOClass();
-            } else {
-                $objSSO = new sso();
-            }
-
-            $editProfileUrl = $objSSO->generateProfileEditingURL();
-        }
+        $editProfileUrl = Display::getProfileEditionLink($user_id);
 
         $profile_content .= '<li class="profile-social"><a href="' . $editProfileUrl . '">'.Display::return_icon('edit-profile.png',get_lang('EditProfile'),null,ICON_SIZE_SMALL).get_lang('EditProfile').'</a></li>';
         $profile_content .= '</ul>';
@@ -915,7 +908,8 @@ class IndexManager
         return $html;
     }
 
-    function return_navigation_links() {
+    public function return_navigation_links()
+    {
         $html = '';
 
         // Deleting the myprofile link.
@@ -1180,7 +1174,9 @@ class IndexManager
                             $params['description'] = $session_box['description'];
                             $params['show_description'] = $session_box['show_description'];
 
-                            $parentInfo = CourseManager::course_item_html($params, true);
+                            $items_courses_session = '<ul class="sessions-items">'.$html_courses_session.'</ul>';
+                            /* Icon session no category */
+                            $parentInfo = CourseManager::session_list_html($params,$items_courses_session,true);
 
                             if (isset($_configuration['show_simple_session_info']) &&
                                 $_configuration['show_simple_session_info']
@@ -1188,9 +1184,10 @@ class IndexManager
                                 $params['title'] = $session_box['title'];
                                 $parentInfo = CourseManager::course_item_html_no_icon($params);
                             }
+
+
                             $sessions_with_no_category .= CourseManager::course_item_parent(
-                                $parentInfo,
-                                $html_courses_session
+                                $parentInfo,null
                             );
                         }
                     }
@@ -1272,12 +1269,9 @@ class IndexManager
                                 $params['icon'] = Display::return_icon(
                                         'window_list.png',
                                         $session_box['title'],
-                                        array(
-                                            'width' => '48px',
-                                            'align' => 'absmiddle',
-                                            'id' => 'session_img_' . $session_id
-                                        )
-                                    ) . ' ';
+                                        array('id' => 'session_img_' . $session_id),
+                                        ICON_SIZE_LARGE
+                                    );
 
                                 if (api_is_drh()) {
                                     $session_link = $session_box['title'];
@@ -1305,7 +1299,7 @@ class IndexManager
                                             ICON_SIZE_SMALL
                                         ) . '</a>';
                                 }
-
+                                /* Icon Session in category */
                                 $parentInfo = CourseManager::course_item_html(
                                     $params,
                                     true
@@ -1350,7 +1344,7 @@ class IndexManager
                                 $params['subtitle'] = get_lang('Until').' '.$session_category_end_date;
                             }
                         }
-                        $sessions_with_category .= CourseManager::course_item_parent(
+                         $sessions_with_category .= CourseManager::course_item_parent(
                             CourseManager::course_item_html($params, true),
                             $html_sessions
                         );

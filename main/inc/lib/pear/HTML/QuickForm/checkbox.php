@@ -68,7 +68,7 @@ class HTML_QuickForm_checkbox extends HTML_QuickForm_input
         $text = '',
         $attributes = null
     ) {
-        HTML_QuickForm_input::HTML_QuickForm_input($elementName, $elementLabel, $attributes);
+        parent::__construct($elementName, $elementLabel, $attributes);
         $this->_persistantFreeze = true;
         $this->_text = $text;
         $this->setType('checkbox');
@@ -134,9 +134,13 @@ class HTML_QuickForm_checkbox extends HTML_QuickForm_input
         } elseif ($this->_flagFrozen) {
             $label = $this->_text;
         } else {
-            $label = '<label class="checkbox '.$this->getAttribute('label-class').' ">' .
-                HTML_QuickForm_input::toHtml().$this->_text
-                . '</label>';
+            $label =
+                '<div class="checkbox">
+                <label '.$this->getAttribute('label-class').' ">' .
+                    HTML_QuickForm_input::toHtml().$this->_text.
+                '</label>
+                </div>
+                ';
 
             return $label;
         }

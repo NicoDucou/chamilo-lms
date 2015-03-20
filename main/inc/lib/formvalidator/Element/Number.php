@@ -2,9 +2,9 @@
 /* For licensing terms, see /license.txt */
 
 /**
- * Form element to select a date and hour (with popup datepicker)
+ * Number element
  *
- * Class DatePicker
+ * Class Number
  */
 class Number extends HTML_QuickForm_text
 {
@@ -18,10 +18,11 @@ class Number extends HTML_QuickForm_text
         if (!isset($attributes['id'])) {
             $attributes['id'] = $elementName;
         }
-        
-        $attributes['type'] = 'number';
 
-        HTML_QuickForm_element::HTML_QuickForm_element($elementName, $elementLabel, $attributes);
+        $attributes['type'] = 'number';
+        $attributes['class'] = 'form-control';
+
+        parent::__construct($elementName, $elementLabel, $attributes);
         $this->_appendName = true;
         $this->_type = 'number';
     }

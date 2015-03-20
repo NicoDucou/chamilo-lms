@@ -26,20 +26,6 @@ if (!api_is_anonymous()) {
     $header_title = " ";
 }
 
-$htmlHeadXtra[] = api_get_jquery_libraries_js(array('bxslider'));
-$htmlHeadXtra[] ='
-<script type="text/javascript">
-    $(document).ready(function(){
-        $("#slider").bxSlider({
-            infiniteLoop : true,
-            auto : true,
-            pager : true,
-            autoHover : true,
-            pause : 10000
-        });
-    });
-</script>';
-
 $controller = new IndexManager($header_title);
 
 //Actions
