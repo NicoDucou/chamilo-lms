@@ -4,6 +4,16 @@ Feature: Users management as admin
   As an administrator
   I need to be able to create new users
 
+  Scenario: See the users list link on the admin page
+    Given I am a platform administrator
+    And I am on "/main/admin/index.php"
+    Then I should see "Users list"
+
+  Scenario: See the user creation link on the admin page
+    Given I am a platform administrator
+    And I am on "/main/admin/index.php"
+    Then I should see "Add a user"
+
   Scenario: Create a user with only basic info
     Given I am a platform administrator
     And I am on "/main/admin/user_add.php"
@@ -17,7 +27,7 @@ Feature: Users management as admin
   Scenario: Search and delete a user
     Given I am a platform administrator
     And I am on "/main/admin/user_list.php"
-    And I fill in "keyword" with "smarshall"
+    And I fill in "user-search-keyword" with "smarshall"
     And I press "submit"
     When I follow "Delete"
     Then I should see "The user has been deleted"
