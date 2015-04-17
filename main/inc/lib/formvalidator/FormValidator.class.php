@@ -442,6 +442,27 @@ EOT;
     }
 
     /**
+     * Returns a button with the primary color and a pencil icon
+     * @param string $label Text appearing on the button
+     * @param string $name Element name (for form treatment purposes)
+     * @param bool $createElement Whether to use the create or add method
+     * @return HTML_QuickForm_button
+     */
+    public function addButtonUpdate($label, $name = 'submit', $createElement = false)
+    {
+        return $this->addButton(
+            $name,
+            $label,
+            'pencil',
+            'primary',
+            null,
+            null,
+            array(),
+            $createElement
+        );
+    }
+
+    /**
      * @param string $label
      * @param string $name
      * @param bool $createElement
