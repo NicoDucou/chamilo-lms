@@ -281,12 +281,12 @@ class aicc extends learnpath
             $previous = 0;
             $prereq = $oAu->prereq_string;
             //$previous = (!empty($this->au_order_list_new_id[x]) ? $this->au_order_list_new_id[x] : 0); // TODO: Deal with the previous.
-            $sql_item = "INSERT INTO $new_lp_item (c_id, lp_id,item_type,ref,title, path,min_score,max_score, $field_add parent_item_id,previous_item_id,next_item_id, prerequisite,display_order) " .
+            $sql_item = "INSERT INTO $new_lp_item (c_id, lp_id,item_type,ref,title, path,min_score,max_score, $field_add parent_item_id,previous_item_id,next_item_id, prerequisite,display_order,parameters) " .
                     "VALUES " .
                     "($course_id, $lp_id, 'au','".$oAu->identifier."','".$title."'," .
                     "'$path',0,100, $value_add" .
                     "$parent, $previous, 0, " .
-                    "'$prereq', 0" .
+                    "'$prereq', 0,'".(!empty($oAu->parameters)?Database::escape_string($oAu->parameters):'')."'" .
                     ")";
             $res_item = Database::query($sql_item);
             if ($this->debug > 1) { error_log('New LP - In aicc::import_aicc() - inserting item : '.$sql_item.' : '.Database::error(), 0); }
@@ -768,6 +768,10 @@ class aicc extends learnpath
         for ($i = 0; $i < @count($f); $i++) {
             $newsec = 0;
             $w = @trim($f[$i]);
+            if (substr($w, 0, 1) == ';') {
+                // Ignore comment lines
+                continue;
+            }
             if ($w) {
                 if ((!$r) or ($sec)) {
                     if ((@substr($w, 0, 1) == '[') and (@substr($w, -1, 1)) == ']') {
@@ -815,6 +819,10 @@ class aicc extends learnpath
         for ($i = 0; $i < @count($f); $i++) {
             $newsec = 0;
             $w = @trim($f[$i]);
+            if (substr($w, 0, 1) == ';') {
+                // Ignore comment lines
+                continue;
+            }
             if ($w) {
                 if ((!$r) or ($sec)) {
                     if ((@substr($w, 0, 1) == '[') and (@substr($w, -1, 1)) == ']') {

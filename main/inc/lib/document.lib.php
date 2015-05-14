@@ -1561,8 +1561,10 @@ class DocumentManager
         $sql = "SELECT visibility
                 FROM $docTable d
                 INNER JOIN $propTable ip
-                ON (d.id = ip.ref AND d.c_id  = $course_id AND ip.c_id = $course_id)
+                ON (d.id = ip.ref AND d.c_id = ip.c_id)
         		WHERE
+        		    ip.visibility <> 2 AND
+        		    d.c_id  = $course_id AND
         		    ip.tool = '" . TOOL_DOCUMENT . "' $condition AND
         			filetype = '$file_type' AND
         			locate(concat(path,'/'), '" . Database::escape_string($doc_path.'/'). "')=1
@@ -1646,8 +1648,13 @@ class DocumentManager
                 $course_info['code'],
                 $session_id
             );
+
             if (in_array($user_status, array('0', '2', '6'))) {
                 //is true if is an student, course session teacher or coach
+                $user_in_course = true;
+            }
+
+            if (api_is_platform_admin()) {
                 $user_in_course = true;
             }
         }
@@ -1657,7 +1664,6 @@ class DocumentManager
         if ($user_in_course) {
 
             // 4.1 Checking document visibility for a Course
-
             if ($session_id == 0) {
                 $item_info = api_get_item_property_info($course_info['real_id'], 'document', $doc_id, 0);
 
@@ -1678,6 +1684,7 @@ class DocumentManager
                     $doc_id,
                     0
                 );
+
                 $item_info_in_session = api_get_item_property_info(
                     $course_info['real_id'],
                     'document',
@@ -1928,16 +1935,16 @@ class DocumentManager
 
     /**
      * Create directory certificate
-     * @param string $course_id The course code
+     * @param string $courseCode
      * @return void()
      */
-    public static function create_directory_certificate_in_course($course_id)
+    public static function create_directory_certificate_in_course($courseCode)
     {
-        $course_info = api_get_course_info($course_id);
-        if (!empty($course_info)) {
+        $courseInfo = api_get_course_info($courseCode);
+        if (!empty($courseInfo)) {
             $to_group_id = 0;
             $to_user_id = null;
-            $course_dir = $course_info['path'] . "/document/";
+            $course_dir = $courseInfo['path'] . "/document/";
             $sys_course_path = api_get_path(SYS_COURSE_PATH);
             $base_work_dir = $sys_course_path . $course_dir;
             $base_work_dir_test = $base_work_dir . 'certificates';
@@ -1947,7 +1954,7 @@ class DocumentManager
 
             if (!is_dir($base_work_dir_test)) {
                 create_unexisting_directory(
-                    $course_info,
+                    $courseInfo,
                     api_get_user_id(),
                     api_get_session_id(),
                     $to_group_id,
@@ -1956,14 +1963,17 @@ class DocumentManager
                     $dir_name,
                     $post_dir_name
                 );
-                $update_id = self::get_document_id_of_directory_certificate();
-                api_item_property_update(
-                    $course_info,
-                    TOOL_DOCUMENT,
-                    $update_id,
-                    $visibility_command,
-                    api_get_user_id()
-                );
+                $id = self::get_document_id_of_directory_certificate();
+
+                if (!empty($id)) {
+                    api_item_property_update(
+                        $courseInfo,
+                        TOOL_DOCUMENT,
+                        $id,
+                        $visibility_command,
+                        api_get_user_id()
+                    );
+                }
             }
         }
     }
@@ -4573,6 +4583,9 @@ class DocumentManager
         $codePath = api_get_path(REL_CODE_PATH);
         $dir = '/certificates';
 
+        // Create certificates directory if it doesn't exist
+        DocumentManager::create_directory_certificate_in_course($courseData['code']);
+
         $title = get_lang('DefaultCertificate');
         $comment = null;
 
@@ -4703,7 +4716,8 @@ class DocumentManager
         $folder,
         $courseInfo,
         $sessionId,
-        $groupId
+        $groupId,
+        $useSuffix = true
     ) {
         $courseId = $courseInfo['real_id'];
 
@@ -4712,13 +4726,17 @@ class DocumentManager
         }
 
         $sessionId = intval($sessionId);
-        $folderWithSuffix = self::fixDocumentName(
-            $folder,
-            'folder',
-            $courseInfo,
-            $sessionId,
-            $groupId
-        );
+        $folderWithSuffix = $folder;
+
+        if ($useSuffix) {
+            $folderWithSuffix = self::fixDocumentName(
+                $folder,
+                'folder',
+                $courseInfo,
+                $sessionId,
+                $groupId
+            );
+        }
 
         $folder = Database::escape_string($folder);
         $folderWithSuffix = Database::escape_string($folderWithSuffix);

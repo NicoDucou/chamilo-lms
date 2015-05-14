@@ -293,5 +293,17 @@ $_configuration['system_stable']     = NEW_VERSION_STABLE;
 //$_configuration['prevent_session_admins_to_manage_all_users'] = false;
 // Show delete option in attendance
 //$_configuration['allow_delete_attendance'] = false;
-// Show delete option in attendance
-//$_configuration['allow_delete_attendance'] = false;
+// Course log - Default columns to hide
+//$_configuration['course_log_hide_columns'] = array(1, 9);
+// Limit for the Session Admin role. The administration page show only
+// User block -> Add user
+// Course Sessions block -> Training session list
+//$_configuration['limit_session_admin_role'] = false;
+// Show session description
+//$_configuration['show_session_description'] = false;
+// Hide only for students the link to export certificates to PDF
+//$_configuration['hide_certificate_export_link_students'] = false;
+// Hide for all user roles the link to export certificates to PDF
+//$_configuration['hide_certificate_export_link'] = false;
+// Hide session course coach in dropbox sent to user list
+// $_configuration['dropbox_hide_course_coach'] = false;

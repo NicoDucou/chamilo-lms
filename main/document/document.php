@@ -27,7 +27,8 @@
  * @package chamilo.document
  */
 
-use \ChamiloSession as Session;
+use ChamiloSession as Session;
+
 // Language files that need to be included
 $language_file = array('document', 'slideshow', 'gradebook', 'create_course');
 require_once '../inc/global.inc.php';
@@ -94,9 +95,6 @@ if ($capturePluginInstalled) {
     });
     </script>';
 }
-
-// Create directory certificates.
-DocumentManager::create_directory_certificate_in_course(api_get_course_id());
 
 if (empty($courseInfo)) {
     api_not_allowed(true);
@@ -798,7 +796,9 @@ if ($sessionId == 0) {
             $base_work_dir,
             $usf_dir_name,
             $usf_dir_title,
-            $visibility
+            $visibility,
+            false,
+            false
         );
     }
     //Create dynamic user shared folder into a shared folder session
@@ -816,7 +816,9 @@ if ($sessionId == 0) {
             $base_work_dir,
             $usf_dir_name,
             $usf_dir_title,
-            $visibility
+            $visibility,
+            false,
+            false
         );
     }
 }

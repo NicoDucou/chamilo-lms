@@ -22,6 +22,7 @@ $xajax->registerFunction('search_users');
 $this_section = SECTION_PLATFORM_ADMIN;
 
 $id_session = intval($_GET['id_session']);
+$countSessionCoursesList = SessionManager::get_course_list_by_session_id($id_session, null, null, true);
 
 $addProcess = isset($_GET['add']) ? Security::remove_XSS($_GET['add']) : null;
 
@@ -94,7 +95,6 @@ function search_users($needle, $type)
             $showOfficialCode = true;
             $order_clause = ' ORDER BY official_code, firstname, lastname, username';
         }
-
         if (api_is_session_admin()
             && isset($_configuration['prevent_session_admins_to_manage_all_users'])
             && $_configuration['prevent_session_admins_to_manage_all_users'] == 'true'
@@ -365,6 +365,25 @@ if ($ajax_search) {
     foreach ($users as $user) {
         $sessionUsersList[$user['user_id']] = $user ;
     }
+
+    $sessionUserInfo = SessionManager::getTotalUserCoursesInSession($id_session);
+
+    // Filter the user list in all courses in the session
+    foreach ($sessionUserInfo as $sessionUser) {
+        // filter students in session
+        if ($sessionUser['status_in_session'] != 0) {
+            continue;
+        }
+        
+        if (!array_key_exists($sessionUser['user_id'], $sessionUsersList)) {
+            continue;
+        }
+
+        if ($sessionUser['count'] != $countSessionCoursesList) {
+            unset($sessionUsersList[$sessionUser['user_id']]);
+        }
+    }
+
     unset($users); //clean to free memory
 } else {
     //Filter by Extra Fields
@@ -412,7 +431,12 @@ if ($ajax_search) {
             }
         }
     }
-
+    if (api_is_session_admin()
+        && isset($_configuration['prevent_session_admins_to_manage_all_users'])
+        && $_configuration['prevent_session_admins_to_manage_all_users'] == 'true'
+    ) {
+        $order_clause = " AND u.creator_id = " . api_get_user_id() . $order_clause;
+    }
     if ($use_extra_fields) {
         $sql = "SELECT  user_id, lastname, firstname, username, id_session, official_code
                FROM $tbl_user u
