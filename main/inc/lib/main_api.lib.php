@@ -43,6 +43,9 @@ define('SESSION_GENERAL_COACH', 13);
 define('COURSE_STUDENT', 14);   //student subscribed in a course
 define('SESSION_STUDENT', 15);  //student subscribed in a session course
 define('COURSE_TUTOR', 16); // student is tutor of a course (NOT in session)
+define('STUDENT_BOSS', 17); // student is boss
+define('INVITEE', 20);
+
 
 // Table of status
 $_status_list[COURSEMANAGER]    = 'teacher';        // 1
@@ -341,6 +344,26 @@ define('LINK_FORUM_THREAD',         5);
 define('LINK_ATTENDANCE',           7);
 define('LINK_SURVEY',               8);
 define('LINK_HOTPOTATOES',          9);
+
+// Score display types constants
+define('SCORE_DIV', 1);    // X / Y
+define('SCORE_PERCENT', 2);    // XX %
+define('SCORE_DIV_PERCENT', 3);    // X / Y (XX %)
+define('SCORE_AVERAGE', 4);    // XX %
+define('SCORE_DECIMAL', 5);    // 0.50  (X/Y)
+define('SCORE_BAR', 6);    // Uses the Display::bar_progress function
+define('SCORE_SIMPLE', 7);    // X
+define('SCORE_IGNORE_SPLIT', 8);    //  ??
+define('SCORE_DIV_PERCENT_WITH_CUSTOM', 9);    // X / Y (XX %) - Good!
+define('SCORE_CUSTOM', 10);    // Good!
+define('SCORE_DIV_SIMPLE_WITH_CUSTOM', 11);    // X - Good!
+define('SCORE_DIV_SIMPLE_WITH_CUSTOM_LETTERS', 12);    // X - Good!
+define('SCORE_ONLY_SCORE', 13);    // X - Good!
+
+define('SCORE_BOTH', 1);
+define('SCORE_ONLY_DEFAULT', 2);
+define('SCORE_ONLY_CUSTOM', 3);
+
 
 //From display.lib.php
 
@@ -7558,4 +7581,53 @@ function api_protect_course_group($tool, $showHeader = true)
             api_not_allowed($showHeader);
         }
     }
+}
+
+/**
+ * Check whether the user type should be exclude.
+ * Such as invited or anonymous users
+ * @param boolean $checkDB Optional. Whether check the user status
+ * @param int $userId Options. The user id
+ *
+ * @return boolean
+ */
+function api_is_excluded_user_type($checkDB = false, $userId = 0)
+{
+    if ($checkDB) {
+        $userId = empty($userId) ? api_get_user_id() : intval($userId);
+
+        if ($userId == 0) {
+            return true;
+        }
+
+        $userInfo = api_get_user_info($userId);
+
+        switch ($userInfo['status']) {
+            case INVITEE:
+                //no break;
+            case ANONYMOUS:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    $isInvited = api_is_invitee();
+    $isAnonymous = api_is_anonymous();
+
+    if ($isInvited || $isAnonymous) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Checks whether the current user is a invited user
+ * @return boolean
+ */
+function api_is_invitee() {
+    $_user = api_get_user_info();
+
+    return isset($_user['status']) && $_user['status'] == INVITEE;
 }
