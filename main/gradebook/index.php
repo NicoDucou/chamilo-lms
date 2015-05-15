@@ -26,6 +26,10 @@ $_SESSION['gradebook_dest'] = 'index.php';
 
 $this_section = SECTION_COURSES;
 
+include_once api_get_path(LIBRARY_PATH) . 'pchart/pData.class.php';
+include_once api_get_path(LIBRARY_PATH) . 'pchart/pChart.class.php';
+include_once api_get_path(LIBRARY_PATH) . 'pchart/pCache.class.php';
+
 /*
 $htmlHeadXtra[] = api_get_css(api_get_path(WEB_LIBRARY_PATH).'javascript/jqplot/jquery.jqplot.min.css');
 $htmlHeadXtra[] = api_get_js('jqplot/jquery.jqplot.min.js');
@@ -871,8 +875,11 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                         Display::display_normal_message(get_lang('GradeModel').': '.$grade_models[$grade_model_id]['name']);
                     }
                 }
+
                 $gradebooktable = new GradebookTable($cat, $allcat, $alleval, $alllink, $addparams);
                 $gradebooktable->display();
+                echo $gradebooktable->getGraph();
+
             }
         }
     }

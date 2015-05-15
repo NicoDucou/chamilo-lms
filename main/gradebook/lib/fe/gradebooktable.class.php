@@ -13,7 +13,8 @@ class GradebookTable extends SortableTable
     private $currentcat;
     private $datagen;
     private $evals_links;
-    public  $cats;
+    public $cats;
+    private $dataForGraph;
 
     /**
      * Constructor
@@ -185,6 +186,8 @@ class GradebookTable extends SortableTable
         $totalBest = [0, 0];
         $totalAverage = [0, 0];
 
+        //
+
         // Categories.
         foreach ($data_array as $data) {
 
@@ -213,6 +216,8 @@ class GradebookTable extends SortableTable
                 $row[] = $invisibility_span_open.$this->build_name_link($item) . $invisibility_span_close;
                 $main_categories[$item->get_id()]['name'] = $this->build_name_link($item);
             }
+
+            $this->dataForGraph['categories'][] = $item->get_name();
 
             $main_categories[$item->get_id()]['weight']= $item->get_weight();
             $total_categories_weight += $item->get_weight();
@@ -293,6 +298,8 @@ class GradebookTable extends SortableTable
 
                     // Student result
                     $row[] = $value_data;
+                    $this->dataForGraph['my_result'][] = (float) $scoredisplay->display_score($totalResult, SCORE_AVERAGE);
+                    $this->dataForGraph['average'][] = (float) $scoredisplay->display_score($totalAverage, SCORE_AVERAGE);
                     // Ranking
                     $row[] = $ranking;
                     // Best
@@ -610,6 +617,80 @@ class GradebookTable extends SortableTable
         }
 
         return $sortable_data;
+    }
+
+    /**
+     * @return array
+     */
+    private function getDataForGraph()
+    {
+        return $this->dataForGraph;
+    }
+
+    /**
+     * @return string
+     */
+    public function getGraph()
+    {
+        $data = $this->getDataForGraph();
+        if (!empty($data)) {
+            $dataSet = new pData();
+            $dataSet->AddPoint($data['categories'], 'title');
+            $dataSet->AddPoint($data['my_result'], 'my_result');
+            $dataSet->AddPoint($data['average'], 'average');
+
+            $dataSet->AddSerie('my_result');
+            $dataSet->AddSerie('average');
+            $dataSet->SetAbsciseLabelSerie('title');
+            $dataSet->SetSerieName(get_lang('Me'), 'my_result');
+            //$dataSet->SetSerieName(get_lang('MyResult'), 'title');
+            $dataSet->SetSerieName(get_lang('Average'), 'average');
+
+            $angle = -30;
+            $pChart = new pChart('700', '360');
+            $pChart->setFontProperties(api_get_path(LIBRARY_PATH) . "pchart/fonts/tahoma.ttf", 8);
+            $pChart = $pChart->fixHeightByRotation($dataSet->GetData(), $dataSet->GetDataDescription(), $angle);
+            //$pChart->loadColorPalette(api_get_path(LIBRARY_PATH) . "pchart/palette/default.txt");
+            $pChart->loadColorPalette(api_get_path(LIBRARY_PATH) . "pchart/palette/reduced.txt");
+
+            $pChart->setGraphArea(50, 30, 550, 300);
+
+            $pChart->drawFilledRoundedRectangle(7, 7, $pChart->XSize + 20, $pChart->YSize - 30, 5, 240, 240, 240);
+            //$Test->drawRoundedRectangle(5,5,790,330,5,230,230,230);
+            //background color area & stripe or not
+            $pChart->drawGraphArea(255, 255, 255, TRUE);
+            $pChart->drawScale($dataSet->GetData(), $dataSet->GetDataDescription(), SCALE_START0, 150, 150, 150, TRUE, 0, 1, FALSE);
+
+            $pChart->drawTitle(50, 22, get_lang('Results'), 50, 50, 80, 620);
+
+            // Draw the 0 line
+            $pChart->setFontProperties(api_get_path(LIBRARY_PATH) . "pchart/fonts/tahoma.ttf", 6);
+            $pChart->drawTreshold(0,143,55,72,TRUE,TRUE);
+
+            // Draw the line graph
+            $pChart->drawLineGraph($dataSet->GetData(), $dataSet->GetDataDescription());
+            $pChart->drawPlotGraph($dataSet->GetData(), $dataSet->GetDataDescription(),3,2,255,255,255);
+
+            $pChart->setFontProperties(api_get_path(LIBRARY_PATH) . "pchart/fonts/tahoma.ttf", 8);
+            $pChart->drawLegend(580, 30,$dataSet->GetDataDescription(),255,255,255);
+
+            $Cache = new pCache();
+            $id = uniqid();
+            $Cache->WriteToCache($id, $dataSet->GetData(), $pChart);
+
+            ob_start();
+            $pChart->Stroke();
+            ob_end_clean();
+            $file = $Cache->GetHash($id, $dataSet->GetData());
+            if (!empty($file)) {
+                $result = '<div id="contentArea" style="text-align: center;" >';
+                $result .= '<img src="' . api_get_path(WEB_ARCHIVE_PATH) . $file . '" >';
+                $result .= '</div>';
+                return $result;
+            }
+        }
+
+        return '';
     }
 
     /**
