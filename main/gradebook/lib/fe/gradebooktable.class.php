@@ -275,7 +275,8 @@ class GradebookTable extends SortableTable
                 }
 
                 // Students get the results and certificates columns
-                if (count($this->evals_links) > 0 && $status_user != 1) {
+                //if (count($this->evals_links) > 0 && $status_user != 1) {
+                if ($status_user != 1) {
                     $value_data = isset($data[4]) ? $data[4] : null;
                     $best = isset($data['best']) ? $data['best'] : null;
                     $average = isset($data['average']) ? $data['average'] : null;
@@ -633,7 +634,11 @@ class GradebookTable extends SortableTable
     public function getGraph()
     {
         $data = $this->getDataForGraph();
-        if (!empty($data)) {
+        if (!empty($data) &&
+            isset($data['categories']) &&
+            isset($data['my_result']) &&
+            isset($data['average'])
+        ) {
             $dataSet = new pData();
             $dataSet->AddPoint($data['categories'], 'title');
             $dataSet->AddPoint($data['my_result'], 'my_result');
