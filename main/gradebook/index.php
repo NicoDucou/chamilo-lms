@@ -821,14 +821,14 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                             $gradebook =  new Gradebook();
                             $params = array();
 
-                            $params['name']             = $component['acronym'];
-                            $params['description']      = $component['title'];
-                            $params['user_id']          = api_get_user_id();
-                            $params['parent_id']        = $cats[0]->get_id();
-                            $params['weight']           = $component['percentage'];
-                            $params['session_id']       = api_get_session_id();
-                            $params['course_code']      = api_get_course_id();
-                            $params['grade_model_id']   = api_get_session_id();
+                            $params['name'] = $component['acronym'];
+                            $params['description'] = $component['title'];
+                            $params['user_id'] = api_get_user_id();
+                            $params['parent_id'] = $cats[0]->get_id();
+                            $params['weight'] = $component['percentage'];
+                            $params['session_id'] = api_get_session_id();
+                            $params['course_code'] = api_get_course_id();
+                            $params['grade_model_id'] = api_get_session_id();
 
                             $gradebook->save($params);
                         }
@@ -879,9 +879,9 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                 $gradebooktable = new GradebookTable($cat, $allcat, $alleval, $alllink, $addparams);
                 $gradebooktable->display();
                 echo $gradebooktable->getGraph();
-
             }
         }
     }
 }
+
 Display :: display_footer();

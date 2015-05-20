@@ -568,9 +568,9 @@ class SortableTable extends HTML_Table
      */
     public function get_table_html()
     {
-        $pager    = $this->get_pager();
-        $offset   = $pager->getOffsetByPageId();
-        $from     = $offset[0] - 1;
+        $pager = $this->get_pager();
+        $offset = $pager->getOffsetByPageId();
+        $from = $offset[0] - 1;
 
         $table_data = $this->get_table_data($from);
 
