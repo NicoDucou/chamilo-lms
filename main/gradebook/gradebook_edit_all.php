@@ -38,21 +38,6 @@ if (empty($my_selectcat)) {
     api_not_allowed();
 }
 
-// 	DISPLAY HEADERS AND MESSAGES
-if (!isset($_GET['exportpdf']) and !isset($_GET['export_certificate'])) {
-    if (isset ($_GET['studentoverview'])) {
-        $interbreadcrumb[]= array ('url' => Security::remove_XSS($_SESSION['gradebook_dest']).'?selectcat=' . $my_selectcat,'name' => get_lang('Gradebook'));
-        Display :: display_header(get_lang('FlatView'));
-    } elseif (isset ($_GET['search'])) {
-        $interbreadcrumb[]= array ('url' => Security::remove_XSS($_SESSION['gradebook_dest']).'?selectcat=' . $my_selectcat,'name' => get_lang('Gradebook'));
-        Display :: display_header(get_lang('SearchResults'));
-    } else {
-        $interbreadcrumb[] = array ('url' => Security::remove_XSS($_SESSION['gradebook_dest']).'?selectcat=1', 'name' => get_lang('Gradebook'));
-        $interbreadcrumb[] = array ('url' => '#','name' => get_lang('EditAllWeights'));
-        Display :: display_header('');
-    }
-}
-
 $course_id			  =	get_course_id_by_link_id($my_selectcat);
 
 $table_link           = Database::get_main_table(TABLE_MAIN_GRADEBOOK_LINK);
@@ -255,7 +240,6 @@ $formNormal = new FormValidator('normal_weight', 'post', $currentUrl);
 $formNormal->addHeader(get_lang('EditWeight'));
 $formNormal->display();
 
-//$warning_message = sprintf(get_lang('TotalWeightMustBeX'), $masked_total);
 $warning_message = sprintf(get_lang('TotalWeightMustBeX'), $original_total);
 Display::display_warning_message($warning_message, false);
 
