@@ -646,6 +646,7 @@ class GradebookTable extends SortableTable
 
             $dataSet->AddSerie('my_result');
             $dataSet->AddSerie('average');
+
             $dataSet->SetAbsciseLabelSerie('title');
             $dataSet->SetSerieName(get_lang('Me'), 'my_result');
             //$dataSet->SetSerieName(get_lang('MyResult'), 'title');
@@ -661,10 +662,23 @@ class GradebookTable extends SortableTable
             $pChart->setGraphArea(50, 30, 550, 300);
 
             $pChart->drawFilledRoundedRectangle(7, 7, $pChart->XSize + 20, $pChart->YSize - 30, 5, 240, 240, 240);
+            $pChart->setFixedScale(0, 100, 10);
+
             //$Test->drawRoundedRectangle(5,5,790,330,5,230,230,230);
             //background color area & stripe or not
             $pChart->drawGraphArea(255, 255, 255, TRUE);
-            $pChart->drawScale($dataSet->GetData(), $dataSet->GetDataDescription(), SCALE_START0, 150, 150, 150, TRUE, 0, 1, FALSE);
+            $pChart->drawScale(
+                $dataSet->GetData(),
+                $dataSet->GetDataDescription(),
+                SCALE_START0,
+                150,
+                150,
+                150,
+                true,
+                0,
+                1,
+                false
+            );
 
             $pChart->drawTitle(50, 22, get_lang('Results'), 50, 50, 80, 620);
 

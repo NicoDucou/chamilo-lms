@@ -293,6 +293,9 @@ define('SYS_TEST_PATH', 'SYS_TEST_PATH');
 define('WEB_TEMPLATE_PATH', 'WEB_TEMPLATE_PATH');
 define('SYS_TEMPLATE_PATH', 'SYS_TEMPLATE_PATH');
 
+define('WEB_FONTS_PATH', 'WEB_FONTS_PATH');
+define('SYS_FONTS_PATH', 'SYS_FONTS_PATH');
+
 // Constants for requesting path conversion.
 define('TO_WEB', 'TO_WEB');
 define('TO_SYS', 'TO_SYS');
@@ -331,6 +334,8 @@ define('USER_RELATION_TYPE_GOODFRIEND', 4); // should be deprecated is useless
 define('USER_RELATION_TYPE_ENEMY',      5); // should be deprecated is useless
 define('USER_RELATION_TYPE_DELETED',    6);
 define('USER_RELATION_TYPE_RRHH',       7);
+
+define ('GRADEBOOK_ITEM_LIMIT', 1000);
 
 //Gradebook link constants
 //Please do not change existing values, they are used in the database !
@@ -503,7 +508,9 @@ function api_get_path($path_type, $path = null)
         WEB_AJAX_PATH           => 'inc/ajax/',
         SYS_TEST_PATH           => 'tests/',
         WEB_TEMPLATE_PATH       => 'template/',
-        SYS_TEMPLATE_PATH       => 'template/'
+        SYS_TEMPLATE_PATH       => 'template/',
+        WEB_FONTS_PATH          => 'fonts/',
+        SYS_FONTS_PATH          => 'fonts/',
     );
 
     static $resource_paths = array(
@@ -622,6 +629,9 @@ function api_get_path($path_type, $path = null)
         $paths[INCLUDE_PATH]            = $paths[SYS_CODE_PATH].$paths[INCLUDE_PATH];
         $paths[LIBRARY_PATH]            = $paths[SYS_CODE_PATH].$paths[LIBRARY_PATH];
         $paths[CONFIGURATION_PATH]      = $paths[SYS_CODE_PATH].$paths[CONFIGURATION_PATH];
+        $paths[WEB_FONTS_PATH]          = $paths[WEB_CODE_PATH].$paths[WEB_FONTS_PATH];
+        $paths[SYS_FONTS_PATH]          = $paths[SYS_CODE_PATH].$paths[SYS_FONTS_PATH];
+
 
         $is_this_function_initialized = true;
     } else {

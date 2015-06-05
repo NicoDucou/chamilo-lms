@@ -764,6 +764,7 @@ class FlatViewDataGenerator
             $course_code     = api_get_course_id();
             $session_id        = api_get_session_id();
             $allcat         = $this->category->get_subcategories(null, $course_code, $session_id, 'ORDER BY id');
+            $parent_id = $this->category->get_parent_id();
 
             if ($parent_id == 0 && !empty($allcat)) {
 
@@ -773,7 +774,7 @@ class FlatViewDataGenerator
                     $main_weight  = $this->category->get_weight();
                     $divide            = ( ($score[1])==0 ) ? 1 : $score[1];
 
-                    $sub_cat_percentage = $sum_categories_weight_array[$sub_cat->get_id()];
+                    //$sub_cat_percentage = $sum_categories_weight_array[$sub_cat->get_id()];
                     $item_value     = $score[0]/$divide*$main_weight;
                     $item_total        += $sub_cat->get_weight();
 
