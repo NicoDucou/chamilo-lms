@@ -1415,13 +1415,13 @@ class Attendance
 		$attendance_id = intval($attendance_id);
 		$course_id = api_get_course_int_id();
 		// check if datetime already exists inside the table
-		$sql = "SELECT id FROM $tbl_attendance_calendar
+		/*$sql = "SELECT id FROM $tbl_attendance_calendar
 		        WHERE
 		        	c_id = $course_id AND
 		        	date_time='".Database::escape_string($this->date_time)."' AND
 		        	attendance_id = '$attendance_id'";
 		$rs = Database::query($sql);
-		if (Database::num_rows($rs) == 0) {
+		if (Database::num_rows($rs) == 0) {*/
 			$params = array(
 				'c_id' =>  $course_id,
 				'date_time' => $this->date_time,
@@ -1430,7 +1430,7 @@ class Attendance
 			$id = Database::insert($tbl_attendance_calendar, $params);
 			$affected_rows = Database::affected_rows();
 			$this->addAttendanceCalendarToGroup($id, $course_id, $groupList);
-		}
+		//}
 
 		// update locked attendance
 		$is_all_calendar_done = self::is_all_attendance_calendar_done($attendance_id);
