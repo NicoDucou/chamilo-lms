@@ -20,6 +20,7 @@ return array(
     'FlatViewDataGenerator' => $baseDir . '/main/gradebook/lib/flatview_data_generator.class.php',
     'FlatViewTable' => $baseDir . '/main/gradebook/lib/fe/flatviewtable.class.php',
     'ForumThreadLink' => $baseDir . '/main/gradebook/lib/be/forumthreadlink.class.php',
+    'GradeBookResult' => $baseDir . '/main/gradebook/lib/gradebook_result.class.php',
     'GradebookDataGenerator' => $baseDir . '/main/gradebook/lib/gradebook_data_generator.class.php',
     'GradebookItem' => $baseDir . '/main/gradebook/lib/be/gradebookitem.class.php',
     'GradebookTable' => $baseDir . '/main/gradebook/lib/fe/gradebooktable.class.php',

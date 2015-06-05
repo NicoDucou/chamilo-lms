@@ -6,7 +6,12 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Symfony\\Component\\Yaml\\' => array($vendorDir . '/symfony/yaml'),
+    'Symfony\\Component\\Process\\' => array($vendorDir . '/symfony/process'),
+    'Symfony\\Component\\Filesystem\\' => array($vendorDir . '/symfony/filesystem'),
+    'Symfony\\Component\\Console\\' => array($vendorDir . '/symfony/console'),
     'Sabre\\VObject\\' => array($vendorDir . '/sabre/vobject/lib'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
     'Emojione\\' => array($vendorDir . '/emojione/emojione/lib/php/src'),
+    'CpChart\\' => array($vendorDir . '/szymach/c-pchart/src'),
 );
