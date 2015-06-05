@@ -5335,11 +5335,11 @@ i.size-32.icon-new-work{
 }
 
 
-#gradebook_list table td {
+#gradebook_list td {
     text-align:center;
     vertical-align:middle;
 }
 
-#gradebook_list table td .badge-group {
+#gradebook_list td .badge-group {
     width: auto;
 }
