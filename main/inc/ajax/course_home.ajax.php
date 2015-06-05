@@ -395,7 +395,7 @@ switch ($action) {
             }
         }
 
-        $start = $limit*$page - $limit;
+        $start = $limit * $page - $limit;
         $course_list = SessionManager::get_course_list_by_session_id($session_id);
         $count = 0;
 
@@ -426,6 +426,7 @@ switch ($action) {
                     $image      = 'moderator_star.png';
                     $label      = get_lang('LearnpathUpdated');
                 }
+                $icons = '';
                 if (strtotime($last_date) < strtotime($lp_date)) {
                     $icons = Display::return_icon($image, get_lang('TitleNotification').': '.$label.' - '.$lp_date);
                 }
