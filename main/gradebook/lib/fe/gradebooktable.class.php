@@ -295,7 +295,7 @@ class GradebookTable extends SortableTable
 
                     $totalResult = [
                         $totalResult[0] + $data['result_score_weight'][0],
-                        $totalResult[1] + $data['result_score_weight'][1],
+                        $totalResult[1] + $data['result_score_weight'][1]
                     ];
 
                     $totalBest = [
@@ -669,6 +669,7 @@ class GradebookTable extends SortableTable
     public function getGraph()
     {
         $data = $this->getDataForGraph();
+
         if (!empty($data) &&
             isset($data['categories']) &&
             isset($data['my_result']) &&

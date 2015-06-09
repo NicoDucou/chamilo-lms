@@ -163,7 +163,7 @@ if (isset($_GET['createallcategories'])) {
     $coursecat= Category :: get_not_created_course_categories($stud_id);
     if (!count($coursecat) == 0) {
         foreach ($coursecat as $row) {
-            $cat= new Category();
+            $cat = new Category();
             $cat->set_name($row[1]);
             $cat->set_course_code($row[0]);
             $cat->set_description(null);
