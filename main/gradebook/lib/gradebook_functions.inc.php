@@ -735,6 +735,7 @@ function get_user_certificate_content($user_id, $course_code, $is_preview = fals
     $new_content_html = str_replace(SYS_CODE_PATH . 'img/', api_get_path(WEB_IMG_PATH), $new_content_html);
 
     //add print header
+    $print = '';
     if ($hide_print_button == false) {
         $print = '<style media="print" type="text/css">#print_div {visibility:hidden;}</style>';
         $print .= '<a href="javascript:window.print();" style="float:right; padding:4px;" id="print_div"><img src="' . api_get_path(WEB_CODE_PATH) . 'img/printmgr.gif" alt="' . get_lang('Print') . '" /> ' . get_lang('Print') . '</a>';
