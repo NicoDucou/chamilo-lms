@@ -400,7 +400,9 @@ class GradebookTable extends SortableTable
                             $cat = new Category();
                             $show_message = $cat->show_message_resource_delete($item->get_course_code());
                             if ($show_message === false) {
-                                $row[] = $this->build_edit_column($item);
+                                if ($this->exportToPdf) {
+                                    $row[] = $this->build_edit_column($item);
+                                }
                             }
                         } else {
                             // Students get the results and certificates columns
@@ -531,16 +533,28 @@ class GradebookTable extends SortableTable
                     SCORE_DIV
                 );
 
-                $row = array(
-                    null,
-                    '<h3>' . get_lang('Total') . '</h3>',
-                    null,
-                    $main_weight,
-                    $totalResult,
-                    $totalRanking,
-                    $totalBest,
-                    $totalAverage,
-                );
+                if ($this->exportToPdf) {
+                    $row = array(
+                        null,
+                        '<h3>' . get_lang('Total') . '</h3>',
+                        $main_weight,
+                        $totalResult,
+                        $totalRanking,
+                        $totalBest,
+                        $totalAverage,
+                    );
+                } else {
+                    $row = array(
+                        null,
+                        '<h3>' . get_lang('Total') . '</h3>',
+                        null,
+                        $main_weight,
+                        $totalResult,
+                        $totalRanking,
+                        $totalBest,
+                        $totalAverage,
+                    );
+                }
 
                 $sortable_data[] = $row;
             }

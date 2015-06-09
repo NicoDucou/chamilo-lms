@@ -905,10 +905,6 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                     $exportToPdf
                 );
 
-                if ($action == 'export_table') {
-                    //$gradebooktable->setAttribute('class', 'table');
-                }
-
                 $table = $gradebooktable->return_table();
 
                 //$graph = $gradebooktable->getGraph();
