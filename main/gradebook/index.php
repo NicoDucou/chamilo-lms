@@ -158,7 +158,7 @@ if ((isset($_GET['selectcat']) && $_GET['selectcat']>0) &&
 
 // ACTIONS
 //this is called when there is no data for the course admin
-if (isset ($_GET['createallcategories'])) {
+if (isset($_GET['createallcategories'])) {
     GradebookUtils::block_students();
     $coursecat= Category :: get_not_created_course_categories($stud_id);
     if (!count($coursecat) == 0) {
@@ -443,10 +443,14 @@ switch ($action) {
             $confirmation_message = get_lang('EvaluationHasBeenUnLocked');
         }
         break;
+    case 'export_table':
+        //table will be export below
+        ob_start();
+        break;
 }
 
 //actions on the sortabletable
-if (isset ($_POST['action'])) {
+if (isset($_POST['action'])) {
     GradebookUtils::block_students();
     $number_of_selected_items= count($_POST['id']);
 
@@ -455,7 +459,6 @@ if (isset ($_POST['action'])) {
         $filter_warning_msg = false;
     } else {
         switch ($_POST['action']) {
-
             case 'deleted' :
                 $number_of_deleted_categories= 0;
                 $number_of_deleted_evaluations= 0;
@@ -733,6 +736,8 @@ $no_qualification = false;
 // Show certificate link.
 $certificate = array();
 
+echo '<div class="actions">';
+
 if ($category != '0') {
     $cat = new Category();
     $category_id   = intval($_GET['selectcat']);
@@ -747,13 +752,23 @@ if ($category != '0') {
                 $stud_id
             );
             if (!empty($certificate)) {
-                echo '<div class="actions" align="right">';
-                echo $certificate['pdf_link'];
-                echo '</div>';
+                echo Display::url(
+                    get_lang('CertificateToPdf'),
+                    $certificate['pdf_url'],
+                    ['class' => 'btn btn-default']
+                );
             }
         }
     }
 }
+
+echo Display::url(
+    get_lang('ReportToPdf'),
+    api_get_self()."?".api_get_self()."&action=export_table",
+    ['class' => 'btn btn-default']
+);
+
+echo '</div>';
 
 if (api_is_allowed_to_edit(null, true)) {
     // Tool introduction
@@ -877,8 +892,17 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                 }
 
                 $gradebooktable = new GradebookTable($cat, $allcat, $alleval, $alllink, $addparams);
-                $gradebooktable->display();
-                echo $gradebooktable->getGraph();
+                $table = $gradebooktable->return_table();
+                $graph = $gradebooktable->getGraph();
+
+                if ($action == 'export_table') {
+                    ob_clean();
+                    $pdf = new PDF();
+                    $pdf->content_to_pdf($table.$graph);
+                } else {
+                    echo $table;
+                    echo $graph;
+                }
             }
         }
     }
