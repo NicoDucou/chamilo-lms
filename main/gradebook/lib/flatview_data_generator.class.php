@@ -162,14 +162,41 @@ class FlatViewDataGenerator
         $evaluationsAdded = array();
         if ($parent_id == 0 && !empty($allcat)) {
             // Means there are any subcategory
-
             foreach ($allcat as $sub_cat) {
+                $extra = '';
+
+                if (api_get_configuration_value('gradebook_detailed_admin_view') == true) {
+
+                    $links = $sub_cat->get_links();
+                    $evaluations = $sub_cat->get_evaluations();
+
+                    /** @var ExerciseLink $link */
+                    $linkNameList = [];
+                    foreach ($links as $link) {
+                        $linkNameList[] = $link->get_name();
+                    }
+
+                    $evalNameList = [];
+                    foreach ($evaluations as $evaluation) {
+                        $evalNameList[] = $evaluation->get_name();
+                    }
+
+                    $finalList = array_merge($linkNameList, $evalNameList);
+                    $extra = '';
+
+                    if (!empty($finalList)) {
+                        $finalList[] = get_lang('Average');
+                        $extra = '<br />'.implode(' / ', $finalList);
+                    }
+                }
+
                 $sub_cat_weight = round(100 * $sub_cat->get_weight() / $main_weight, 1);
                 $add_weight = " $sub_cat_weight %";
                 $headers[] = Display::url(
-                        $sub_cat->get_name(),
-                        api_get_self().'?selectcat='.$sub_cat->get_id().'&'.api_get_cidreq()
-                    ).$add_weight;
+                    $sub_cat->get_name(),
+                    api_get_self().'?selectcat='.$sub_cat->get_id().'&'.api_get_cidreq()
+                    ).
+                $add_weight.$extra;
             }
         } else {
             if (!isset($this->params['only_total_category']) ||
@@ -409,6 +436,21 @@ class FlatViewDataGenerator
                 /** @var Category $sub_cat */
                 foreach ($allcat as $sub_cat) {
                     $score = $sub_cat->calc_score($user_id);
+                    $links = $sub_cat->get_links();
+                    $evaluations = $sub_cat->get_evaluations();
+
+                    /** @var ExerciseLink $link */
+                    $linkScoreList = [];
+                    foreach ($links as $link) {
+                        $linkScore = $link->calc_score($user_id);
+                        $linkScoreList[] = $scoredisplay->display_score($linkScore, SCORE_SIMPLE);
+                    }
+
+                    $evalScoreList = [];
+                    foreach ($evaluations as $evaluation) {
+                        $evalScore = $evaluation->calc_score($user_id);
+                        $evalScoreList[] = $scoredisplay->display_score($evalScore, SCORE_SIMPLE);
+                    }
 
                     $real_score = $score;
 
@@ -439,15 +481,24 @@ class FlatViewDataGenerator
                     }
 
                     if (!isset($this->params['only_total_category']) ||
-                        (isset($this->params['only_total_category']) && $this->params['only_total_category'] == false)
+                        (isset($this->params['only_total_category']) &&
+                        $this->params['only_total_category'] == false)
                     ) {
                         if (!$show_all) {
-                            $row[] = $temp_score.' ';
+                            if (api_get_configuration_value('gradebook_detailed_admin_view')) {
+                                $finalList = array_merge($linkScoreList, $evalScoreList);
+                                $average = array_sum($finalList) / count($finalList);
+                                $finalList[] = $average;
+                                $extra = implode(' / ', $finalList);
+                                $row[] = $extra;
+                            } else {
+                                $row[] = $temp_score.' ';
+                            }
                         } else {
                             $row[] = $temp_score;
                         }
                     }
-                    $item_value_total +=$item_value;
+                    $item_value_total += $item_value;
                 }
                 if ($convert_using_the_global_weight) {
                     //$item_total = $main_weight;
@@ -620,7 +671,7 @@ class FlatViewDataGenerator
         return array(
             'item_total' => $item_total,
             'item_value_total' => $item_value_total,
-            'evaluations_added' => $evaluationsAdded
+            'evaluations_added' => $evaluationsAdded,
         );
     }
 
@@ -680,7 +731,7 @@ class FlatViewDataGenerator
             $summary= array(
                 'max' => $maximum,
                 'min' => $minimum,
-                'avg' => $average
+                'avg' => $average,
             );
             $result[$k] = $summary;
         }
