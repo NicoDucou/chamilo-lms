@@ -436,20 +436,29 @@ class FlatViewDataGenerator
                 /** @var Category $sub_cat */
                 foreach ($allcat as $sub_cat) {
                     $score = $sub_cat->calc_score($user_id);
-                    $links = $sub_cat->get_links();
-                    $evaluations = $sub_cat->get_evaluations();
 
-                    /** @var ExerciseLink $link */
-                    $linkScoreList = [];
-                    foreach ($links as $link) {
-                        $linkScore = $link->calc_score($user_id);
-                        $linkScoreList[] = $scoredisplay->display_score($linkScore, SCORE_SIMPLE);
-                    }
+                    if (api_get_configuration_value('gradebook_detailed_admin_view')) {
+                        $links = $sub_cat->get_links();
+                        $evaluations = $sub_cat->get_evaluations();
 
-                    $evalScoreList = [];
-                    foreach ($evaluations as $evaluation) {
-                        $evalScore = $evaluation->calc_score($user_id);
-                        $evalScoreList[] = $scoredisplay->display_score($evalScore, SCORE_SIMPLE);
+                        /** @var ExerciseLink $link */
+                        $linkScoreList = [];
+                        foreach ($links as $link) {
+                            $linkScore = $link->calc_score($user_id);
+                            $linkScoreList[] = $scoredisplay->display_score(
+                                $linkScore,
+                                SCORE_SIMPLE
+                            );
+                        }
+
+                        $evalScoreList = [];
+                        foreach ($evaluations as $evaluation) {
+                            $evalScore = $evaluation->calc_score($user_id);
+                            $evalScoreList[] = $scoredisplay->display_score(
+                                $evalScore,
+                                SCORE_SIMPLE
+                            );
+                        }
                     }
 
                     $real_score = $score;
@@ -470,7 +479,6 @@ class FlatViewDataGenerator
                         }
                     */
                     if (api_get_setting('gradebook_show_percentage_in_reports') == 'false') {
-                        //if (true)
                         $real_score = $scoredisplay->display_score($real_score, SCORE_SIMPLE);
                         $temp_score = $scoredisplay->display_score($score, SCORE_DIV_SIMPLE_WITH_CUSTOM);
                         $temp_score = Display::tip($real_score, $temp_score);
