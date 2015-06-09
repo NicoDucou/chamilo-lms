@@ -1,4 +1,3 @@
-<link href={{ _p.web_main }}css/print.css" rel="stylesheet" media="screen" type="text/css" />
 {{ organization }}
 
 <h2 align="center"> {{ pdf_title }} </h2>
