@@ -488,7 +488,7 @@ class FlatViewDataGenerator
                             if (api_get_configuration_value('gradebook_detailed_admin_view')) {
                                 $finalList = array_merge($linkScoreList, $evalScoreList);
                                 $average = array_sum($finalList) / count($finalList);
-                                $finalList[] = $average;
+                                $finalList[] = round($average, 2);
                                 $extra = implode(' / ', $finalList);
                                 $row[] = $extra;
                             } else {
