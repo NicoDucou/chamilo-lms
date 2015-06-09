@@ -140,6 +140,8 @@ class PDF
         Display::$global_template->assign('pdf_date', api_format_date(api_get_local_time(), DATE_TIME_FORMAT_LONG));
         Display::$global_template->assign('pdf_teachers', $teacher_list);
         Display::$global_template->assign('pdf_title', $this->params['pdf_title']);
+        Display::$global_template->assign('pdf_student_info', $this->params['student_info']);
+
         Display::$global_template->assign('add_signatures', $this->params['add_signatures']);
 
         // Getting template

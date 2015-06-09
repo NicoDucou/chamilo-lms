@@ -1,3 +1,4 @@
+<link href={{ _p.web_main }}css/print.css" rel="stylesheet" media="screen" type="text/css" />
 {{ organization }}
 
 <h2 align="center"> {{ pdf_title }} </h2>
@@ -48,6 +49,15 @@
         </td>
     </tr>
     {% endif %}
+
+    {% if pdf_student_info %}
+        <tr>
+            <td>
+                <strong>{{ "Student" | get_lang }}:</strong>  {{ pdf_student_info.complete_name }}
+            </td>
+        </tr>
+    {% endif %}
+
     <tr>
         <td>
          <strong>{{ "Date" | get_lang }}:</strong> {{ pdf_date }}

@@ -764,7 +764,7 @@ if ($category != '0') {
 
 echo Display::url(
     get_lang('ReportToPdf'),
-    api_get_self()."?".api_get_self()."&action=export_table",
+    api_get_self()."?action=export_table&".api_get_cidreq(),
     ['class' => 'btn btn-default']
 );
 
@@ -905,19 +905,26 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                     $exportToPdf
                 );
 
-                $table = $gradebooktable->return_table();
-
                 if ($action == 'export_table') {
-                    $gradebooktable->setAttribute('class', 'table');
+                    //$gradebooktable->setAttribute('class', 'table');
                 }
 
-                $graph = $gradebooktable->getGraph();
+                $table = $gradebooktable->return_table();
+
+                //$graph = $gradebooktable->getGraph();
 
                 if ($action == 'export_table') {
                     ob_clean();
-                    $pdf = new PDF();
-                    $pdf->set_header(api_get_course_info());
-                    $pdf->content_to_pdf($table.$graph);
+                    $params = array(
+                        //'filename' => get_lang('FlatView') . '_' . api_get_utc_datetime(),
+                        'pdf_title' => get_lang('Report'),
+                        'course_code' => api_get_course_id(),
+                        'session_info' => api_get_session_info(api_get_session_id()),
+                        'add_signatures' => false,
+                        'student_info' => api_get_user_info()
+                    );
+                    $pdf = new PDF('A4', $params['orientation'], $params);
+                    $pdf->html_to_pdf_with_template($table.$graph);
                 } else {
                     echo $table;
                     echo $graph;
