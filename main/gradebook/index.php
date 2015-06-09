@@ -891,13 +891,32 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                     }
                 }
 
-                $gradebooktable = new GradebookTable($cat, $allcat, $alleval, $alllink, $addparams);
+                $exportToPdf = false;
+                if ($action == 'export_table') {
+                    $exportToPdf = true;
+                }
+
+                $gradebooktable = new GradebookTable(
+                    $cat,
+                    $allcat,
+                    $alleval,
+                    $alllink,
+                    $addparams,
+                    $exportToPdf
+                );
+
                 $table = $gradebooktable->return_table();
+
+                if ($action == 'export_table') {
+                    $gradebooktable->setAttribute('class', 'table');
+                }
+
                 $graph = $gradebooktable->getGraph();
 
                 if ($action == 'export_table') {
                     ob_clean();
                     $pdf = new PDF();
+                    $pdf->set_header(api_get_course_info());
                     $pdf->content_to_pdf($table.$graph);
                 } else {
                     echo $table;
