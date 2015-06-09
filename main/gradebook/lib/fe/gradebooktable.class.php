@@ -40,7 +40,9 @@ class GradebookTable extends SortableTable
 
         $column= 0;
         if (api_is_allowed_to_edit(null, true)) {
-            $this->set_header($column++, '', '', 'width="25px"');
+            if ($this->exportToPdf == false) {
+                $this->set_header($column++, '', '', 'width="25px"');
+            }
         }
 
         $this->set_header($column++, get_lang('Type'), '', 'width="35px"');
@@ -193,8 +195,6 @@ class GradebookTable extends SortableTable
         $totalBest = [0, 0];
         $totalAverage = [0, 0];
 
-        //
-
         // Categories.
         foreach ($data_array as $data) {
 
@@ -209,7 +209,9 @@ class GradebookTable extends SortableTable
 
             // Id
             if (api_is_allowed_to_edit(null, true)) {
-                $row[] = $this->build_id_column($item);
+                if ($this->exportToPdf == false) {
+                    $row[] = $this->build_id_column($item);
+                }
             }
 
             // Type.
@@ -369,9 +371,11 @@ class GradebookTable extends SortableTable
                         }
 
                         if (api_is_allowed_to_edit(null, true)) {
-                            $row[] = $this->build_id_column($item);
+                            if ($this->exportToPdf == false) {
+                                $row[] = $this->build_id_column($item);
+                            }
                         }
-
+                        // Type
                         $row[] = $this->build_type_column($item, array('style' => 'padding-left:5px'));
 
                         // Name.
@@ -384,7 +388,7 @@ class GradebookTable extends SortableTable
 
                         $weight = $data[3];
                         $total_weight += $weight;
-
+                        // Weight
                         $row[] = $invisibility_span_open.$weight.$invisibility_span_close;
 
                         if (api_is_allowed_to_edit(null, true)) {

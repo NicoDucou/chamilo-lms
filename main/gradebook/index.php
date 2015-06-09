@@ -906,8 +906,7 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                 );
 
                 $table = $gradebooktable->return_table();
-
-                //$graph = $gradebooktable->getGraph();
+                $graph = $gradebooktable->getGraph();
 
                 if ($action == 'export_table') {
                     ob_clean();
