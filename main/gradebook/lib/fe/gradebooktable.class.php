@@ -641,7 +641,8 @@ class GradebookTable extends SortableTable
                         if (empty($certificate_min_score) ||
                             ($certificate_min_score > $weight_category)
                         ) {
-                            $warning_message .= $course_code .'&nbsp;-&nbsp;'.get_lang('CertificateMinimunScoreIsRequiredAndMustNotBeMoreThan').'&nbsp;'.$weight_category.'<br />';
+                            $warning_message .= $course_code .'&nbsp;-&nbsp;'.
+                                get_lang('CertificateMinimunScoreIsRequiredAndMustNotBeMoreThan').'&nbsp;'.$weight_category.'<br />';
                         }
                     }
 
