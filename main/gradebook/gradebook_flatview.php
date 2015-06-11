@@ -165,11 +165,12 @@ if (isset($_GET['exportpdf']))	{
 
     if ($export_pdf_form->validate()) {
         $params = $export_pdf_form->exportValues();
-        Display :: set_header(null, false, false);
+        Display :: display_no_header();
         $params['join_firstname_lastname'] = true;
         $params['show_official_code'] = true;
         $params['export_pdf'] = true;
         $params['only_total_category'] = false;
+
         GradebookUtils::export_pdf_flatview(
             $flatviewtable,
             $cat,

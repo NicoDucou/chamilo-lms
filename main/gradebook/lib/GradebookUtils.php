@@ -818,8 +818,15 @@ class GradebookUtils
      * @param array $params
      * @param null $mainCourseCategory
      */
-    public static function export_pdf_flatview($flatviewtable, $cat, $users, $alleval, $alllinks, $params = array(), $mainCourseCategory = null)
-    {
+    public static function export_pdf_flatview(
+        $flatviewtable,
+        $cat,
+        $users,
+        $alleval,
+        $alllinks,
+        $params = array(),
+        $mainCourseCategory = null
+    ) {
         // Getting data
         $printable_data = self::get_printable_data($cat[0], $users, $alleval, $alllinks, $params, $mainCourseCategory);
 
@@ -879,7 +886,10 @@ class GradebookUtils
         $table->setHeaderContents($row, $column, get_lang('NumberAbbreviation'));
         $column++;
         foreach ($printable_data[0] as $printable_data_cell) {
-            $printable_data_cell = strip_tags($printable_data_cell);
+            //var_dump($printable_data_cell);
+            if (!is_array($printable_data_cell)) {
+                $printable_data_cell = strip_tags($printable_data_cell);
+            }
             $table->setHeaderContents($row, $column, $printable_data_cell);
             $column++;
         }
@@ -918,7 +928,7 @@ class GradebookUtils
             $table->updateCellAttributes($row, $column, 'colspan="' . $columns . '" align="center" class="row_odd"');
         }
 
-        $params = array(
+        $pdfParams = array(
             'filename' => get_lang('FlatView') . '_' . api_get_utc_datetime(),
             'pdf_title' => $title,
             'course_code' => $course_code,
@@ -926,7 +936,7 @@ class GradebookUtils
         );
 
         $page_format = $params['orientation'] == 'landscape' ? 'A4-L' : 'A4';
-        $pdf = new PDF($page_format, $params['orientation'], $params);
+        $pdf = new PDF($page_format, $page_format, $pdfParams);
         $pdf->html_to_pdf_with_template($table->toHtml());
         exit;
     }
