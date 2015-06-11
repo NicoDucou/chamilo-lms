@@ -229,7 +229,7 @@ class FlatViewDataGenerator
             }
         }
 
-        $headers[] = api_strtoupper(get_lang('GradebookQualificationTotal'));
+        $headers[] = '<center>'.api_strtoupper(get_lang('GradebookQualificationTotal')).'</center>';
 
         return $headers;
     }
