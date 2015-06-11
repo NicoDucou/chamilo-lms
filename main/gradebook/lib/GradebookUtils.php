@@ -937,7 +937,9 @@ class GradebookUtils
 
         $page_format = $params['orientation'] == 'landscape' ? 'A4-L' : 'A4';
         $pdf = new PDF($page_format, $page_format, $pdfParams);
-        $pdf->html_to_pdf_with_template($table->toHtml());
+        $pdf->html_to_pdf_with_template($flatviewtable->return_table());
+        // Default
+        //$pdf->html_to_pdf_with_template($table->toHtml());
         exit;
     }
 

@@ -195,10 +195,10 @@ class FlatViewDataGenerator
 
                     $list = [];
                     $list['items'] = $finalList;
-                    $list['header'] = $mainHeader;
+                    $list['header'] = '<center>'.$mainHeader.'</center>';
                     $headers[]= $list;
                 } else {
-                    $headers[] = $mainHeader;
+                    $headers[] = '<center>'.$mainHeader.'</center>';
                 }
             }
         } else {
