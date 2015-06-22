@@ -296,7 +296,7 @@ class AttendanceController
                 $data['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, $user_id, $groupId);
             }
 
-            $data['faults']  = $attendance->get_faults_of_user($user_id, $attendance_id);
+            $data['faults']  = $attendance->get_faults_of_user($user_id, $attendance_id, $groupId);
             $data['user_id'] = $user_id;
         }
 
@@ -484,15 +484,15 @@ class AttendanceController
         );
 
         if (api_is_allowed_to_edit(null, true) || api_is_drh()) {
-            $data_array['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id);
+            $data_array['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, 0, $groupId);
         } else {
             if (!empty($student_id)) {
                 $user_id = intval($student_id);
             } else {
                 $user_id = api_get_user_id();
             }
-            $data_array['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, $user_id);
-            $data_array['faults'] = $attendance->get_faults_of_user($user_id, $attendance_id);
+            $data_array['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, $user_id, $groupId);
+            $data_array['faults'] = $attendance->get_faults_of_user($user_id, $attendance_id, $groupId);
             $data_array['user_id'] = $user_id;
         }
 

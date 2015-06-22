@@ -1164,6 +1164,7 @@ class Attendance
 		$tbl_attendance_result 	= Database::get_course_table(TABLE_ATTENDANCE_RESULT);
         $tbl_attendance_sheet = Database::get_course_table(TABLE_ATTENDANCE_SHEET);
         $tbl_attendance_cal_rel_group = Database::get_course_table(TABLE_ATTENDANCE_CALENDAR_REL_GROUP);
+        $tbl_attendance_cal = Database::get_course_table(TABLE_ATTENDANCE_CALENDAR);
         $user_id = intval($user_id);
 		$attendance_id = intval($attendance_id);
 		$course_id = api_get_course_int_id();
@@ -1181,10 +1182,13 @@ class Attendance
                         user_id='$user_id' AND
                         presence = 1 AND
                         attendance_calendar_id IN (
-                            SELECT calendar_id FROM $tbl_attendance_cal_rel_group
+                            SELECT calendar_id FROM $tbl_attendance_cal_rel_group crg
+                            INNER JOIN $tbl_attendance_cal c
+                            ON (crg.calendar_id = c.id)
                             WHERE
-                                c_id = $course_id AND
-                                group_id = $groupId
+                                crg.c_id = $course_id AND
+                                crg.group_id = $groupId AND
+                                c.attendance_id = $attendance_id
                         )
                     ";
         }
