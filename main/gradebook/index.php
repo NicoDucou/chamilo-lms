@@ -941,8 +941,8 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                     $pdf->html_to_pdf_with_template(
                         $table.
                         $graph.
-                        '<br />'.get_lang('Feedback').
-                        '<textarea></textarea>'
+                        '<br />'.get_lang('Feedback').'<br />'
+                        '<textarea rows="5" cols="100" ></textarea>'
                     );
                 } else {
                     echo $table;

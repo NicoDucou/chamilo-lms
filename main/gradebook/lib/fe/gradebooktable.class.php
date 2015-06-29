@@ -448,7 +448,6 @@ class GradebookTable extends SortableTable
                                 }
                             }
                         }
-
                         if ($this->exportToPdf == false) {
                             $row['child_of'] = $parent_id;
                         }
