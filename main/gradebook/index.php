@@ -938,7 +938,7 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                         'show_real_course_teachers' => true
                     );
                     $pdf = new PDF('A4', $params['orientation'], $params);
-                    $pdf->html_to_pdf_with_template($table.$graph);
+                    $pdf->html_to_pdf_with_template($table.$graph.'<br />'.get_lang('Feedback').'<textarea></textarea>';
                 } else {
                     echo $table;
                     echo $graph;
