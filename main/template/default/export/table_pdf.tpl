@@ -64,7 +64,7 @@
     </tr>
 </table>
 
-{% if show_grade_generated == true %}
+{% if show_grade_generated_date == true %}
     <h5 align="right">
     {{ "GradeGenerated" | get_lang }} {{ "now"|date("d/m/Y") }}
     </h5>

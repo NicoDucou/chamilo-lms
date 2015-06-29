@@ -55,6 +55,7 @@ class PDF
         $this->params['add_signatures'] = isset($params['add_signatures']) ? $params['add_signatures'] : false;
         $this->params['show_real_course_teachers'] = isset($params['show_real_course_teachers']) ? $params['show_real_course_teachers'] : false;
         $this->params['student_info'] = isset($params['student_info']) ? $params['student_info'] : false;
+        $this->params['show_grade_generated_date'] = isset($params['show_grade_generated_date']) ? $params['show_grade_generated_date'] : false;
 
         $this->pdf = new mPDF(
             'UTF-8',
@@ -142,6 +143,7 @@ class PDF
         Display::$global_template->assign('pdf_teachers', $teacher_list);
         Display::$global_template->assign('pdf_title', $this->params['pdf_title']);
         Display::$global_template->assign('pdf_student_info', $this->params['student_info']);
+        Display::$global_template->assign('show_grade_generated_date', $this->params['show_grade_generated_date']);
 
         Display::$global_template->assign('add_signatures', $this->params['add_signatures']);
 

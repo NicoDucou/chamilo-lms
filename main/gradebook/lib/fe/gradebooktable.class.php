@@ -410,7 +410,7 @@ class GradebookTable extends SortableTable
                             $cat = new Category();
                             $show_message = $cat->show_message_resource_delete($item->get_course_code());
                             if ($show_message === false) {
-                                if ($this->exportToPdf) {
+                                if ($this->exportToPdf == false) {
                                     $row[] = $this->build_edit_column($item);
                                 }
                             }
@@ -493,7 +493,10 @@ class GradebookTable extends SortableTable
 
                 if (intval($total_categories_weight) == $main_weight) {
                     $total = GradebookUtils::score_badges(
-                        array($total_categories_weight.' / '.$main_weight, '100')
+                        array(
+                            $total_categories_weight.' / '.$main_weight,
+                            '100',
+                        )
                     );
                 } else {
                     $total = Display::badge($total_categories_weight.' / '.$main_weight, 'warning');
