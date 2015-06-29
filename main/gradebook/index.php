@@ -101,6 +101,7 @@ $tbl_attendance   = Database :: get_course_table(TABLE_ATTENDANCE);
 $tbl_grade_links  = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_LINK);
 $filter_confirm_msg = true;
 $filter_warning_msg = true;
+$courseInfo = api_get_course_info();
 
 $cats = Category :: load(null, null, $course_code, null, null, $session_id, false);
 $first_time = null;
@@ -924,16 +925,19 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
 
                 if ($action == 'export_table') {
                     ob_clean();
+                    $sessionName = api_get_session_name(api_get_session_id());
+                    $sessionName = !empty($sessionName) ? " - $sessionName" : '';
                     $params = array(
                         //'filename' => get_lang('FlatView') . '_' . api_get_utc_datetime(),
-                        'pdf_title' => get_lang('Report'),
+                        'pdf_title' => $courseInfo['title'].$sessionName,
                         'course_code' => api_get_course_id(),
                         'session_info' => api_get_session_info(api_get_session_id()),
                         'add_signatures' => false,
-                        'student_info' => api_get_user_info()
+                        'student_info' => api_get_user_info(),
+                        'show_grade_generated' => true
                     );
                     $pdf = new PDF('A4', $params['orientation'], $params);
-                    $pdf->html_to_pdf_with_template($table.$graph);
+                    $pdf->html_to_pdf_with_template($table.$graph.get_lang('Feedback').'<textarea></textarea>');
                 } else {
                     echo $table;
                     echo $graph;
