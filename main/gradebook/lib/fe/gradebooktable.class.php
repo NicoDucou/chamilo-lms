@@ -88,7 +88,13 @@ class GradebookTable extends SortableTable
             );
         } else {
             if (empty($_GET['selectcat']) && !api_is_allowed_to_edit()) {
-                $this->set_header($column++, get_lang('Certificates'), false);
+                if ($this->exportToPdf == false) {
+                    $this->set_header(
+                        $column++,
+                        get_lang('Certificates'),
+                        false
+                    );
+                }
             }
         }
     }
