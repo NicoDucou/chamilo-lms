@@ -930,7 +930,8 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                         'course_code' => api_get_course_id(),
                         'session_info' => api_get_session_info(api_get_session_id()),
                         'add_signatures' => false,
-                        'student_info' => api_get_user_info()
+                        'student_info' => api_get_user_info(),
+                        'show_real_course_teachers' => true
                     );
                     $pdf = new PDF('A4', $params['orientation'], $params);
                     $pdf->html_to_pdf_with_template($table.$graph);
