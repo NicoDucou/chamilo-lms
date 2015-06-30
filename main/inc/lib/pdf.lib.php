@@ -74,11 +74,16 @@ class PDF
 
     /**
      * Export the given HTML to PDF, using a global template
-     * @param string $content the HTML content
      *
      * @uses export/table_pdf.tpl
+
+     * @param $content
+     * @param bool|false $saveToFile
+     * @param bool|false $returnHtml
+     *
+     * @return string
      */
-    public function html_to_pdf_with_template($content)
+    public function html_to_pdf_with_template($content, $saveToFile = false, $returnHtml = false)
     {
         global $_configuration;
         Display :: display_no_header();
@@ -144,7 +149,6 @@ class PDF
         Display::$global_template->assign('pdf_title', $this->params['pdf_title']);
         Display::$global_template->assign('pdf_student_info', $this->params['student_info']);
         Display::$global_template->assign('show_grade_generated_date', $this->params['show_grade_generated_date']);
-
         Display::$global_template->assign('add_signatures', $this->params['add_signatures']);
 
         // Getting template
@@ -154,7 +158,20 @@ class PDF
 
         $css_file = api_get_path(TO_SYS, WEB_CSS_PATH).'/print.css';
         $css = file_exists($css_file) ? @file_get_contents($css_file) : '';
-        self::content_to_pdf($html, $css, $this->params['filename'], $this->params['course_code']);
+
+        $html = self::content_to_pdf(
+            $html,
+            $css,
+            $this->params['filename'],
+            $this->params['course_code'],
+            $saveToFile,
+            null,
+            $returnHtml
+        );
+
+        if ($returnHtml) {
+            return $html;
+        }
     }
 
     /**
@@ -178,7 +195,8 @@ class PDF
         $pdf_name = '',
         $course_code = null,
         $print_title = false,
-        $complete_style = true
+        $complete_style = true,
+        $addStyle = true
     ) {
         if ($complete_style === false) {
             error_log(__FUNCTION__.' with no style');
@@ -243,6 +261,13 @@ class PDF
                     );
                 }
                 continue;
+            }
+
+            if ($addStyle) {
+                $css_file = api_get_path(TO_SYS, WEB_CSS_PATH).'/print.css';
+                $css = file_exists($css_file) ? @file_get_contents($css_file) : '';
+
+                $this->pdf->WriteHTML($css, 1);
             }
 
             if (!file_exists($file)) {
@@ -358,6 +383,7 @@ class PDF
      * @param   string  $css CSS content of a CSS file
      * @param   string  $pdf_name pdf name
      * @param   string  $course_code course code
+     * @param   bool  $saveInFile
      * (if you are using html that are located in the document tool you must provide this)
      * @return  string  Web path
      */
@@ -365,7 +391,10 @@ class PDF
         $document_html,
         $css = '',
         $pdf_name = '',
-        $course_code = null
+        $course_code = null,
+        $saveInFile = false,
+        $fileToSave = null,
+        $returnHtml = false
     ) {
         global $_configuration;
 
@@ -438,9 +467,14 @@ class PDF
         // $_GET[] too, as it is done with file name.
         // At the moment the title is retrieved from the html document itself.
 
+        if ($returnHtml) {
+            return "<style>$css</style>".$document_html;
+        }
+
         if (!empty($css)) {
             $this->pdf->WriteHTML($css, 1);
         }
+
         $this->pdf->WriteHTML($document_html, 2);
 
         if (empty($pdf_name)) {
@@ -449,8 +483,22 @@ class PDF
             $pdf_name = replace_dangerous_char($pdf_name);
             $output_file = $pdf_name.'.pdf';
         }
-        $this->pdf->Output($output_file, 'D'); // F to save the pdf in a file
-        exit;
+
+        if ($saveInFile) {
+            $fileToSave = !empty($fileToSave) ? $fileToSave : api_get_path(SYS_ARCHIVE_PATH).uniqid();
+
+            $this->pdf->Output(
+                $fileToSave,
+                'F'
+            ); // F to save the pdf in a file
+
+        } else {
+            $this->pdf->Output(
+                $output_file,
+                'D'
+            ); // F to save the pdf in a file
+            exit;
+        }
     }
 
     /**

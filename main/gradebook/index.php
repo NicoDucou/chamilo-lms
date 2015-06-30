@@ -763,11 +763,13 @@ if ($category != '0') {
     }
 }
 
-echo Display::url(
-    get_lang('ReportToPdf'),
-    api_get_self()."?action=export_table&".api_get_cidreq(),
-    ['class' => 'btn btn-default']
-);
+if (!api_is_allowed_to_edit()) {
+    echo Display::url(
+        get_lang('ReportToPdf'),
+        api_get_self()."?action=export_table&".api_get_cidreq(),
+        ['class' => 'btn btn-default']
+    );
+}
 
 echo '</div>';
 
