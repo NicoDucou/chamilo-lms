@@ -112,19 +112,16 @@ if (count($userList) == 0 ) {
     echo '<br /><br /><table class="data_table">';
     foreach ($userList as $index => $value) {
         echo '<tr>
-                <td width="100%" class="actions">'.
-            get_lang('Student').' : '.api_get_person_name($value['firstname'], $value['lastname']).' ('.$value['username'].')</td>';
-        echo '</tr>';
-        echo '<tr><td>
-            <table class="data_table">';
+                <td width="100%" >'.
+            get_lang('Student').' : '.api_get_person_name($value['firstname'], $value['lastname']).' ('.$value['username'].') </td>';
+        echo '<td>';
         $url = api_get_self().'?'.api_get_cidreq().'&action=download&user_id='.$value['user_id'].'&selectcat='.$cat_id;
         $link = Display::url(
             get_lang('ExportToPDF'),
             $url,
-            array('target' => '_blank', 'class' => 'btn')
+            array('target' => '_blank', 'class' => 'btn btn-default')
         );
         echo $link;
-        echo '</table>';
         echo '</td></tr>';
     }
     echo '</table>';

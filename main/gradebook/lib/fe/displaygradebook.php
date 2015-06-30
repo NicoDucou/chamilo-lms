@@ -582,7 +582,7 @@ class DisplayGradebook
                                 '',
                                 ICON_SIZE_MEDIUM
                             ),
-                            "gradebook_display_summary.php?$my_api_cidreq&cat_id=" . intval($_GET['selectcat'])
+                            "gradebook_display_summary.php?$my_api_cidreq&selectcat=" . intval($_GET['selectcat'])
                         )
                         . "</td>";
 

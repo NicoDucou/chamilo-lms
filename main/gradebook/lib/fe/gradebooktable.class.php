@@ -39,13 +39,14 @@ class GradebookTable extends SortableTable
     ) {
         $this->teacherView = is_null($showTeacherView) ? api_is_allowed_to_edit(null, true) : $showTeacherView;
         $this->userId = is_null($userId) ? api_get_user_id() : $userId;
+        $this->exportToPdf = $exportToPdf;
 
         parent::__construct('gradebooklist', null, null, ($this->teacherView?1:0), 20, 'ASC', 'gradebook_list');
         $this->evals_links = array_merge($evals, $links);
         $this->currentcat = $currentcat;
         $this->cats = $cats;
         $this->datagen = new GradebookDataGenerator($cats, $evals, $links);
-        $this->exportToPdf = $exportToPdf;
+
 
         if (isset($addparams)) {
             $this->set_additional_parameters($addparams);
