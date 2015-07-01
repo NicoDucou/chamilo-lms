@@ -1,0 +1,18 @@
+changes
+
+default.css
+
+-line 98: changed color to #595959
+-line 103: changed color to #595959
+-line 107: changed color to #000000
+-line 113: changed color to #067de2
+-line 176: added background-image
+-line 179: changed color to #FFFFFF
+-line 247: changed color to #000000
+-line 319: changed background-color to #067de2
+-line 350: changed color to #000000
+-line 373: changed background-color to #E4E4E4
+-line 380: changed color to #000000
+-line 588: added background-color to #E4E4E4
+-line 332:changed color to #000000
+

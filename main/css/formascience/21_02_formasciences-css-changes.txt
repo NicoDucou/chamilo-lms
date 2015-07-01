@@ -1,0 +1,18 @@
+changes
+
+default.css
+
+-line 234: changed color to #FFFFFF
+-line 209: added min-height: 136px
+-line 170: added background-repeat: no repeat
+-line 226: changed padding to 50px
+-line 180: added display: none
+-line 210: changed color to #FFFFFF
+-line 335: added background-image: url('images/tab-header4.png');
+-line 1094: changed color to #02622b4
+-line 1098: changed color to #FFFFFF
+-line 1101: changed hover color to #000000
+- footer: changed background-color to #adafae
+
+
+
