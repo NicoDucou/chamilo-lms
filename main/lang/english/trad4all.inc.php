@@ -1790,4 +1790,6 @@ $LegalAgreementAccepted = "Legal agreement accepted";
 $AutoWeight = "Auto weight";
 $AutoWeightExplanation = "Sets an average weight for all elements.";
 $EditWeight = "Edit weight";
+$GradeGenerated = "Grade generated the %s";
+$GradeFromX = "Grade %s";
 ?>

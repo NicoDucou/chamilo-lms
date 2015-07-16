@@ -920,6 +920,10 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                         6 => 'class=centered',
                         7 => 'class=centered'
                     ];
+
+                    if ($action == 'export_table') {
+                        unset($gradebooktable->td_attributes[7]);
+                    }
                 }
 
                 $table = $gradebooktable->return_table();
@@ -931,14 +935,19 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                     $sessionName = !empty($sessionName) ? " - $sessionName" : '';
                     $params = array(
                         //'filename' => get_lang('FlatView') . '_' . api_get_utc_datetime(),
-                        'pdf_title' => $courseInfo['title'].$sessionName,
+                        'pdf_title' => sprintf(get_lang('GradeFromX'), $courseInfo['department_name']),
                         'course_code' => api_get_course_id(),
-                        'session_info' => api_get_session_info(api_get_session_id()),
+                        //'session_info' => api_get_session_info(api_get_session_id()),
+                        'session_info' => '',
+                        'course_info' => '',
+                        'pdf_date' => '',
                         'add_signatures' => false,
                         'student_info' => api_get_user_info(),
                         'show_grade_generated_date' => true,
-                        'show_real_course_teachers' => true
+                        'show_real_course_teachers' => false,
+                        'show_teacher_as_myself' => false
                     );
+
                     $pdf = new PDF('A4', $params['orientation'], $params);
                     $pdf->html_to_pdf_with_template(
                         $table.

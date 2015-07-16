@@ -56,6 +56,8 @@ class PDF
         $this->params['show_real_course_teachers'] = isset($params['show_real_course_teachers']) ? $params['show_real_course_teachers'] : false;
         $this->params['student_info'] = isset($params['student_info']) ? $params['student_info'] : false;
         $this->params['show_grade_generated_date'] = isset($params['show_grade_generated_date']) ? $params['show_grade_generated_date'] : false;
+        $this->params['show_teacher_as_myself'] = isset($params['show_teacher_as_myself']) ? $params['show_teacher_as_myself'] : true;
+        $this->params['pdf_date'] = isset($params['pdf_date']) ? $params['pdf_date'] : api_format_date(api_get_local_time(), DATE_TIME_FORMAT_LONG);
 
         $this->pdf = new mPDF(
             'UTF-8',
@@ -119,7 +121,7 @@ class PDF
         Display::$global_template->assign('organization', $organization);
 
         //Showing only the current teacher/admin instead the all teacher list name see BT#4080
-
+        $teacher_list = '';
         if (isset($this->params['show_real_course_teachers']) &&
             $this->params['show_real_course_teachers']
         ) {
@@ -138,13 +140,16 @@ class PDF
             }
         } else {
             $user_info = api_get_user_info();
-            $teacher_list = $user_info['complete_name'];
+
+            if ($this->params['show_teacher_as_myself']) {
+                $teacher_list = $user_info['complete_name'];
+            }
         }
 
         Display::$global_template->assign('pdf_course', $this->params['course_code']);
         Display::$global_template->assign('pdf_course_info', $this->params['course_info']);
         Display::$global_template->assign('pdf_session_info', $this->params['session_info']);
-        Display::$global_template->assign('pdf_date', api_format_date(api_get_local_time(), DATE_TIME_FORMAT_LONG));
+        Display::$global_template->assign('pdf_date', $this->params['pdf_date']);
         Display::$global_template->assign('pdf_teachers', $teacher_list);
         Display::$global_template->assign('pdf_title', $this->params['pdf_title']);
         Display::$global_template->assign('pdf_student_info', $this->params['student_info']);

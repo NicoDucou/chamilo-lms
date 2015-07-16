@@ -17,11 +17,14 @@
         </tr>
     {% endif %}
 
+
+    {% if pdf_teachers %}
     <tr>
         <td>
          <strong>{{ "Teacher" | get_lang }}:</strong> {{ pdf_teachers }}
         </td>
     </tr>
+    {% endif %}
 
     {% if pdf_session_info %}
         <tr>
@@ -49,24 +52,26 @@
     <tr>
         <td>
          <strong>{{ "Course" | get_lang }}:</strong>  {{ pdf_course_info.title }} ({{ pdf_course_info.code }})
-
          {% if pdf_course_category %}
             <strong>{{ "Category" | get_lang }}:</strong> {{ pdf_course_category }}
          {% endif %}
-
         </td>
     </tr>
     {% endif %}
+
+    {% if pdf_date %}
     <tr>
         <td>
          <strong>{{ "Date" | get_lang }}:</strong> {{ pdf_date }}
         </td>
     </tr>
+    {% endif %}
+
 </table>
 
 {% if show_grade_generated_date == true %}
     <h5 align="right">
-    {{ "GradeGenerated" | get_lang }} {{ "now"|date("d/m/Y") }}
+    {{ "GradeGenerated" | get_lang | format("now"|date("d/m/Y"))}}
     </h5>
 {% endif %}
 
