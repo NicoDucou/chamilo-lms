@@ -6827,7 +6827,7 @@ function _puthtmlheaders() {
 		$html = str_replace('{PAGENO}',$this->pagenumPrefix.$this->docPageNum($n).$this->pagenumSuffix,$html);
 		$html = str_replace($this->aliasNbPgGp,$this->nbpgPrefix.$this->docPageNumTotal($n).$this->nbpgSuffix,$html );	// {nbpg}
 		$html = str_replace($this->aliasNbPg,$nb,$html );	// {nb}
-		$html = preg_replace('/\{DATE\s+(.*?)\}/e',"date('\\1')",$html );
+		$html = @preg_replace('/\{DATE\s+(.*?)\}/e',"date('\\1')",$html );
 
 		$this->HTMLheaderPageLinks = array();
 		$this->pageBackgrounds = array();
