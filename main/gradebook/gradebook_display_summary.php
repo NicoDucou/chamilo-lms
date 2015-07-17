@@ -58,7 +58,7 @@ switch ($action) {
                 null,
                 null,
                 false,
-                false,
+                true,
                 true
             );
         }
