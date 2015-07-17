@@ -950,8 +950,8 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
 
                     $address = api_get_setting('institution_address');
                     $phone = api_get_setting('administratorTelephone');
-
-                    $pdf->custom_header = ['html' => "<h5 align='right'>$address <br />$phone</h5>"];
+                    $address = str_replace('\n', '<br />', $address);
+                    $pdf->custom_header = ['html' => "<h5  align='right'>$address <br />$phone</h5>"];
 
                     $pdf->html_to_pdf_with_template(
                         $table.

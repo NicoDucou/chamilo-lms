@@ -48,6 +48,11 @@ switch ($action) {
         if (!empty($pdfList)) {
             // Print certificates (without the common header/footer/watermark
             //  stuff) and return as one multiple-pages PDF
+            $address = api_get_setting('institution_address');
+            $phone = api_get_setting('administratorTelephone');
+            $address = str_replace('\n', '<br />', $address);
+            $pdf->custom_header = ['html' => "<h5 align='right'>$address <br />$phone</h5>"];
+
             $pdf->html_to_pdf(
                 $pdfList,
                 null,
