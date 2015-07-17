@@ -1242,17 +1242,17 @@ class GradebookUtils
         $table = $gradebooktable->return_table();
         $graph = $gradebooktable->getGraph();
 
-        $sessionName = api_get_session_name(api_get_session_id());
-        $sessionName = !empty($sessionName) ? " - $sessionName" : '';
         $params = array(
-            //'filename' => get_lang('FlatView') . '_' . api_get_utc_datetime(),
-            'pdf_title' => $courseInfo['title'].$sessionName,
+            'pdf_title' => sprintf(get_lang('GradeFromX'), $courseInfo['department_name']),
+            'session_info' => '',
+            'course_info' => '',
+            'pdf_date' => '',
             'course_code' => api_get_course_id(),
-            'session_info' => api_get_session_info(api_get_session_id()),
             'add_signatures' => false,
             'student_info' => $userInfo,
             'show_grade_generated_date' => true,
-            'show_real_course_teachers' => true
+            'show_real_course_teachers' => false,
+            'show_teacher_as_myself' => false
         );
 
         $file = api_get_path(SYS_ARCHIVE_PATH).uniqid().'.html';
@@ -1264,6 +1264,11 @@ class GradebookUtils
             <textarea rows="5" cols="100" ></textarea>';
 
         $pdf = new PDF('A4', $params['orientation'], $params);
+
+        $address = api_get_setting('institution_address');
+        $phone = api_get_setting('administratorTelephone');
+
+        $pdf->custom_header = ['html' => "<h5 align='right'>$address <br />$phone</h5>"];
 
         $result = $pdf->html_to_pdf_with_template(
             $content,

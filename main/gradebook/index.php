@@ -934,10 +934,8 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                     $sessionName = api_get_session_name(api_get_session_id());
                     $sessionName = !empty($sessionName) ? " - $sessionName" : '';
                     $params = array(
-                        //'filename' => get_lang('FlatView') . '_' . api_get_utc_datetime(),
                         'pdf_title' => sprintf(get_lang('GradeFromX'), $courseInfo['department_name']),
                         'course_code' => api_get_course_id(),
-                        //'session_info' => api_get_session_info(api_get_session_id()),
                         'session_info' => '',
                         'course_info' => '',
                         'pdf_date' => '',
@@ -949,6 +947,12 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                     );
 
                     $pdf = new PDF('A4', $params['orientation'], $params);
+
+                    $address = api_get_setting('institution_address');
+                    $phone = api_get_setting('administratorTelephone');
+
+                    $pdf->custom_header = ['html' => "<h5 align='right'>$address <br />$phone</h5>"];
+
                     $pdf->html_to_pdf_with_template(
                         $table.
                         $graph.
