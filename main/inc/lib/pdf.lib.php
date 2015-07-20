@@ -237,6 +237,7 @@ class PDF
 
         // Formatting the pdf
         self::format_pdf($course_data, $complete_style);
+
         $counter = 1;
         foreach ($html_file_array as $file) {
 
@@ -827,8 +828,8 @@ class PDF
             if (empty($this->custom_header)) {
                 self::set_header($course_data);
             } else {
-                $this->pdf->SetHTMLHeader($this->custom_header,'E');
-                $this->pdf->SetHTMLHeader($this->custom_header,'O');
+                $this->pdf->SetHTMLHeader($this->custom_header, 'E');
+                $this->pdf->SetHTMLHeader($this->custom_header, 'O');
             }
 
             if (empty($this->custom_footer)) {

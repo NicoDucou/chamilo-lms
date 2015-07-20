@@ -75,8 +75,6 @@
     </h5>
 {% endif %}
 
-<br />
-
 {{ pdf_content }}
 
 {% if add_signatures == true %}
