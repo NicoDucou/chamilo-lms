@@ -391,7 +391,8 @@ class UserManager
                 $tplContent->assign('mailAdministratorTelephone', api_get_setting('administratorTelephone'));
                 $tplContent->assign('mailEmailAdministrator', api_get_setting('emailAdministrator'));
                 // variables for others templates
-                $tplContent->assign('mailEmailAdministrator', api_get_setting('emailAdministrator'));
+                $tplContent->assign('mailInstitutionAddress', api_get_setting('institution_address'));
+                $tplContent->assign('mailLinkSessionCatalog', api_get_setting($url.'main/auth/courses.php'));
 
                 $layoutContent = $tplContent->get_template('mail/content_registration_platform.tpl');
                 $emailBody = $tplContent->fetch($layoutContent);
