@@ -197,6 +197,7 @@ class GradebookTable extends SortableTable
             null,
             $statusToFilter
         );
+        $this->datagen->userId = $this->userId;
 
         $data_array = $this->datagen->get_data(
             $sorting,
@@ -205,6 +206,7 @@ class GradebookTable extends SortableTable
             false,
             $studentList
         );
+
 
         // generate the data to display
         $sortable_data = array();
@@ -304,6 +306,7 @@ class GradebookTable extends SortableTable
                     $row[] = $this->build_edit_column($item);
                 }
             } else {
+
                 $score = $item->calc_score($this->userId);
 
                 if (!empty($score[1])) {
@@ -382,7 +385,9 @@ class GradebookTable extends SortableTable
 
                     $sub_cat_info = new GradebookDataGenerator($allcat, $alleval, $alllink);
                     $sub_cat_info->userId = $user_id;
+
                     $data_array = $sub_cat_info->get_data($sorting, $from, $this->per_page);
+
                     $total_weight = 0;
 
                     // Links.
@@ -432,7 +437,11 @@ class GradebookTable extends SortableTable
                         }
 
                         // Admins get an edit column.
-                        if (api_is_allowed_to_edit(null, true) && !isset($_GET['user_id'])) {
+                        if (api_is_allowed_to_edit(null, true) &&
+                            isset($_GET['user_id']) == false &&
+                            (isset($_GET['action']) && $_GET['action'] != 'export_all' || !isset($_GET['action'])
+                            )
+                        ) {
                             $cat = new Category();
                             $show_message = $cat->show_message_resource_delete($item->get_course_code());
                             if ($show_message === false) {
@@ -443,6 +452,7 @@ class GradebookTable extends SortableTable
                         } else {
                             // Students get the results and certificates columns
                             $eval_n_links = array_merge($alleval, $alllink);
+
 
                             if (count($eval_n_links)> 0) {
 
@@ -542,6 +552,7 @@ class GradebookTable extends SortableTable
             }
         } else {
             // Total for student.
+
             if (count($main_cat) > 1) {
                 $main_weight = intval($main_cat[0]->get_weight());
 

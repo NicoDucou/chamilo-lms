@@ -1133,7 +1133,6 @@ class GradebookUtils
         AbstractLink::add_link_log($linkId, $name);
         $table_link = Database::get_main_table(TABLE_MAIN_GRADEBOOK_LINK);
 
-        $table_evaluation = Database::get_main_table(TABLE_MAIN_GRADEBOOK_EVALUATION);
         $tbl_forum_thread = Database:: get_course_table(TABLE_FORUM_THREAD);
         $tbl_work = Database:: get_course_table(TABLE_STUDENT_PUBLICATION);
         $tbl_attendance = Database:: get_course_table(TABLE_ATTENDANCE);
@@ -1224,6 +1223,8 @@ class GradebookUtils
             false,
             $userId
         );
+
+        $gradebooktable->userId = $userId;
 
         if (api_is_allowed_to_edit()) {
             $gradebooktable->td_attributes = [
