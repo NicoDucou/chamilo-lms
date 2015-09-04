@@ -862,7 +862,7 @@ class Category implements GradebookItem
         $ressum = 0;
         $weightsum = 0;
         $bestResult = 0;
-        $students = [];
+        $students = array();
 
         if (!empty($cats)) {
             /** @var Category $cat */
