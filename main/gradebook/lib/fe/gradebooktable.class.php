@@ -224,9 +224,9 @@ class GradebookTable extends SortableTable
         $total_categories_weight = 0;
         $scoredisplay = ScoreDisplay :: instance();
 
-        $totalResult = [0, 0];
-        $totalBest = [0, 0];
-        $totalAverage = [0, 0];
+        $totalResult = array(0, 0);
+        $totalBest = array(0, 0);
+        $totalAverage = array(0, 0);
 
         // Categories.
         foreach ($data_array as $data) {
@@ -326,20 +326,20 @@ class GradebookTable extends SortableTable
                     $average = isset($data['average']) ? $data['average'] : null;
                     $ranking = isset($data['ranking']) ? $data['ranking'] : null;
 
-                    $totalResult = [
+                    $totalResult = array(
                         $totalResult[0] + $data['result_score_weight'][0],
                         $totalResult[1] + $data['result_score_weight'][1]
-                    ];
+                    );
 
-                    $totalBest = [
+                    $totalBest = array(
                         $totalBest[0] + $data['best_score'][0],
                         $totalBest[1] + $data['best_score'][1],
-                    ];
+                    );
 
-                    $totalAverage = [
+                    $totalAverage = array(
                         $totalAverage[0] + $data['average_score'][0],
                         $totalAverage[1] + $data['average_score'][1],
-                    ];
+                    );
 
                     // Student result
                     $row[] = $value_data;
@@ -720,6 +720,7 @@ class GradebookTable extends SortableTable
     public function getGraph()
     {
         $data = $this->getDataForGraph();
+
 
         if (!empty($data) &&
             isset($data['categories']) &&

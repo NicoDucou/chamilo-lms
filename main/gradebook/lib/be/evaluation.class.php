@@ -518,7 +518,7 @@ class Evaluation implements GradebookItem
 		$weight = 0;
 		$sumResult = 0;
 
-		$students = [];
+		$students = array();
 		/** @var Result $res */
 		foreach ($results as $res) {
 			$score = $res->get_score();

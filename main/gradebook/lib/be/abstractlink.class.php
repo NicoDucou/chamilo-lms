@@ -599,7 +599,7 @@ abstract class AbstractLink implements GradebookItem
 
             // If no ranking was detected.
             if ($ranking == 0) {
-                return [];
+                return array();
             }
 
             return array($ranking, $count);

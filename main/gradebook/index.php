@@ -756,7 +756,7 @@ if ($category != '0') {
                 echo Display::url(
                     get_lang('CertificateToPdf'),
                     $certificate['pdf_url'],
-                    ['class' => 'btn btn-default']
+                    array('class' => 'btn btn-default')
                 );
             }
         }
@@ -767,7 +767,7 @@ if (!api_is_allowed_to_edit()) {
     echo Display::url(
         get_lang('ReportToPdf'),
         api_get_self()."?action=export_table&".api_get_cidreq(),
-        ['class' => 'btn btn-default']
+        array('class' => 'btn btn-default')
     );
 }
 
@@ -909,17 +909,17 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                 );
 
                 if (api_is_allowed_to_edit()) {
-                    $gradebooktable->td_attributes = [
+                    $gradebooktable->td_attributes = array(
                         4 => 'class=centered'
-                    ];
+                    );
                 } else {
-                    $gradebooktable->td_attributes = [
+                    $gradebooktable->td_attributes = array(
                         3 => 'class=centered',
                         4 => 'class=centered',
                         5 => 'class=centered',
                         6 => 'class=centered',
                         7 => 'class=centered'
-                    ];
+                    );
 
                     if ($action == 'export_table') {
                         unset($gradebooktable->td_attributes[7]);
@@ -951,7 +951,7 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                     $address = api_get_setting('institution_address');
                     $phone = api_get_setting('administratorTelephone');
                     $address = str_replace('\n', '<br />', $address);
-                    $pdf->custom_header = ['html' => "<h5  align='right'>$address <br />$phone</h5>"];
+                    $pdf->custom_header = array('html' => "<h5  align='right'>$address <br />$phone</h5>");
 
                     $pdf->html_to_pdf_with_template(
                         $table.
