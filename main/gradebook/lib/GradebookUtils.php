@@ -1227,17 +1227,17 @@ class GradebookUtils
         $gradebooktable->userId = $userId;
 
         if (api_is_allowed_to_edit()) {
-            $gradebooktable->td_attributes = [
+            $gradebooktable->td_attributes = array(
                 4 => 'class=centered'
-            ];
+            );
         } else {
-            $gradebooktable->td_attributes = [
+            $gradebooktable->td_attributes = array(
                 3 => 'class=centered',
                 4 => 'class=centered',
                 5 => 'class=centered',
                 6 => 'class=centered',
                 7 => 'class=centered'
-            ];
+            );
         }
 
         $table = $gradebooktable->return_table();
@@ -1270,7 +1270,7 @@ class GradebookUtils
         $phone = api_get_setting('administratorTelephone');
         $address = str_replace('\n', '<br />', $address);
 
-        $pdf->custom_header = ['html' => "<h5 align='right'>$address <br />$phone</h5>"];
+        $pdf->custom_header = array('html' => "<h5 align='right'>$address <br />$phone</h5>");
 
         $result = $pdf->html_to_pdf_with_template(
             $content,

@@ -21,7 +21,7 @@ if (api_get_setting('allow_public_certificates') != 'true') {
 
 $userId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-$userList = $userInfo = $courseList = $sessionList = [];
+$userList = $userInfo = $courseList = $sessionList = array();
 
 $searchForm = new FormValidator('search_form', 'post', null, null);
 $searchForm->addText('firstname', get_lang('Firstname'));

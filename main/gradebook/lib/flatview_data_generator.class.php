@@ -178,12 +178,12 @@ class FlatViewDataGenerator
                     $evaluations = $sub_cat->get_evaluations();
 
                     /** @var ExerciseLink $link */
-                    $linkNameList = [];
+                    $linkNameList = array();
                     foreach ($links as $link) {
                         $linkNameList[] = $link->get_name();
                     }
 
-                    $evalNameList = [];
+                    $evalNameList = array();
                     foreach ($evaluations as $evaluation) {
                         $evalNameList[] = $evaluation->get_name();
                     }
@@ -194,7 +194,7 @@ class FlatViewDataGenerator
                         $finalList[] = get_lang('Average');
                     }
 
-                    $list = [];
+                    $list = array();
                     $list['items'] = $finalList;
                     $list['header'] = '<center>'.$mainHeader.'</center>';
                     $headers[]= $list;
@@ -446,7 +446,7 @@ class FlatViewDataGenerator
                         $evaluations = $sub_cat->get_evaluations();
 
                         /** @var ExerciseLink $link */
-                        $linkScoreList = [];
+                        $linkScoreList = array();
                         foreach ($links as $link) {
                             $linkScore = $link->calc_score($user_id);
                             $linkScoreList[] = $scoredisplay->display_score(
@@ -455,7 +455,7 @@ class FlatViewDataGenerator
                             );
                         }
 
-                        $evalScoreList = [];
+                        $evalScoreList = array();
                         foreach ($evaluations as $evaluation) {
                             $evalScore = $evaluation->calc_score($user_id);
                             $evalScoreList[] = $scoredisplay->display_score(

@@ -400,7 +400,7 @@ class FlatViewTable extends SortableTable
         $this->set_header(1, $header_names[1], true, $thAttributes);
 
         $column = 2;
-        $firstHeader = [];
+        $firstHeader = array();
         while ($column < count($header_names)) {
             $headerData = $header_names[$column];
 
