@@ -378,7 +378,7 @@ if ($is_allowed_to_edit) {
                         $name,
                         $url,
                         array(
-                            'class' => 'home btn btn-small btn-info',
+                            'class' => 'home',
                             'target' => '_self',
                             'onclick' => 'javascript: window.parent.API.save_asset();'
                         )
