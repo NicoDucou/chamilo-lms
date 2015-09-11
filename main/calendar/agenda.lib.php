@@ -139,8 +139,10 @@ class Agenda
         $start = api_get_utc_datetime($start);
         $end = api_get_utc_datetime($end);
         $allDay = isset($allDay) && $allDay == 'true' ? 1 : 0;
-
         $id = null;
+        $content = nl2br($content);
+        $eventComment = nl2br($eventComment);
+
         switch ($this->type) {
             case 'personal':
                 $attributes = array(
@@ -566,6 +568,9 @@ class Agenda
         $end = api_get_utc_datetime($end);
         $allDay = isset($allDay) && $allDay == 'true' ? 1 : 0;
 
+        $content = nl2br($content);
+        $comment = nl2br($comment);
+
         switch ($this->type) {
             case 'personal':
                 $eventInfo = $this->get_event($id);
@@ -915,8 +920,49 @@ class Agenda
                 $my_course_list = array();
 
                 if (!api_is_anonymous()) {
-                    $session_list = SessionManager::get_sessions_by_user(api_get_user_id());
-                    $my_course_list = CourseManager::get_courses_list_by_user_id(api_get_user_id(), true);
+                    $session_list = SessionManager::get_sessions_by_user(
+                        api_get_user_id()
+                    );
+                    $my_course_list = CourseManager::get_courses_list_by_user_id(
+                        api_get_user_id(),
+                        true
+                    );
+                }
+
+                if (api_is_drh()) {
+                    if (api_drh_can_access_all_session_content()) {
+                        $session_list = array();
+                        $sessionList = SessionManager::get_sessions_followed_by_drh(
+                            api_get_user_id(),
+                            null,
+                            null,
+                            null,
+                            true,
+                            false
+                        );
+
+                        if (!empty($sessionList)) {
+                            foreach ($sessionList as $sessionId) {
+                                $courses = UserManager::get_courses_list_by_session(
+                                    api_get_user_id(),
+                                    $sessionId
+                                );
+                                $sessionInfo = array(
+                                    'session_id' => $sessionId,
+                                    'courses' => $courses
+                                );
+                                $session_list[] = $sessionInfo;
+                            }
+                        }
+
+                        //var_dump($session_list);
+
+                        /*$courseList = SessionManager::getAllCoursesFollowedByUser(
+                            api_get_user_id(),
+                            null
+                        );
+                        var_dump($courseList);*/
+                    }
                 }
 
                 if (!empty($session_list)) {
@@ -1456,7 +1502,7 @@ class Agenda
                 $event['has_children'] = $this->hasChildren($row['id'], $course_id) ? 1 : 0;
 
                 if ($allowComments) {
-                    $event['comment'] = $row['comment'];
+                    $event['comment'] = isset($row['comment']) ? $row['comment'] : '';
                 } else {
                     $event['comment'] = null;
                 }
@@ -1742,6 +1788,10 @@ class Agenda
             $url = api_get_self().'?'.api_get_cidreq().'&action='.$action.'&id='.$id.'&type='.$this->type;
         } else {
             $url = api_get_self().'?action='.$action.'&id='.$id.'&type='.$this->type;
+        }
+
+        if (isset($params['content'])) {
+            $params['content'] = nl2br($params['content']);
         }
 
         $form = new FormValidator(

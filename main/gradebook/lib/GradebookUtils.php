@@ -1133,7 +1133,6 @@ class GradebookUtils
         AbstractLink::add_link_log($linkId, $name);
         $table_link = Database::get_main_table(TABLE_MAIN_GRADEBOOK_LINK);
 
-        $table_evaluation = Database::get_main_table(TABLE_MAIN_GRADEBOOK_EVALUATION);
         $tbl_forum_thread = Database:: get_course_table(TABLE_FORUM_THREAD);
         $tbl_work = Database:: get_course_table(TABLE_STUDENT_PUBLICATION);
         $tbl_attendance = Database:: get_course_table(TABLE_ATTENDANCE);
@@ -1189,4 +1188,102 @@ class GradebookUtils
                WHERE id = '.$id;
         Database::query($sql);
     }
+
+    /**
+     * @param int $userId
+     * @param int $categoryId
+     * @param bool $saveToFile
+     * @param bool $saveToHtmlFile
+     *
+     * @return string
+     */
+    public static function generateTable($userId, $categoryId, $saveToFile = false, $saveToHtmlFile = false)
+    {
+        $courseInfo = api_get_course_info();
+        $userInfo = api_get_user_info($userId);
+
+        $cats = Category::load($categoryId, null, null, null, null, null, false);
+        $cat = $cats[0];
+
+        $allcat = $cats[0]->get_subcategories(
+            $userId,
+            api_get_course_id(),
+            api_get_session_id()
+        );
+        $alleval = $cats[0]->get_evaluations($userId);
+        $alllink = $cats[0]->get_links($userId);
+
+        $gradebooktable = new GradebookTable(
+            $cat,
+            $allcat,
+            $alleval,
+            $alllink,
+            null,
+            true,
+            false,
+            $userId
+        );
+
+        $gradebooktable->userId = $userId;
+
+        if (api_is_allowed_to_edit()) {
+            $gradebooktable->td_attributes = array(
+                4 => 'class=centered'
+            );
+        } else {
+            $gradebooktable->td_attributes = array(
+                3 => 'class=centered',
+                4 => 'class=centered',
+                5 => 'class=centered',
+                6 => 'class=centered',
+                7 => 'class=centered'
+            );
+        }
+
+        $table = $gradebooktable->return_table();
+        $graph = $gradebooktable->getGraph();
+
+        $params = array(
+            'pdf_title' => sprintf(get_lang('GradeFromX'), $courseInfo['department_name']),
+            'session_info' => '',
+            'course_info' => '',
+            'pdf_date' => '',
+            'course_code' => api_get_course_id(),
+            'add_signatures' => false,
+            'student_info' => $userInfo,
+            'show_grade_generated_date' => true,
+            'show_real_course_teachers' => false,
+            'show_teacher_as_myself' => false
+        );
+
+        $file = api_get_path(SYS_ARCHIVE_PATH).uniqid().'.html';
+
+        $content =
+            $table.
+            $graph.
+            '<br />'.get_lang('Feedback').'<br />
+            <textarea rows="5" cols="100" ></textarea>';
+
+        $pdf = new PDF('A4', $params['orientation'], $params);
+
+        $address = api_get_setting('institution_address');
+        $phone = api_get_setting('administratorTelephone');
+        $address = str_replace('\n', '<br />', $address);
+
+        $pdf->custom_header = array('html' => "<h5 align='right'>$address <br />$phone</h5>");
+
+        $result = $pdf->html_to_pdf_with_template(
+            $content,
+            $saveToFile,
+            $saveToHtmlFile
+        );
+
+        if ($saveToHtmlFile) {
+            file_put_contents($file, $result);
+            return $file;
+        }
+
+        return $file;
+    }
+
 }

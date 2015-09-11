@@ -744,6 +744,7 @@ class ImportCsv
                 $startTime  = $row['time_start'];
                 $endTime = $row['time_end'];
                 $title = $row['title'];
+                $comment = $row['comment'];
 
                 $startDateYear = substr($date, 0, 4);
                 $startDateMonth = substr($date, 4, 2);
@@ -752,12 +753,17 @@ class ImportCsv
                 $startDate = $startDateYear.'-'.$startDateMonth.'-'.$startDateDay.' '.$startTime.":00";
                 $endDate = $startDateYear.'-'.$startDateMonth.'-'.$startDateDay.' '.$endTime.":00";
 
-                if (!api_is_valid_date($startDate) OR !api_is_valid_date($endDate)) {
+                if (!api_is_valid_date($startDate) || !api_is_valid_date($endDate)) {
                     $this->logger->addInfo(
                         "Verify your dates:  '$startDate' : '$endDate' "
                     );
                     $errorFound = true;
                 }
+
+                // If old events do nothing.
+                /*if (api_strtotime($startDate) < time()) {
+                    continue;
+                }*/
 
                 if ($errorFound == false) {
                     $eventsToCreate[] = array(
@@ -767,6 +773,7 @@ class ImportCsv
                         'sender_id' => $teacherId,
                         'course_id' => $courseInfo['real_id'],
                         'session_id' => $sessionId,
+                        'comment' => $comment,
                         $this->extraFieldIdNameList['calendar_event'] => $row['external_calendar_itemID']
                     );
                 }
@@ -784,7 +791,7 @@ class ImportCsv
                 "Ready to insert events"
             );
 
-            $content = null;
+
             $agenda = new Agenda();
 
             $extraFieldValue = new ExtraFieldValue('calendar_event');
@@ -803,6 +810,8 @@ class ImportCsv
             }
 
             foreach ($eventsToCreate as $event) {
+                $update = false;
+                $item = null;
                 if (!isset($event[$extraFieldName])) {
                     $this->logger->addInfo(
                         "No external_calendar_itemID found. Skipping ..."
@@ -810,16 +819,24 @@ class ImportCsv
                     continue;
                 } else {
                     $externalEventId = $event[$extraFieldName];
+                    if (empty($externalEventId)) {
+                        $this->logger->addInfo(
+                            "external_calendar_itemID was set but empty. Skipping ..."
+                        );
+                        continue;
+                    }
+
                     $item = $extraFieldValue->get_item_id_from_field_variable_and_field_value(
                         $extraFieldName,
                         $externalEventId
                     );
 
-                    if (!empty($item) || empty($externalEventId)) {
+                    if (!empty($item)) {
                         $this->logger->addInfo(
-                            "Event #$externalEventId was already added . Skipping ..."
+                            "Event #$externalEventId was already added. Updating ..."
                         );
-                        continue;
+                        $update = true;
+                        //continue;
                     }
                 }
 
@@ -849,35 +866,62 @@ class ImportCsv
                     continue;
                 }
 
-                $eventId = $agenda->add_event(
-                    $event['start'],
-                    $event['end'],
-                    false,
-                    $event['title'],
-                    $content,
-                    array('everyone'), // send to
-                    false, //$addAsAnnouncement = false
-                    null, //  $parentEventId
-                    array(), //$attachmentArray = array(),
-                    null, //$attachmentComment = null,
-                    $eventComment
-                );
+                $content = '';
 
-                if (!empty($eventId)) {
-                    $extraFieldValue->save(
-                        array(
-                            'field_value' => $externalEventId,
-                            'field_id' => $extraFieldInfo['id'],
-                            'calendar_event_id' => $eventId
-                        )
+                if ($update) {
+                    //the event already exists, just update
+                    $eventId = $agenda->edit_event(
+                        $item,
+                        $event['start'],
+                        $event['end'],
+                        false,
+                        $event['title'],
+                        $content,
+                        array('everyone'), // send to
+                        array(), //$attachmentArray = array(),
+                        null, //$attachmentComment = null,
+                        $eventComment
                     );
-                    $this->logger->addInfo(
-                        "Event added: #$eventId"
-                    );
+                    if ($eventId !== false) {
+                        $this->logger->addInfo(
+                            "Event updated: #$eventId"
+                        );
+                    } else {
+                        $this->logger->addInfo(
+                            "Error while updating event."
+                        );
+                    }
                 } else {
-                    $this->logger->addInfo(
-                        "Error while creating event."
+                    // New event. Create it.
+                    $eventId = $agenda->add_event(
+                        $event['start'],
+                        $event['end'],
+                        false,
+                        $event['title'],
+                        $content,
+                        array('everyone'), // send to
+                        false, //$addAsAnnouncement = false
+                        null, //  $parentEventId
+                        array(), //$attachmentArray = array(),
+                        null, //$attachmentComment = null,
+                        $eventComment
                     );
+                    if (!empty($eventId)) {
+                        $extraFieldValue->save(
+                            array(
+                                'field_value' => $externalEventId,
+                                'field_id' => $extraFieldInfo['id'],
+                                'calendar_event_id' => $eventId
+                            )
+                        );
+                        $this->logger->addInfo(
+                            "Event added: #$eventId"
+                        );
+                    } else {
+                        $this->logger->addInfo(
+                            "Error while creating event."
+                        );
+                    }
                 }
             }
         }
@@ -1409,6 +1453,29 @@ class ImportCsv
 
         $table = Database::get_main_table(TABLE_MAIN_USER_FIELD_VALUES);
         $sql = "DELETE FROM $table";
+        Database::query($sql);
+        echo $sql.PHP_EOL;
+
+        // Remove all calendar items
+        $truncateTables = array(
+            Database::get_course_table(TABLE_AGENDA),
+            Database::get_course_table(TABLE_AGENDA_ATTACHMENT),
+            Database::get_course_table(TABLE_AGENDA_REPEAT),
+            Database::get_course_table(TABLE_AGENDA_REPEAT_NOT),
+            Database::get_main_table(TABLE_PERSONAL_AGENDA),
+            Database::get_main_table(TABLE_PERSONAL_AGENDA_REPEAT_NOT),
+            Database::get_main_table(TABLE_PERSONAL_AGENDA_REPEAT),
+            Database::get_main_table(TABLE_MAIN_CALENDAR_EVENT_VALUES),
+        );
+
+        foreach ($truncateTables as $table) {
+            $sql = "TRUNCATE $table";
+            Database::query($sql);
+            echo $sql.PHP_EOL;
+        }
+
+        $table = Database::get_course_table(TABLE_ITEM_PROPERTY);
+        $sql = "DELETE FROM $table WHERE tool = 'calendar_event'";
         Database::query($sql);
         echo $sql.PHP_EOL;
     }

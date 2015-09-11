@@ -101,6 +101,7 @@ $tbl_attendance   = Database :: get_course_table(TABLE_ATTENDANCE);
 $tbl_grade_links  = Database :: get_main_table(TABLE_MAIN_GRADEBOOK_LINK);
 $filter_confirm_msg = true;
 $filter_warning_msg = true;
+$courseInfo = api_get_course_info();
 
 $cats = Category :: load(null, null, $course_code, null, null, $session_id, false);
 $first_time = null;
@@ -755,18 +756,20 @@ if ($category != '0') {
                 echo Display::url(
                     get_lang('CertificateToPdf'),
                     $certificate['pdf_url'],
-                    ['class' => 'btn btn-default']
+                    array('class' => 'btn btn-default')
                 );
             }
         }
     }
 }
 
-echo Display::url(
-    get_lang('ReportToPdf'),
-    api_get_self()."?action=export_table&".api_get_cidreq(),
-    ['class' => 'btn btn-default']
-);
+if (!api_is_allowed_to_edit()) {
+    echo Display::url(
+        get_lang('ReportToPdf'),
+        api_get_self()."?action=export_table&".api_get_cidreq(),
+        array('class' => 'btn btn-default')
+    );
+}
 
 echo '</div>';
 
@@ -906,17 +909,21 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
                 );
 
                 if (api_is_allowed_to_edit()) {
-                    $gradebooktable->td_attributes = [
+                    $gradebooktable->td_attributes = array(
                         4 => 'class=centered'
-                    ];
+                    );
                 } else {
-                    $gradebooktable->td_attributes = [
+                    $gradebooktable->td_attributes = array(
                         3 => 'class=centered',
                         4 => 'class=centered',
                         5 => 'class=centered',
                         6 => 'class=centered',
                         7 => 'class=centered'
-                    ];
+                    );
+
+                    if ($action == 'export_table') {
+                        unset($gradebooktable->td_attributes[7]);
+                    }
                 }
 
                 $table = $gradebooktable->return_table();
@@ -924,17 +931,34 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
 
                 if ($action == 'export_table') {
                     ob_clean();
+                    $sessionName = api_get_session_name(api_get_session_id());
+                    $sessionName = !empty($sessionName) ? " - $sessionName" : '';
                     $params = array(
-                        //'filename' => get_lang('FlatView') . '_' . api_get_utc_datetime(),
-                        'pdf_title' => get_lang('Report'),
+                        'pdf_title' => sprintf(get_lang('GradeFromX'), $courseInfo['department_name']),
                         'course_code' => api_get_course_id(),
-                        'session_info' => api_get_session_info(api_get_session_id()),
+                        'session_info' => '',
+                        'course_info' => '',
+                        'pdf_date' => '',
                         'add_signatures' => false,
                         'student_info' => api_get_user_info(),
-                        'show_real_course_teachers' => true
+                        'show_grade_generated_date' => true,
+                        'show_real_course_teachers' => false,
+                        'show_teacher_as_myself' => false
                     );
+
                     $pdf = new PDF('A4', $params['orientation'], $params);
-                    $pdf->html_to_pdf_with_template($table.$graph);
+
+                    $address = api_get_setting('institution_address');
+                    $phone = api_get_setting('administratorTelephone');
+                    $address = str_replace('\n', '<br />', $address);
+                    $pdf->custom_header = array('html' => "<h5  align='right'>$address <br />$phone</h5>");
+
+                    $pdf->html_to_pdf_with_template(
+                        $table.
+                        $graph.
+                        '<br />'.get_lang('Feedback').'<br />
+                        <textarea rows="5" cols="100" ></textarea>'
+                    );
                 } else {
                     echo $table;
                     echo $graph;
