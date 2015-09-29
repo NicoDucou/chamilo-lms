@@ -534,9 +534,11 @@ class Evaluation implements GradebookItem
 			$students[$res->get_user_id()] = $score;
 		}
 
+        //echo '<pre>'.print_r($students);
+
 		if ($rescount == 0) {
 			return null;
-		} else if (isset($stud_id)) {
+		} else if (isset($stud_id) && empty($type)) {
 			return array($score, $this->get_max());
 		} else {
 			switch ($type) {
@@ -547,7 +549,15 @@ class Evaluation implements GradebookItem
 					return array($sumResult/$rescount, $weight);
 					break;
 				case 'ranking':
-					return AbstractLink::getCurrentUserRanking($students);
+                    $results = Result::load(null, null, $this->id);
+                    $students = array();
+                    /** @var Result $res */
+                    foreach ($results as $res) {
+                        $score = $res->get_score();
+                        $students[$res->get_user_id()] = $score;
+                    }
+
+					return AbstractLink::getCurrentUserRanking($stud_id, $students);
 					break;
 				default:
 					return array($sum, $rescount);

@@ -36,10 +36,11 @@ switch ($action) {
         $pdf = new PDF('A4', 'P', $params);
 
         $pdfList = array();
+        $cats = Category::load($cat_id, null, null, null, null, null, false);
         foreach ($userList as $index => $value) {
             $pdfList[] = GradebookUtils::generateTable(
                 $value['user_id'],
-                $cat_id,
+                $cats,
                 false,
                 true
             );
@@ -66,7 +67,8 @@ switch ($action) {
         break;
     case 'download':
         $userId = isset($_GET['user_id']) && $_GET['user_id'] ? $_GET['user_id'] : null;
-        GradebookUtils::generateTable($userId, $cat_id);
+        $cats = Category::load($cat_id, null, null, null, null, null, false);
+        GradebookUtils::generateTable($userId, $cats);
         break;
 }
 

@@ -827,6 +827,7 @@ class GradebookUtils
         $params = array(),
         $mainCourseCategory = null
     ) {
+
         // Getting data
         $printable_data = self::get_printable_data($cat[0], $users, $alleval, $alllinks, $params, $mainCourseCategory);
 
@@ -836,17 +837,17 @@ class GradebookUtils
         $displayscore = ScoreDisplay :: instance();
         $customdisplays = $displayscore->get_custom_score_display_settings();
 
+
         $total = array();
         if (is_array($customdisplays) && count(($customdisplays))) {
             foreach ($customdisplays as $custom) {
                 $total[$custom['display']] = 0;
             }
-            $user_results = $flatviewtable->datagen->get_data_to_graph2();
+            $user_results = $flatviewtable->datagen->get_data_to_graph2(false);
             foreach ($user_results as $user_result) {
                 $total[$user_result[count($user_result) - 1][1]]++;
             }
         }
-
         $parent_id = $cat[0]->get_parent_id();
         if (isset($cat[0]) && isset($parent_id)) {
             if ($parent_id == 0) {
@@ -886,7 +887,6 @@ class GradebookUtils
         $table->setHeaderContents($row, $column, get_lang('NumberAbbreviation'));
         $column++;
         foreach ($printable_data[0] as $printable_data_cell) {
-            //var_dump($printable_data_cell);
             if (!is_array($printable_data_cell)) {
                 $printable_data_cell = strip_tags($printable_data_cell);
             }
@@ -1191,18 +1191,17 @@ class GradebookUtils
 
     /**
      * @param int $userId
-     * @param int $categoryId
+     * @param array $cats
      * @param bool $saveToFile
      * @param bool $saveToHtmlFile
      *
      * @return string
      */
-    public static function generateTable($userId, $categoryId, $saveToFile = false, $saveToHtmlFile = false)
+    public static function generateTable($userId, $cats, $saveToFile = false, $saveToHtmlFile = false)
     {
         $courseInfo = api_get_course_info();
         $userInfo = api_get_user_info($userId);
 
-        $cats = Category::load($categoryId, null, null, null, null, null, false);
         $cat = $cats[0];
 
         $allcat = $cats[0]->get_subcategories(
