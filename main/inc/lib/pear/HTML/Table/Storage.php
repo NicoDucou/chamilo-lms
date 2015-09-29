@@ -299,7 +299,8 @@ class HTML_Table_Storage extends HTML_Common {
             return $err;
         }
         $this->_structure[$row][$col]['attr'] = $attributes;
-        $this->_updateSpanGrid($row, $col);
+        // Fix use of rowspan/colspan
+        //$this->_updateSpanGrid($row, $col);
     }
 
     /**
@@ -324,7 +325,7 @@ class HTML_Table_Storage extends HTML_Common {
             return $err;
         }
         $this->_updateAttrArray($this->_structure[$row][$col]['attr'], $attributes);
-        $this->_updateSpanGrid($row, $col);
+        //$this->_updateSpanGrid($row, $col);
     }
 
     /**
@@ -748,7 +749,7 @@ class HTML_Table_Storage extends HTML_Common {
                     if (isset($this->_structure[$i][$j]['contents'])) {
                         $contents = $this->_structure[$i][$j]['contents'];
                     }
-                    $strHtml .= $tabs . $tab . $tab . $extraTab . "<$type" . $this->_getAttrString($attr) . '>';
+
                     if (is_object($contents)) {
                         // changes indent and line end settings on nested tables
                         if (is_subclass_of($contents, 'html_common')) {
@@ -766,11 +767,22 @@ class HTML_Table_Storage extends HTML_Common {
                     if (is_array($contents)) {
                         $contents = implode(', ', $contents);
                     }
-                    if (isset($this->_autoFill) && $contents === '') {
-                        $contents = $this->_autoFill;
+
+                    $typeContent = $tabs . $tab . $tab . $extraTab . "<$type" . $this->_getAttrString($attr) . '>';
+
+                    if (empty($contents)) {
+                        if (isset($this->_autoFill) && $this->_autoFill) {
+                            $contents = $this->_autoFill;
+                        }
+                    } else {
+                        $typeContent .= $contents;
                     }
-                    $strHtml .= $contents;
-                    $strHtml .= "</$type>" . $lnEnd;
+                    $typeContent .= "</$type>" . $lnEnd;
+
+                    if (!empty($contents)) {
+                        $strHtml .= $typeContent;
+                    }
+
                 }
                 $strHtml .= $tabs . $tab . $extraTab . '</tr>' . $lnEnd;
             }
@@ -833,9 +845,10 @@ class HTML_Table_Storage extends HTML_Common {
         if (($row + $rowspan - 1) >= $this->_rows) {
             if ($this->_autoGrow) {
                 $this->_rows = $row + $rowspan;
+
             } else {
-                return PEAR::raiseError('Invalid table row reference[' .
-                    $row . '] in HTML_Table::' . $method);
+                /*return PEAR::raiseError('Invalid table row reference[' .
+                    $row . '] in HTML_Table::' . $method);*/
             }
         }
 
@@ -843,8 +856,8 @@ class HTML_Table_Storage extends HTML_Common {
             if ($this->_autoGrow) {
                 $this->_cols = $col + $colspan;
             } else {
-                return PEAR::raiseError('Invalid table column reference[' .
-                    $col . '] in HTML_Table::' . $method);
+                /*return PEAR::raiseError('Invalid table column reference[' .
+                    $col . '] in HTML_Table::' . $method);*/
             }
         }
     }

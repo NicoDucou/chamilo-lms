@@ -264,10 +264,9 @@ class AttendanceController
         $attendance = new Attendance();
         $data = array();
         $data['attendance_id'] = $attendance_id;
-        $data['users_in_course'] = $attendance->get_users_rel_course($attendance_id);
-
+        $groupId = isset($_REQUEST['group_id']) ? $_REQUEST['group_id'] : null;
+        $data['users_in_course'] = $attendance->get_users_rel_course($attendance_id, 0, $groupId);
         $filter_type = 'today';
-
         if (!empty($_REQUEST['filter'])) {
             $filter_type = $_REQUEST['filter'];
         }
@@ -278,9 +277,8 @@ class AttendanceController
         );
 
         if ($edit == true) {
-
             if (api_is_allowed_to_edit(null, true) || $isDrhOfCourse) {
-                $data['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id);
+                $data['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, 0, $groupId);
             }
         } else {
             if (!empty($student_id)) {
@@ -293,12 +291,12 @@ class AttendanceController
                 api_is_coach(api_get_session_id(), api_get_course_id()) ||
                 $isDrhOfCourse
             ) {
-                $data['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id);
+                $data['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, 0, $groupId);
             } else {
-                $data['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, $user_id);
+                $data['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, $user_id, $groupId);
             }
 
-            $data['faults']  = $attendance->get_faults_of_user($user_id, $attendance_id);
+            $data['faults']  = $attendance->get_faults_of_user($user_id, $attendance_id, $groupId);
             $data['user_id'] = $user_id;
         }
 
@@ -312,24 +310,33 @@ class AttendanceController
                     if (isset($_POST['check_presence'][$cal_id])) {
                         $users_present = $_POST['check_presence'][$cal_id];
                     }
-                    $attendance->attendance_sheet_add($cal_id,$users_present,$attendance_id);
+                    $attendance->attendance_sheet_add(
+                        $cal_id,
+                        $users_present,
+                        $attendance_id
+                    );
                 }
             }
 
-            $data['users_in_course'] = $attendance->get_users_rel_course($attendance_id);
+            $data['users_in_course'] = $attendance->get_users_rel_course($attendance_id, $groupId);
             $my_calendar_id = null;
             if (is_numeric($filter_type)) {
                 $my_calendar_id = $filter_type;
                 $filter_type = 'calendar_id';
             }
-            $data['attendant_calendar'] = $attendance->get_attendance_calendar($attendance_id, $filter_type, $my_calendar_id);
-            $data['attendant_calendar_all'] = $attendance->get_attendance_calendar($attendance_id);
-            $data['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id);
+            $data['attendant_calendar'] = $attendance->get_attendance_calendar(
+                $attendance_id,
+                $filter_type,
+                $my_calendar_id,
+                $groupId
+            );
+            $data['attendant_calendar_all'] = $attendance->get_attendance_calendar($attendance_id, 'all', null, $groupId);
+            $data['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, 0, $groupId);
             $data['next_attendance_calendar_id'] = $attendance->get_next_attendance_calendar_id($attendance_id);
             $data['next_attendance_calendar_datetime'] = $attendance->get_next_attendance_calendar_datetime($attendance_id);
         } else {
-            $data['attendant_calendar_all'] = $attendance->get_attendance_calendar($attendance_id);
-            $data['attendant_calendar'] = $attendance->get_attendance_calendar($attendance_id, $filter_type);
+            $data['attendant_calendar_all'] = $attendance->get_attendance_calendar($attendance_id, 'all', null, $groupId);
+            $data['attendant_calendar'] = $attendance->get_attendance_calendar($attendance_id, $filter_type, null, $groupId);
         }
 
         $data['edit_table'] = intval($edit);
@@ -354,6 +361,7 @@ class AttendanceController
         $data = array();
         $data['attendance_id'] = $attendance_id;
         $attendance_id = intval($attendance_id);
+        $groupList = isset($_POST['groups']) ? array($_POST['groups']) : array();
 
         if ($action == 'calendar_add') {
             if (strtoupper($_SERVER['REQUEST_METHOD']) == "POST") {
@@ -373,7 +381,8 @@ class AttendanceController
                                 $attendance_id,
                                 $start_datetime,
                                 $end_datetime,
-                                $repeat_type
+                                $repeat_type,
+                                $groupList
                             );
                             $action = 'calendar_list';
                         } else {
@@ -390,7 +399,7 @@ class AttendanceController
                         $datetimezone = api_get_utc_datetime($datetime);
                         if (!empty($datetime)) {
                             $attendance->set_date_time($datetimezone);
-                            $affected_rows = $attendance->attendance_calendar_add($attendance_id);
+                            $affected_rows = $attendance->attendance_calendar_add($attendance_id, $groupList);
                             $action = 'calendar_list';
                         } else {
                             $data['error_date'] = true;
@@ -424,7 +433,14 @@ class AttendanceController
         }
 
         $data['action'] = $action;
-        $data['attendance_calendar'] = $attendance->get_attendance_calendar($attendance_id);
+        $data['attendance_calendar'] = $attendance->get_attendance_calendar(
+            $attendance_id,
+            'all',
+		    null,
+		    null,
+		    true
+        );
+
         $data['is_locked_attendance'] = $attendance->is_locked_attendance($attendance_id);
         // render to the view
         $this->view->set_data($data);
@@ -442,11 +458,11 @@ class AttendanceController
     {
         $attendance = new Attendance();
         $courseInfo = CourseManager::get_course_information($course_id);
-
         $attendance->set_course_id($courseInfo['code']);
+        $groupId = isset($_REQUEST['group_id']) ? $_REQUEST['group_id'] : null;
         $data_array = array();
         $data_array['attendance_id'] = $attendance_id;
-        $data_array['users_in_course'] = $attendance->get_users_rel_course($attendance_id);
+        $data_array['users_in_course'] = $attendance->get_users_rel_course($attendance_id, $groupId);
 
         $filter_type = 'today';
 
@@ -460,18 +476,23 @@ class AttendanceController
             $filter_type = 'calendar_id';
         }
 
-        $data_array['attendant_calendar'] = $attendance->get_attendance_calendar($attendance_id, $filter_type, $my_calendar_id);
+        $data_array['attendant_calendar'] = $attendance->get_attendance_calendar(
+            $attendance_id,
+            $filter_type,
+            $my_calendar_id,
+            $groupId
+        );
 
         if (api_is_allowed_to_edit(null, true) || api_is_drh()) {
-            $data_array['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id);
+            $data_array['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, 0, $groupId);
         } else {
             if (!empty($student_id)) {
                 $user_id = intval($student_id);
             } else {
                 $user_id = api_get_user_id();
             }
-            $data_array['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, $user_id);
-            $data_array['faults'] = $attendance->get_faults_of_user($user_id, $attendance_id);
+            $data_array['users_presence'] = $attendance->get_users_attendance_sheet($attendance_id, $user_id, $groupId);
+            $data_array['faults'] = $attendance->get_faults_of_user($user_id, $attendance_id, $groupId);
             $data_array['user_id'] = $user_id;
         }
 
@@ -479,12 +500,13 @@ class AttendanceController
 
         // Set headers pdf.
         $courseCategory = CourseManager::get_course_category($courseInfo['category_code']);
-        $teacherInfo    = CourseManager::get_teacher_list_from_course_code($courseInfo['code']);
+        $teacherInfo = CourseManager::get_teacher_list_from_course_code($courseInfo['code']);
         $teacherName = null;
-        foreach ($teacherInfo as $dados) {
-            if ($teacherName != null)
-                $teacherName = $teacherName . " / ";
-            $teacherName.= $dados['firstname']." ".$dados['lastname'];
+        foreach ($teacherInfo as $teacherData) {
+            if ($teacherName != null) {
+                $teacherName = $teacherName." / ";
+            }
+            $teacherName .= api_get_person_name($teacherData['firstname'], $teacherData['lastname']);
         }
 
         // Get data table
@@ -493,7 +515,9 @@ class AttendanceController
 
         $head_table = array('#', get_lang('Name'));
         foreach ($data_array['attendant_calendar'] as $class_day) {
-            $head_table[] = api_format_date($class_day['date_time'], DATE_FORMAT_NUMBER_NO_YEAR);
+            $head_table[] =
+                api_format_date($class_day['date_time'], DATE_FORMAT_NUMBER_NO_YEAR).' '.
+                api_format_date($class_day['date_time'], TIME_NO_SEC_FORMAT);
         }
         $data_table[] = $head_table;
         $dataClass = array();
@@ -513,7 +537,7 @@ class AttendanceController
                         if ($data_users_presence[$user['user_id']][$class_day['id']]['presence'] == 1)
                             $result[$class_day['id']] = get_lang('UserAttendedSymbol');
                         else
-                            $result[$class_day['id']] = get_lang('UserNotAttendedSymbol');
+                            $result[$class_day['id']] = '<span style="color:red">'.get_lang('UserNotAttendedSymbol').'</span>';
                     } else {
                         $result[$class_day['id']] = " ";
                     }
@@ -535,10 +559,10 @@ class AttendanceController
             $changed = 1;
 
             for ($i= 0; $i <= $rows; $i++) {
-                $row = $data_table[$i];
+                $row = isset($data_table[$i]) ? $data_table[$i] : null;
                 $key = 1;
                 $max_dates_per_page = 10;
-                $item = $data_table[$i];
+                $item = isset($data_table[$i]) ? $data_table[$i] : null;
                 $count_j = 0;
 
                 if (!empty($item)) {
@@ -557,14 +581,16 @@ class AttendanceController
             }
 
             $content = null;
-
             if (!empty($tables)) {
                 foreach ($tables as $sub_table) {
                     $content .= Export::convert_array_to_html($sub_table).'<br /><br />';
                 }
             }
         } else {
-            $content .= Export::convert_array_to_html($data_table, array('header_attributes' =>   array('align' => 'center')));
+            $content = Export::convert_array_to_html(
+                $data_table,
+                array('header_attributes' => array('align' => 'center'))
+            );
         }
 
         $params = array(
@@ -605,7 +631,7 @@ class AttendanceController
                 ) . '&action=calendar_logins'
             );
             $form->addDateRangePicker('range', get_lang('Range'));
-            $form->add_button('submit', get_lang('submit'));
+            $form->addButton('submit', get_lang('submit'));
 
             if ($form->validate()) {
                 $values = $form->getSubmitValues();

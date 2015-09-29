@@ -97,6 +97,7 @@ ini_set('auto_detect_line_endings', '1');
 
 // Include the libraries that are necessary everywhere
 require_once dirname(__FILE__).'/autoload.inc.php';
+require_once __DIR__.'/../../vendor/autoload.php';
 
 require_once $lib_path.'database.lib.php';
 require_once $lib_path.'text.lib.php';

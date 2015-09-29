@@ -8,10 +8,10 @@
  */
 
 $language_file= 'gradebook';
-$cidReset= true;
+$cidReset = true;
 require_once '../inc/global.inc.php';
 $this_section = SECTION_COURSES;
-$current_course_tool  = TOOL_GRADEBOOK;
+$current_course_tool = TOOL_GRADEBOOK;
 
 api_protect_course_script();
 
@@ -55,6 +55,17 @@ $table_evaluated[LINK_ATTENDANCE]         = array(TABLE_ATTENDANCE, 'attendance_
 $table_evaluated[LINK_SURVEY]             = array(TABLE_SURVEY, 'code', 'survey_id', get_lang('Survey'));
 
 $submitted = isset($_POST['submitted'])?$_POST['submitted']:'';
+if ($submitted==1) {
+    Display :: display_confirmation_message(get_lang('GradebookWeightUpdated')) . '<br /><br />';
+    if (isset($_POST['evaluation'])) {
+        require_once 'lib/be/evaluation.class.php';
+        $eval_log = new Evaluation();
+    }
+    if (isset($_POST['link'])) {
+        require_once 'lib/be/abstractlink.class.php';
+        //$eval_link_log = new AbstractLink();
+    }
+}
 
 $output='';
 $my_cat = Category::load($my_selectcat);
@@ -76,8 +87,9 @@ $links = Database::store_result($result, 'ASSOC');
 
 foreach ($links as &$row) {
     $item_weight = $row['weight'];
-
-    $sql = 'SELECT * FROM '.get_table_type_course($row['type']).'
+    //$item_weight = $masked_total*$item_weight/$original_total;
+    //
+    $sql = 'SELECT * FROM '.GradebookUtils::get_table_type_course($row['type']).'
             WHERE c_id = '.$course_id.' AND '.$table_evaluated[$row['type']][2].' = '.$row['ref_id'];
     $result = Database::query($sql);
     $resource_name = Database ::fetch_array($result);
@@ -90,7 +102,7 @@ foreach ($links as &$row) {
 
     $row['resource_name'] = $resource_name;
 
-    //update only if value changed
+    // Update only if value changed
     if (isset($_POST['link'][$row['id']])) {
         $new_weight = trim($_POST['link'][$row['id']]);
         updateLinkWeight($row['id'], $resource_name, $new_weight);
@@ -113,6 +125,7 @@ foreach ($evaluations as $evaluationRow) {
     //$item_weight = $row['weight'];
     //$item_weight = $masked_total*$item_weight/$original_total;
     $item_weight = $evaluationRow['weight'];
+    //$item_weight = $masked_total*$item_weight/$original_total;
 
     //update only if value changed
     if (isset($_POST['evaluation'][$evaluationRow['id']])) {
@@ -124,13 +137,13 @@ foreach ($evaluations as $evaluationRow) {
     $output.= '<td><input type="hidden" name="eval_'.$evaluationRow['id'].'" value="'.$evaluationRow['name'].'" /><input type="text" size="10" name="evaluation['.$evaluationRow['id'].']" value="'.$item_weight.'"/></td></tr>';
 }
 
-//by iflorespaz
 $my_api_cidreq = api_get_cidreq();
 if ($my_api_cidreq=='') {
     $my_api_cidreq='cidReq='.$my_category['course_code'];
 }
 
 $currentUrl = api_get_self().'?'.api_get_cidreq().'&selectcat='.$my_selectcat;
+
 $form = new FormValidator('auto_weight', 'post', $currentUrl);
 $form->addHeader(get_lang('AutoWeight'));
 $form->addLabel(null, get_lang('AutoWeightExplanation'));
@@ -219,13 +232,16 @@ if ($submitted==1) {
         </a>
     </div>
 <?php
-$warning_message = sprintf(get_lang('TotalWeightMustBeX'), $masked_total);
-Display::display_normal_message($warning_message, false);
+
+
 $form->display();
 
 $formNormal = new FormValidator('normal_weight', 'post', $currentUrl);
 $formNormal->addHeader(get_lang('EditWeight'));
 $formNormal->display();
+
+$warning_message = sprintf(get_lang('TotalWeightMustBeX'), $original_total);
+Display::display_warning_message($warning_message, false);
 
 ?>
     <form method="post" action="gradebook_edit_all.php?<?php echo $my_api_cidreq ?>&selectcat=<?php echo $my_selectcat?>">

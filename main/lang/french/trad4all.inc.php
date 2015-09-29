@@ -1792,4 +1792,7 @@ $DataTableSearch = "Recherche";
 $HideColumn = "Cacher la colonne";
 $DisplayColumn = "Montrer la colonne";
 $LegalAgreementAccepted = "Conditions légales acceptées";
+$GradeGenerated = "Relevé de notes au %s";
+$GradeFromX = "Relevé de notes %s";
+
 ?>

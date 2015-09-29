@@ -1,5 +1,6 @@
 <?php
 /* For licensing terms, see /license.txt */
+
 /**
  * Gradebook link to student publication item
  * @author Bert Steppé
@@ -10,6 +11,9 @@ class ForumThreadLink extends AbstractLink
 	private $forum_thread_table = null;
 	private $itemprop_table = null;
 
+	/**
+	 * Constructor
+	 */
 	public function __construct()
 	{
 		parent::__construct();
@@ -48,12 +52,14 @@ class ForumThreadLink extends AbstractLink
 
 		$result = Database::query($sql);
 
-		$cats=array();
+		$cats = array();
 		while ($data=Database::fetch_array($result)) {
-			if ( isset($data['thread_title_qualify']) and $data['thread_title_qualify']!=""){
-				$cats[] = array ($data['thread_id'], $data['thread_title_qualify']);
+			if (isset($data['thread_title_qualify']) and
+				$data['thread_title_qualify'] != ""
+			) {
+				$cats[] = array($data['thread_id'], $data['thread_title_qualify']);
 			} else {
-				$cats[] = array ($data['thread_id'], $data['thread_title']);
+				$cats[] = array($data['thread_id'], $data['thread_title']);
 			}
 		}
 		return $cats;
@@ -68,6 +74,7 @@ class ForumThreadLink extends AbstractLink
 		if (empty($this->course_code)) {
 			die('Error in get_not_created_links() : course code not set');
 		}
+
 		$tbl_grade_links 	= Database :: get_course_table(TABLE_FORUM_THREAD);
 		$tbl_item_property	= Database :: get_course_table(TABLE_ITEM_PROPERTY);
 		$session_id = api_get_session_id();
@@ -95,11 +102,10 @@ class ForumThreadLink extends AbstractLink
 				$cats[] = array ($data['thread_id'], $data['thread_title']);
 			}
 		}
-		$my_cats=isset($cats)?$cats:null;
+		$my_cats = isset($cats) ? $cats : null;
 
 		return $my_cats;
 	}
-
 
 	/**
 	 * Has anyone done this exercise yet ?
@@ -118,7 +124,7 @@ class ForumThreadLink extends AbstractLink
 	 * @param int $stud_id
 	 * @return array|null
 	 */
-	public function calc_score($stud_id = null)
+	public function calc_score($stud_id = null, $type = null)
 	{
 		$thread_qualify = Database :: get_course_table(TABLE_FORUM_THREAD_QUALIFY);
 
@@ -127,7 +133,8 @@ class ForumThreadLink extends AbstractLink
 		$query = Database::query($sql);
 		$assignment = Database::fetch_array($query);
 
-		$sql = "SELECT * FROM $thread_qualify WHERE c_id = ".$this->course_id." AND thread_id = ".$this->get_ref_id();
+		$sql = "SELECT * FROM $thread_qualify
+				WHERE c_id = ".$this->course_id." AND thread_id = ".$this->get_ref_id();
 		if (isset($stud_id)) {
 			$sql .= ' AND user_id = '."'".intval($stud_id)."'";
 		}
@@ -149,17 +156,25 @@ class ForumThreadLink extends AbstractLink
 			}
 		} else {
 			// all students -> get average
-			$students=array();  // user list, needed to make sure we only
+			$students = array();  // user list, needed to make sure we only
 			// take first attempts into account
 			$rescount = 0;
 			$sum = 0;
+			$bestResult = 0;
+			$weight = 0;
+			$sumResult = 0;
 
-			while ($data=Database::fetch_array($scores)) {
-				if (!(array_key_exists($data['user_id'],$students))) {
+			while ($data = Database::fetch_array($scores)) {
+				if (!(array_key_exists($data['user_id'], $students))) {
 					if ($assignment['thread_qualify_max'] != 0) {
 						$students[$data['user_id']] = $data['qualify'];
 						$rescount++;
-						$sum += ($data['qualify'] / $assignment['thread_qualify_max']);
+						$sum += $data['qualify'] / $assignment['thread_qualify_max'];
+						$sumResult += $data['qualify'];
+						if ($data['qualify'] > $bestResult) {
+							$bestResult = $data['qualify'];
+						}
+						$weight = $assignment['thread_qualify_max'];
 					}
 				}
 			}
@@ -167,7 +182,20 @@ class ForumThreadLink extends AbstractLink
 			if ($rescount == 0) {
 				return null;
 			} else {
-				return array ($sum , $rescount);
+				switch ($type) {
+					case 'best':
+						return array($bestResult, $weight);
+						break;
+					case 'average':
+						return array($sumResult/$rescount, $weight);
+						break;
+					case 'ranking':
+						return AbstractLink::getCurrentUserRanking($students);
+						break;
+					default:
+						return array($sum, $rescount);
+						break;
+				}
 			}
 		}
 	}

@@ -6827,7 +6827,7 @@ function _puthtmlheaders() {
 		$html = str_replace('{PAGENO}',$this->pagenumPrefix.$this->docPageNum($n).$this->pagenumSuffix,$html);
 		$html = str_replace($this->aliasNbPgGp,$this->nbpgPrefix.$this->docPageNumTotal($n).$this->nbpgSuffix,$html );	// {nbpg}
 		$html = str_replace($this->aliasNbPg,$nb,$html );	// {nb}
-		$html = preg_replace('/\{DATE\s+(.*?)\}/e',"date('\\1')",$html );
+		$html = @preg_replace('/\{DATE\s+(.*?)\}/e',"date('\\1')",$html );
 
 		$this->HTMLheaderPageLinks = array();
 		$this->pageBackgrounds = array();
@@ -10664,7 +10664,7 @@ function Header($content='') {
 		$hd = str_replace('{PAGENO}',$pgno,$h[$side][$pos]['content']);
 		// mPDF 3.0
 		$hd = str_replace($this->aliasNbPgGp,$this->nbpgPrefix.$this->aliasNbPgGp.$this->nbpgSuffix,$hd);	// {nbpg}
-		$hd = preg_replace('/\{DATE\s+(.*?)\}/e',"date('\\1')",$hd);
+		$hd = @preg_replace('/\{DATE\s+(.*?)\}/e',"date('\\1')",$hd);
 		if (isset($h[$side][$pos]['font-family']) && $h[$side][$pos]['font-family']) { $hff = $h[$side][$pos]['font-family']; }
 		// mPDF 3.0 original_ in case pagebreak in middle of table
 		else { $hff = $this->original_default_font; }
@@ -11596,7 +11596,7 @@ function Footer() {
 		$hd = str_replace('{PAGENO}',$pgno,$h[$side][$pos]['content']);
 		// mPDF 3.0
 		$hd = str_replace($this->aliasNbPgGp,$this->nbpgPrefix.$this->aliasNbPgGp.$this->nbpgSuffix,$hd);	// {nbpg}
-		$hd = preg_replace('/\{DATE\s+(.*?)\}/e',"date('\\1')",$hd);
+		$hd = @preg_replace('/\{DATE\s+(.*?)\}/e',"date('\\1')",$hd);
 		if (isset($h[$side][$pos]['font-family']) && $h[$side][$pos]['font-family']) { $hff = $h[$side][$pos]['font-family']; }
 		// mPDF 3.0 original_ in case pagebreak in middle of table
 		else { $hff = $this->original_default_font; }

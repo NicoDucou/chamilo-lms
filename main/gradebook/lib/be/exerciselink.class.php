@@ -183,7 +183,7 @@ class ExerciseLink extends AbstractLink
      * 			array (sum of scores, number of scores) otherwise
      * 			or null if no scores available
      */
-    public function calc_score($stud_id = null)
+    public function calc_score($stud_id = null, $type = null)
     {
         $tblStats = Database::get_main_table(TABLE_STATISTIC_TRACK_E_EXERCICES);
         $tblHp = Database::get_main_table(TABLE_STATISTIC_TRACK_E_HOTPOTATOES);
@@ -192,34 +192,15 @@ class ExerciseLink extends AbstractLink
         /* the following query should be similar (in conditions) to the one used
         in exercice/exercice.php, look for note-query-exe-results marker*/
         $session_id = api_get_session_id();
-
-        $exercise = new Exercise();
-        $exercise->read($this->get_ref_id());
-
         if (!$this->is_hp) {
-            if ($exercise->exercise_was_added_in_lp == false) {
-                $sql = "SELECT * FROM $tblStats
-                        WHERE
-                            exe_exo_id      = ".intval($this->get_ref_id())." AND
-                            orig_lp_id      = 0 AND
-                            orig_lp_item_id = 0 AND
-                            status      <> 'incomplete' AND
-                            session_id = $session_id";
-            } else {
-                $lpId = null;
-                if (!empty($exercise->lpList)) {
-                    // Taking only the first LP
-                    $lpId = current($exercise->lpList);
-                    $lpId = $lpId['lp_id'];
-                }
+            $sql = "SELECT * FROM $tblStats
+                    WHERE
+                        exe_exo_id      = ".intval($this->get_ref_id())." AND
+                        orig_lp_id      = 0 AND
+                        orig_lp_item_id = 0 AND
+                        status      <> 'incomplete' AND
+                        session_id = $session_id";
 
-                $sql = "SELECT * FROM $tblStats
-                        WHERE
-                            exe_exo_id      = ".intval($this->get_ref_id())." AND
-                            orig_lp_id      = $lpId AND
-                            status      <> 'incomplete' AND
-                            session_id = $session_id";
-            }
             if (isset($stud_id)) {
                 $course_code_exe = $this->get_course_code();
                 $sql .= " AND exe_cours_id = '$course_code_exe' AND exe_user_id = '$stud_id' ";
@@ -254,19 +235,42 @@ class ExerciseLink extends AbstractLink
             // take first attempts into account
             $student_count = 0;
             $sum = 0;
+            $bestResult = 0;
+            $weight = 0;
+            $sumResult = 0;
+
             while ($data = Database::fetch_array($scores, 'ASSOC')) {
-                if (!in_array($data['exe_user_id'], $students)) {
+                if (!isset($students[$data['exe_user_id']])) {
                     if ($data['exe_weighting'] != 0) {
-                        $students[] = $data['exe_user_id'];
+                        $students[$data['exe_user_id']] = $data['exe_result'];
                         $student_count++;
+                        if ($data['exe_result'] > $bestResult) {
+                            $bestResult = $data['exe_result'];
+                        }
                         $sum += $data['exe_result'] / $data['exe_weighting'];
+                        $sumResult += $data['exe_result'];
+                        $weight = $data['exe_weighting'];
                     }
                 }
             }
+
             if ($student_count == 0) {
                 return null;
             } else {
-                return array($sum, $student_count);
+                switch ($type) {
+                    case 'best':
+                        return array($bestResult, $weight);
+                        break;
+                    case 'average':
+                        return array($sumResult/$student_count, $weight);
+                        break;
+                    case 'ranking':
+                        return AbstractLink::getCurrentUserRanking($students);
+                        break;
+                    default:
+                        return array($sum, $student_count);
+                        break;
+                }
             }
         }
     }

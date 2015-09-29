@@ -568,9 +568,9 @@ class SortableTable extends HTML_Table
      */
     public function get_table_html()
     {
-        $pager    = $this->get_pager();
-        $offset   = $pager->getOffsetByPageId();
-        $from     = $offset[0] - 1;
+        $pager = $this->get_pager();
+        $offset = $pager->getOffsetByPageId();
+        $from = $offset[0] - 1;
 
         $table_data = $this->get_table_data($from);
 
@@ -580,6 +580,7 @@ class SortableTable extends HTML_Table
             $count = 1;
             foreach ($table_data as & $row) {
                 $row = $this->filter_data($row);
+
                 $newRow = array();
                 if (!empty($this->columnsToHide)) {
                     $counter = 0;
@@ -740,10 +741,10 @@ class SortableTable extends HTML_Table
             if (!is_null($td_attributes)) {
                 $this->td_attributes[$column] = $td_attributes;
             }
+
             if (!is_null($th_attributes)) {
                 $this->th_attributes[$column] = $th_attributes;
             }
-
             $counter++;
         }
     }

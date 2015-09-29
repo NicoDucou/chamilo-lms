@@ -5498,4 +5498,36 @@ class CourseManager
         $row = Database::fetch_array($result);
         return $row['count'];
     }
+
+    /**
+     * Returns the course name from a given code
+     * @param string $code
+     */
+    public static function getCourseNameFromCode($code)
+    {
+        $tbl_main_categories = Database:: get_main_table(TABLE_MAIN_COURSE);
+        $sql = 'SELECT title
+                FROM ' . $tbl_main_categories . '
+                WHERE code = "' . Database::escape_string($code) . '"';
+        $result = Database::query($sql);
+        if ($col = Database::fetch_array($result)) {
+            return $col['title'];
+        }
+    }
+
+    /**
+     * Returns course code from a given gradebook category's id
+     * @param int  Category ID
+     * @return string  Course code
+     */
+    public static function get_course_by_category($category_id)
+    {
+        $category_id = intval($category_id);
+        $info = Database::fetch_array(
+            Database::query('SELECT course_code FROM ' . Database::get_main_table(TABLE_MAIN_GRADEBOOK_CATEGORY) . '
+            WHERE id=' . $category_id), 'ASSOC'
+        );
+        return $info ? $info['course_code'] : false;
+    }
 }
+

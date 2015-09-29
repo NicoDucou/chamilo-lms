@@ -117,13 +117,20 @@ $new_course_list = array();
 
 if (!empty($course_list)) {
     foreach ($course_list as $course_data) {
-        if (in_array($course_data['code'], $user_course_list)) {
+        if (api_is_platform_admin()) {
             $course_data['title'] = Display::url(
                 $course_data['title'],
                 api_get_course_url($course_data['code'], $session_id)
             );
         } else {
-            continue;
+            if (in_array($course_data['code'], $user_course_list)) {
+                $course_data['title'] = Display::url(
+                    $course_data['title'],
+                    api_get_course_url($course_data['code'], $session_id)
+                );
+            } else {
+                continue;
+            }
         }
 
         $list = new LearnpathList(
@@ -403,7 +410,7 @@ $column_model   = array(
 );
 
 $extra_params = array();
-
+$extra_params['sortname'] = 'date';
 /*
 $extra_params['sortname'] = 'date';
 $extra_params['sortorder'] = 'asc';
@@ -493,7 +500,6 @@ $extra_params_exercise['autowidth'] = 'true';
 //$extra_params_exercise['grouping'] = 'true';
 //$extra_params_exercise['groupingView'] = array('groupField'=>array('course'),'groupColumnShow'=>'false','groupText' => array('<b>'.get_lang('Course').' {0}</b>'));
 //$extra_params_exercise['groupingView'] = array('groupField'=>array('course'),'groupColumnShow'=>'false','groupText' => array('<b>'.get_lang('Course').' {0} - {1} Item(s)</b>'));
-
 ?>
 <br />
 <script>
@@ -525,6 +531,7 @@ $(function() {
 		window.location.href=ui.tab;
     });
 <?php
+
      // Displays js code to use a jqgrid
      echo Display::grid_js('courses',       '',             $columns_courses, $column_model_courses, $extra_params_courses, $new_course_list);
      echo Display::grid_js('list_default',  $url,           $columns,         $column_model,$extra_params,array(), '');

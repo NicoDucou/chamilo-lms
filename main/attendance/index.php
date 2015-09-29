@@ -10,7 +10,6 @@
  */
 // name of the language file that needs to be included
 $language_file = array(
-    'course_description',
     'course_info',
     'userInfo',
     'admin',
@@ -21,6 +20,8 @@ $language_file = array(
 
 // including files
 require_once '../inc/global.inc.php';
+
+require_once 'attendance_controller.php';
 require_once api_get_path(SYS_CODE_PATH).'gradebook/lib/gradebook_functions.inc.php';
 require_once api_get_path(LIBRARY_PATH).'attendance.lib.php';
 require_once api_get_path(LIBRARY_PATH).'app_view.php';

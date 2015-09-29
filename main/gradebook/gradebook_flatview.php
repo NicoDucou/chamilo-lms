@@ -12,17 +12,6 @@ $current_course_tool  = TOOL_GRADEBOOK;
 
 api_protect_course_script();
 
-require_once 'lib/be.inc.php';
-require_once 'lib/fe/dataform.class.php';
-require_once 'lib/fe/userform.class.php';
-require_once 'lib/flatview_data_generator.class.php';
-require_once 'lib/fe/flatviewtable.class.php';
-require_once 'lib/fe/displaygradebook.php';
-require_once 'lib/fe/exportgradebook.php';
-require_once 'lib/scoredisplay.class.php';
-require_once api_get_path(SYS_CODE_PATH).'gradebook/lib/gradebook_functions.inc.php';
-require_once api_get_path(LIBRARY_PATH).'pdf.lib.php';
-
 api_block_anonymous_users();
 $isDrhOfCourse = CourseManager::isUserSubscribedInCourseAsDrh(
     api_get_user_id(),
@@ -30,7 +19,7 @@ $isDrhOfCourse = CourseManager::isUserSubscribedInCourseAsDrh(
 );
 
 if (!$isDrhOfCourse) {
-    block_students();
+    GradebookUtils::block_students();
 }
 
 if (isset ($_POST['submit']) && isset ($_POST['keyword'])) {
@@ -98,15 +87,20 @@ if ($simple_search_form->validate() && (empty($keyword))) {
 }
 
 if (!empty($keyword)) {
-    $users = find_students($keyword);
+    $users = GradebookUtils::find_students($keyword);
 } else {
     if (isset($alleval) && isset($alllinks)) {
-        $users = get_all_users($alleval, $alllinks);
+        $users = GradebookUtils::get_all_users($alleval, $alllinks);
     } else {
         $users = null;
     }
 }
 $offset = isset($_GET['offset']) ? $_GET['offset'] : '0';
+
+$addparams = array('selectcat' => $cat[0]->get_id());
+if (isset($_GET['search'])) {
+    $addparams['search'] = $keyword;
+}
 
 // Main course category
 $mainCourseCategory = Category::load(
@@ -129,6 +123,8 @@ $flatviewtable = new FlatViewTable(
     $mainCourseCategory[0]
 );
 
+$flatviewtable->setAutoFill(false);
+
 $parameters = array('selectcat' => intval($_GET['selectcat']));
 $flatviewtable->set_additional_parameters($parameters);
 
@@ -140,7 +136,7 @@ if (isset($_GET['export_pdf']) && $_GET['export_pdf'] == 'category') {
     $params['export_pdf'] = true;
     if ($cat[0]->is_locked() == true || api_is_platform_admin()) {
         Display :: set_header(null, false, false);
-        export_pdf_flatview(
+        GradebookUtils::export_pdf_flatview(
             $flatviewtable,
             $cat,
             $users,
@@ -173,12 +169,13 @@ if (isset($_GET['exportpdf']))	{
 
     if ($export_pdf_form->validate()) {
         $params = $export_pdf_form->exportValues();
-        Display :: set_header(null, false, false);
+        Display :: display_no_header();
         $params['join_firstname_lastname'] = true;
         $params['show_official_code'] = true;
         $params['export_pdf'] = true;
         $params['only_total_category'] = false;
-        export_pdf_flatview(
+
+        GradebookUtils::export_pdf_flatview(
             $flatviewtable,
             $cat,
             $users,
@@ -194,7 +191,7 @@ if (isset($_GET['exportpdf']))	{
 }
 
 if (isset($_GET['print']))	{
-    $printable_data = get_printable_data(
+    $printable_data = GradebookUtils::get_printable_data(
         $cat[0],
         $users,
         $alleval,
@@ -221,9 +218,7 @@ if (!empty($_GET['export_report']) && $_GET['export_report'] == 'export_report')
         if (!api_is_allowed_to_edit(false, false) and !api_is_course_tutor()) {
             $user_id = api_get_user_id();
         }
-
-        require_once 'gradebook_result.class.php';
-        $printable_data = get_printable_data(
+        $printable_data = GradebookUtils::get_printable_data(
             $cat[0],
             $users,
             $alleval,
@@ -254,11 +249,6 @@ if (!empty($_GET['export_report']) && $_GET['export_report'] == 'export_report')
     }
 }
 
-$addparams = array ('selectcat' => $cat[0]->get_id());
-if (isset($_GET['search'])) {
-    $addparams['search'] = $keyword;
-}
-
 $this_section = SECTION_COURSES;
 
 if (isset($_GET['exportpdf'])) {
@@ -284,11 +274,13 @@ if (isset($_GET['isStudentView']) && $_GET['isStudentView'] == 'false') {
         $simple_search_form
     );
 
-    // Table
+    // main graph
     $flatviewtable->display();
-
     //@todo load images with jquery
     echo '<div id="contentArea" style="text-align: center;" >';
+    if (!empty($image_file)) {
+        echo '<img src="'.$image_file.'">';
+    }
     $flatviewtable->display_graph_by_resource();
     echo '</div>';
 }
