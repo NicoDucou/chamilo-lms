@@ -1,6 +1,8 @@
 <?php
 /* For licensing terms, see license.txt */
 
+use ChamiloSession as Session;
+
 /**
  * GradebookTable Class
  * Table to display categories, evaluations and links
@@ -18,6 +20,7 @@ class GradebookTable extends SortableTable
     public $exportToPdf;
     public $teacherView;
     public $userId;
+    public $studentList;
 
     /**
      * Constructor
@@ -35,11 +38,13 @@ class GradebookTable extends SortableTable
         $addparams = null,
         $exportToPdf = false,
         $showTeacherView = null,
-        $userId = null
+        $userId = null,
+        $studentList = array()
     ) {
         $this->teacherView = is_null($showTeacherView) ? api_is_allowed_to_edit(null, true) : $showTeacherView;
         $this->userId = is_null($userId) ? api_get_user_id() : $userId;
         $this->exportToPdf = $exportToPdf;
+        $this->studentList = $studentList;
 
         parent::__construct('gradebooklist', null, null, ($this->teacherView?1:0), 20, 'ASC', 'gradebook_list');
         $this->evals_links = array_merge($evals, $links);
@@ -182,7 +187,6 @@ class GradebookTable extends SortableTable
         $user_id = $this->userId;
         $course_code = api_get_course_id();
         $session_id = api_get_session_id();
-        $status_user = api_get_status_of_user_in_course(api_get_user_id(), $course_code);
 
         if (empty($session_id)) {
             $statusToFilter = STUDENT;
@@ -190,13 +194,17 @@ class GradebookTable extends SortableTable
             $statusToFilter = 0;
         }
 
-        $studentList = CourseManager::get_user_list_from_course_code(
-            $course_code,
-            $session_id,
-            null,
-            null,
-            $statusToFilter
-        );
+        if (empty($this->studentList)) {
+            $studentList = CourseManager::get_user_list_from_course_code(
+                $course_code,
+                $session_id,
+                null,
+                null,
+                $statusToFilter
+            );
+            $this->studentList = $studentList;
+        }
+
         $this->datagen->userId = $this->userId;
 
         $data_array = $this->datagen->get_data(
@@ -204,9 +212,8 @@ class GradebookTable extends SortableTable
             $from,
             $this->per_page,
             false,
-            $studentList
+            $this->studentList
         );
-
 
         // generate the data to display
         $sortable_data = array();
@@ -720,7 +727,6 @@ class GradebookTable extends SortableTable
     public function getGraph()
     {
         $data = $this->getDataForGraph();
-
 
         if (!empty($data) &&
             isset($data['categories']) &&

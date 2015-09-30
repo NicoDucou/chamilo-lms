@@ -1194,11 +1194,19 @@ class GradebookUtils
      * @param array $cats
      * @param bool $saveToFile
      * @param bool $saveToHtmlFile
+     * @param array $studentList
+     * @param PDF $pdf
      *
      * @return string
      */
-    public static function generateTable($userId, $cats, $saveToFile = false, $saveToHtmlFile = false)
-    {
+    public static function generateTable(
+        $userId,
+        $cats,
+        $saveToFile = false,
+        $saveToHtmlFile = false,
+        $studentList = array(),
+        $pdf = null
+    ) {
         $courseInfo = api_get_course_info();
         $userInfo = api_get_user_info($userId);
 
@@ -1220,7 +1228,8 @@ class GradebookUtils
             null,
             true,
             false,
-            $userId
+            $userId,
+            $studentList
         );
 
         $gradebooktable->userId = $userId;
@@ -1255,6 +1264,12 @@ class GradebookUtils
             'show_teacher_as_myself' => false
         );
 
+        if (empty($pdf)) {
+            $pdf = new PDF('A4', $params['orientation'], $params);
+        }
+
+        $pdf->params['student_info'] = $userInfo;
+
         $file = api_get_path(SYS_ARCHIVE_PATH).uniqid().'.html';
 
         $content =
@@ -1262,8 +1277,6 @@ class GradebookUtils
             $graph.
             '<br />'.get_lang('Feedback').'<br />
             <textarea rows="5" cols="100" ></textarea>';
-
-        $pdf = new PDF('A4', $params['orientation'], $params);
 
         $address = api_get_setting('institution_address');
         $phone = api_get_setting('administratorTelephone');

@@ -37,12 +37,61 @@ switch ($action) {
 
         $pdfList = array();
         $cats = Category::load($cat_id, null, null, null, null, null, false);
+
+        $session_id = api_get_session_id();
+        if (empty($session_id)) {
+            $statusToFilter = STUDENT;
+        } else {
+            $statusToFilter = 0;
+        }
+
+        $studentList = CourseManager::get_user_list_from_course_code(
+            api_get_course_id(),
+            $session_id,
+            null,
+            null,
+            $statusToFilter
+        );
+
+        /*$userList = array(
+            ['user_id' => '1766'],
+            ['user_id' => 1747],
+            ['user_id' => 1112],
+            ['user_id' => 1725],
+            ['user_id' => 1764],
+            ['user_id' => 1674],
+            ['user_id' => 1917],
+            ['user_id' => 1768],
+            ['user_id' => 1739],
+            ['user_id' => 1719 ]
+        );*/
+
+        $tpl = new Template('', false, false, false);
+
+        $courseInfo = api_get_course_info();
+        $params = array(
+            'pdf_title' => sprintf(get_lang('GradeFromX'), $courseInfo['department_name']),
+            'session_info' => '',
+            'course_info' => '',
+            'pdf_date' => '',
+            'course_code' => api_get_course_id(),
+            'add_signatures' => false,
+            'student_info' => null,
+            'show_grade_generated_date' => true,
+            'show_real_course_teachers' => false,
+            'show_teacher_as_myself' => false
+        );
+
+        $pdf = new PDF('A4', $params['orientation'], $params, $tpl);
+
         foreach ($userList as $index => $value) {
             $pdfList[] = GradebookUtils::generateTable(
                 $value['user_id'],
                 $cats,
                 false,
-                true
+                true,
+                $studentList,
+                $pdf
             );
         }
 

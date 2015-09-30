@@ -119,12 +119,8 @@ class GradebookDataGenerator
         // status de user in course
         $course_code = api_get_course_id();
         $sessionId = api_get_session_id();
-        $status_user = api_get_status_of_user_in_course(
-            api_get_user_id(),
-            $course_code
-        );
 
-        if (empty($sessionId)) {
+        /*if (empty($sessionId)) {
             $statusToFilter = STUDENT;
         } else {
             $statusToFilter = 0;
@@ -137,13 +133,15 @@ class GradebookDataGenerator
             null,
             $statusToFilter,
             true
-        );
+        );*/
+        $userCount = count($studentList);
 
         // Generate the data to display
         $data = array();
 
         /** @var GradebookItem $item */
         $totalWeight = 0;
+
         foreach ($visibleitems as $item) {
             $row = array();
             $row[] = $item;
@@ -153,9 +151,12 @@ class GradebookDataGenerator
                 api_get_short_text_from_html($item->get_description(), 160).'</span>';
             $totalWeight += $item->get_weight();
             $row[] = $item->get_weight();
+
             if (count($this->evals_links) > 0) {
                 // Items inside a category.
                 if (1) {
+
+
                     //(api_is_allowed_to_edit() && isset($_GET['user_id'])) ) {
                     $resultColumn = $this->build_result_column(
                         $userId,
@@ -176,6 +177,8 @@ class GradebookDataGenerator
                     $average = $this->buildAverageResultColumn($item);
                     $row['average'] = $average['display'];
                     $row['average_score'] = $average['score'];
+
+
 
                     // Ranking
                     $ranking = $this->buildRankingColumn($item, $userId, $userCount);
@@ -302,6 +305,7 @@ class GradebookDataGenerator
         $forceSimpleResult = false
     ) {
         $scoredisplay = ScoreDisplay::instance();
+
         $score = $item->calc_score($userId);
 
         if (!empty($score)) {
@@ -341,14 +345,12 @@ class GradebookDataGenerator
                 // evaluation and link
                 case 'E' :
                 case 'L' :
-
                     //if ($parentId == 0) {
                         $scoreWeight = array(
                             $score[0] / $score[1] * $item->get_weight(),
                             $item->get_weight()
                         );
                     //}
-
                     return array(
                         'display' => $scoredisplay->display_score($score, SCORE_DIV),
                         'score' => $score,

@@ -92,8 +92,6 @@ class Result
             $existEvaluation = Database::result($result, 0, 0);
 
             if ($existEvaluation != 0) {
-
-                $sql_course_rel_user = '';
                 if ($sessionId) {
                     $sql = 'SELECT course_code, id_user as user_id, status
                             FROM ' . $tbl_session_rel_course_user . '
@@ -125,7 +123,7 @@ class Result
                     if ($info_verified == 0) {
                         $sql_insert = 'INSERT INTO ' . $tbl_grade_results . '(user_id,evaluation_id,created_at,score)
 									   VALUES ("' . intval($list_user_course_list[$i]['user_id']) . '","' . intval($evaluation_id) . '","' . $current_date . '",0);';
-                        $res_insert = Database::query($sql_insert);
+                        Database::query($sql_insert);
                     }
                 }
                 $list_user_course_list = array();

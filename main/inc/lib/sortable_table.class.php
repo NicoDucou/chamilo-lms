@@ -244,7 +244,6 @@ class SortableTable extends HTML_Table
     public function return_table()
     {
         $empty_table = false;
-
         $content = $this->get_table_html();
 
         if ($this->get_total_number_of_items() == 0) {

@@ -1,6 +1,8 @@
 <?php
 /* For licensing terms, see /license.txt */
 
+use ChamiloSession as Session;
+
 /**
  * Class Evaluation
  * @package chamilo.gradebook
@@ -258,8 +260,6 @@ class Evaluation implements GradebookItem
 		return $alleval;
 	}
 
-
-
 	/**
 	 * @param array $result
 	 * @return array
@@ -511,12 +511,22 @@ class Evaluation implements GradebookItem
 	 */
 	public function calc_score($stud_id = null, $type = null)
 	{
-		$results = Result::load(null, $stud_id, $this->id);
 		$rescount = 0;
 		$sum = 0;
 		$bestResult = 0;
 		$weight = 0;
 		$sumResult = 0;
+
+        if (empty($stud_id)) {
+            $key = 'result_score_student_list_'.api_get_course_int_id().'_'.api_get_session_id().'_'.$this->id;
+            $results = Session::read($key);
+            if (empty($results)) {
+                $results = Result::load(null, null, $this->id);
+                Session::write($key, $results);
+            }
+        } else {
+            $results = Result::load(null, $stud_id, $this->id);
+        }
 
 		$students = array();
 		/** @var Result $res */
@@ -534,8 +544,6 @@ class Evaluation implements GradebookItem
 			$students[$res->get_user_id()] = $score;
 		}
 
-        //echo '<pre>'.print_r($students);
-
 		if ($rescount == 0) {
 			return null;
 		} else if (isset($stud_id) && empty($type)) {
@@ -549,7 +557,6 @@ class Evaluation implements GradebookItem
 					return array($sumResult/$rescount, $weight);
 					break;
 				case 'ranking':
-                    $results = Result::load(null, null, $this->id);
                     $students = array();
                     /** @var Result $res */
                     foreach ($results as $res) {
