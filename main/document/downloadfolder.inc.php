@@ -96,8 +96,20 @@ function fixDocumentNameCallback($p_event, &$p_header)
     // Changes file.phps to file.php
     $basename = basename($documentNameFixed);
     $basenamePHPFixed = str_replace('.phps', '.php', $basename);
-    $documentNameFixed = str_replace($basename, $basenamePHPFixed, $basenamePHPFixed);
+    $documentNameFixed = str_replace(
+        $basename,
+        $basenamePHPFixed,
+        $documentNameFixed
+    );
 
+    if ($remove_dir != '/') {
+        $documentNameFixed = str_replace($remove_dir, '/', $documentNameFixed);
+        if (substr($documentNameFixed, 0, 1) == '/') {
+            $documentNameFixed = substr($documentNameFixed, 1, api_strlen($documentNameFixed));
+        }
+    } else {
+        $documentNameFixed = ltrim($documentNameFixed, '/');
+    }
     $p_header['stored_filename'] = $documentNameFixed;
 
     return 1;

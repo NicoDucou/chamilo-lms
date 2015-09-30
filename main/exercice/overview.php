@@ -64,6 +64,11 @@ if ($time_control) {
 if ($origin != 'learnpath') {
 	Display::display_header();
 } else {
+    $htmlHeadXtra[] = "
+    <style>
+    body { background: none;}
+    </style>
+    ";
 	Display::display_reduced_header();
 }
 
@@ -129,6 +134,10 @@ if ($visible_return['value'] == false) {
         $message = $visible_return['message'];
         $exercise_url_button = null;
     }
+} else {
+    if ($visible_return['message'] != "") {
+        $message = $visible_return['message'];
+    }
 }
 
 $attempts = get_exercise_results_by_user(
@@ -157,7 +166,7 @@ if ($current_browser == 'Internet Explorer') {
     $btn_class = '';
 }
 
-if (!empty($attempts) && $visible_return['value'] == true) {
+if (!empty($attempts)) {
     $i = $counter;
     foreach ($attempts as $attempt_result) {
 

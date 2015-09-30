@@ -188,6 +188,7 @@ class ExerciseLink extends AbstractLink
         $tblStats = Database::get_main_table(TABLE_STATISTIC_TRACK_E_EXERCICES);
         $tblHp = Database::get_main_table(TABLE_STATISTIC_TRACK_E_HOTPOTATOES);
         $tblDoc = Database::get_course_table(TABLE_DOCUMENT);
+        $stud_id = intval($stud_id);
 
         /* the following query should be similar (in conditions) to the one used
         in exercice/exercice.php, look for note-query-exe-results marker*/
@@ -201,27 +202,29 @@ class ExerciseLink extends AbstractLink
                         status      <> 'incomplete' AND
                         session_id = $session_id";
 
-            if (isset($stud_id)) {
+            if (isset($stud_id) && $type != 'ranking') {
                 $course_code_exe = $this->get_course_code();
-                $sql .= " AND exe_cours_id = '$course_code_exe' AND exe_user_id = '$stud_id' ";
+                $sql .= " AND exe_cours_id = '$course_code_exe' AND exe_user_id = $stud_id ";
             }
             $sql .= ' ORDER BY exe_id DESC';
 
         } else {
             $course_code_exe = $this->get_course_code();
-            $courseId =  $this->getCourseId();
+            $courseId = $this->getCourseId();
             $sql = "SELECT * FROM $tblHp hp, $tblDoc doc
-                     WHERE
-                        hp.exe_cours_id = '$course_code_exe' AND
-                        hp.exe_user_id = '$stud_id'  AND
-                        hp.exe_name = doc.path AND
-                        doc.c_id = $courseId AND
-                        doc.id = ".intval($this->get_ref_id())."";
+                     WHERE hp.exe_name = doc.path AND ";
+
+            if (isset($stud_id) && $type != 'ranking') {
+                $sql .= " hp.exe_cours_id = '$course_code_exe' AND
+                    hp.exe_user_id = $stud_id  AND
+                    doc.c_id = $courseId AND ";
+            }
+            $sql .= " doc.id = " . intval($this->get_ref_id());
         }
 
         $scores = Database::query($sql);
 
-        if (isset($stud_id)) {
+        if (isset($stud_id) && $type != 'ranking') {
             // for 1 student
             if ($data = Database::fetch_array($scores)) {
                 return array($data['exe_result'], $data['exe_weighting']);
@@ -265,7 +268,7 @@ class ExerciseLink extends AbstractLink
                         return array($sumResult/$student_count, $weight);
                         break;
                     case 'ranking':
-                        return AbstractLink::getCurrentUserRanking($students);
+                        return AbstractLink::getCurrentUserRanking($stud_id, $students);
                         break;
                     default:
                         return array($sum, $student_count);

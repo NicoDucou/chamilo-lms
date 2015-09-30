@@ -1714,7 +1714,7 @@ class CourseManager
      */
     public static function get_coach_list_from_course_code($course_code, $session_id)
     {
-        if (empty($course_code) OR empty($session_id)) {
+        if (empty($course_code) || empty($session_id)) {
             return array();
         }
 
@@ -1723,8 +1723,11 @@ class CourseManager
         $users = array();
 
         // We get the coach for the given course in a given session.
-        $sql = 'SELECT id_user FROM '.Database::get_main_table(TABLE_MAIN_SESSION_COURSE_USER).
-               ' WHERE id_session="'.$session_id.'" AND course_code="'.$course_code.'" AND status = 2';
+        $sql = 'SELECT id_user FROM '.Database::get_main_table(TABLE_MAIN_SESSION_COURSE_USER).'
+                WHERE
+                    id_session="'.$session_id.'" AND
+                    course_code="'.$course_code.'" AND
+                    status = 2';
         $rs = Database::query($sql);
         while ($user = Database::fetch_array($rs)) {
             $user_info = api_get_user_info($user['id_user']);
@@ -1732,7 +1735,9 @@ class CourseManager
             $user_info['role'] = $user['role'];
             $user_info['tutor_id'] = $user['tutor_id'];
             $user_info['email'] = $user['email'];
+            $user_info['type'] = 'course_coach';
             $users[$user['id_user']] = $user_info;
+
         }
 
         $table = Database::get_main_table(TABLE_MAIN_SESSION);
@@ -1745,6 +1750,7 @@ class CourseManager
         $user_info['role'] = $user['role'];
         $user_info['tutor_id'] = $user['tutor_id'];
         $user_info['email'] = $user['email'];
+        $user_info['type'] = 'general_coach';
         $users[$session_id_coach] = $user_info;
 
         return $users;
@@ -3907,9 +3913,8 @@ class CourseManager
         return $html;
     }
 
-
     /**
-     * return html code for diaplaying a course title in the standart view (not the Session view)
+     * return html code for displaying a course title in the standard view (not the Session view)
      * @param $courseId
      * @param bool $loadDirs
      * @return string
@@ -3924,7 +3929,7 @@ class CourseManager
 
     /**
      * Return tab of params to display a course title in the My Courses tab
-     * Check visibility, right, and notification icones, and load_dirs option
+     * Check visibility, right, and notification icons, and load_dirs option
      * @param $courseId
      * @param bool $loadDirs
      * @return array
@@ -3969,7 +3974,10 @@ class CourseManager
 
         // Browse through all courses. We can only have one course because of the  course.id=".intval($courseId) in sql query
         $course = Database::fetch_array($result);
-        $course_info = api_get_course_info($course['code']);
+        $course_info = api_get_course_info_by_id($courseId);
+        if (empty($course_info)) {
+            return '';
+        }
         //$course['id_session'] = null;
         $course_info['id_session'] = null;
         $course_info['status'] = $course['status'];
@@ -4036,7 +4044,6 @@ class CourseManager
         return $params;
     }
 
-
     /**
      * Retrieves the user defined course categories
      * @param string $userId
@@ -4088,8 +4095,6 @@ class CourseManager
         }
         return $result;
     }
-
-
 
     /**
      * Get the course id based on the original id and field name in the extra fields.
@@ -5150,7 +5155,7 @@ class CourseManager
             }
 
             $sql = 'DELETE FROM '.$course_user_table.'
-                    WHERE course_code="'.Database::escape_string($course_code).'" AND status="1"'.$cond;
+                    WHERE course_code="'.Database::escape_string($course_code).'" AND relation_type = 0  AND status="1"'.$cond;
             Database::query($sql);
         }
 
@@ -5172,6 +5177,7 @@ class CourseManager
                         role = '',
                         tutor_id = '0',
                         sort = '0',
+                        relation_type = '0',
                         user_course_cat='0'";
                 }
                 Database::query($sql);

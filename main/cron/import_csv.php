@@ -262,7 +262,7 @@ class ImportCsv
         $row['email'] = $row['Email'];
         $row['username'] = $row['UserName'];
         $row['password'] = $row['Password'];
-        $row['auth_source'] = $row['AuthSource'];
+        $row['auth_source'] = isset($row['AuthSource']) ? $row['AuthSource'] : PLATFORM_AUTH_SOURCE;
         $row['official_code'] = $row['OfficialCode'];
         $row['phone'] = $row['PhoneNumber'];
 
@@ -371,7 +371,7 @@ class ImportCsv
                         $language, //$row['language'],
                         $row['phone'],
                         null, //$row['picture'], //picture
-                        PLATFORM_AUTH_SOURCE, // ?
+                        $row['auth_source'], // ?
                         $expirationDate, //'0000-00-00 00:00:00', //$row['expiration_date'], //$expiration_date = '0000-00-00 00:00:00',
                         1, //active
                         0,
@@ -406,7 +406,7 @@ class ImportCsv
                         $row['lastname'],  // <<-- changed
                         $userInfo['username'],
                         null, //$password = null,
-                        PLATFORM_AUTH_SOURCE,
+                        $row['auth_source'],
                         $userInfo['email'],
                         COURSEMANAGER,
                         $userInfo['official_code'],
@@ -506,7 +506,7 @@ class ImportCsv
                         $language, //$row['language'],
                         $row['phone'],
                         null, //$row['picture'], //picture
-                        PLATFORM_AUTH_SOURCE, // ?
+                        $row['auth_source'], // ?
                         $expirationDate, //'0000-00-00 00:00:00', //$row['expiration_date'], //$expiration_date = '0000-00-00 00:00:00',
                         1, //active
                         0,
@@ -587,7 +587,7 @@ class ImportCsv
                         $row['lastname'],  // <<-- changed
                         $row['username'],  // <<-- changed
                         $password, //$password = null,
-                        PLATFORM_AUTH_SOURCE,
+                        $row['auth_source'],
                         $email,
                         STUDENT,
                         $userInfo['official_code'],
@@ -605,6 +605,7 @@ class ImportCsv
                     );
 
                     if ($result) {
+
                         if ($row['username'] != $userInfo['username']) {
                             $this->logger->addInfo("Students - Username was changes from '".$userInfo['username']."' to '".$row['username']."' ");
                         }
@@ -649,28 +650,6 @@ class ImportCsv
     private function importCalendarStatic($file, $moveFile = true)
     {
         $data = Import::csv_to_array($file);
-
-        if ($this->getDumpValues()) {
-            // Remove all calendar items
-            $truncateTables = array(
-                Database::get_course_table(TABLE_AGENDA),
-                Database::get_course_table(TABLE_AGENDA_ATTACHMENT),
-                Database::get_course_table(TABLE_AGENDA_REPEAT),
-                Database::get_course_table(TABLE_AGENDA_REPEAT_NOT),
-                Database::get_main_table(TABLE_PERSONAL_AGENDA),
-                Database::get_main_table(TABLE_PERSONAL_AGENDA_REPEAT_NOT),
-                Database::get_main_table(TABLE_PERSONAL_AGENDA_REPEAT)
-            );
-
-            foreach ($truncateTables as $table) {
-                $sql = "TRUNCATE $table";
-                Database::query($sql);
-            }
-
-            $table = Database::get_course_table(TABLE_ITEM_PROPERTY);
-            $sql = "DELETE FROM $table WHERE tool = 'calendar_event'";
-            Database::query($sql);
-        }
 
         if (!empty($data)) {
             $this->logger->addInfo(count($data) . " records found.");
@@ -745,6 +724,7 @@ class ImportCsv
                 $endTime = $row['time_end'];
                 $title = $row['title'];
                 $comment = $row['comment'];
+                $color = isset($row['color']) ? $row['color'] : '';
 
                 $startDateYear = substr($date, 0, 4);
                 $startDateMonth = substr($date, 4, 2);
@@ -774,6 +754,7 @@ class ImportCsv
                         'course_id' => $courseInfo['real_id'],
                         'session_id' => $sessionId,
                         'comment' => $comment,
+                        'color' => $color,
                         $this->extraFieldIdNameList['calendar_event'] => $row['external_calendar_itemID']
                     );
                 }
@@ -790,7 +771,6 @@ class ImportCsv
             $this->logger->addInfo(
                 "Ready to insert events"
             );
-
 
             $agenda = new Agenda();
 
@@ -826,10 +806,20 @@ class ImportCsv
                         continue;
                     }
 
-                    $item = $extraFieldValue->get_item_id_from_field_variable_and_field_value(
+                    $items = $extraFieldValue->get_item_id_from_field_variable_and_field_value(
                         $extraFieldName,
-                        $externalEventId
+                        $externalEventId,
+                        false,
+                        false,
+                        true
                     );
+
+                    $item = null;
+                    foreach ($items as $tempItem) {
+                        if ($tempItem['c_id'] == $event['course_id']) {
+                            $item = $tempItem;
+                        }
+                    }
 
                     if (!empty($item)) {
                         $this->logger->addInfo(
@@ -845,8 +835,10 @@ class ImportCsv
                 $agenda->setType('course');
                 $agenda->setSessionId($event['session_id']);
                 $agenda->setSenderId($event['sender_id']);
+                $agenda->setIsAllowedToEdit(true);
 
                 $eventComment = $event['comment'];
+                $color = $event['color'];
 
                 // To use the event comment you need
                 // ALTER TABLE c_calendar_event ADD COLUMN comment TEXT;
@@ -868,10 +860,10 @@ class ImportCsv
 
                 $content = '';
 
-                if ($update) {
+                if ($update && isset($item['calendar_event_id'])) {
                     //the event already exists, just update
                     $eventId = $agenda->edit_event(
-                        $item,
+                        $item['calendar_event_id'],
                         $event['start'],
                         $event['end'],
                         false,
@@ -880,7 +872,8 @@ class ImportCsv
                         array('everyone'), // send to
                         array(), //$attachmentArray = array(),
                         null, //$attachmentComment = null,
-                        $eventComment
+                        $eventComment,
+                        $color
                     );
                     if ($eventId !== false) {
                         $this->logger->addInfo(
@@ -904,14 +897,17 @@ class ImportCsv
                         null, //  $parentEventId
                         array(), //$attachmentArray = array(),
                         null, //$attachmentComment = null,
-                        $eventComment
+                        $eventComment,
+                        $color
                     );
                     if (!empty($eventId)) {
+                        $extraFieldValue->is_course_model = true;
                         $extraFieldValue->save(
                             array(
                                 'field_value' => $externalEventId,
                                 'field_id' => $extraFieldInfo['id'],
-                                'calendar_event_id' => $eventId
+                                'calendar_event_id' => $eventId,
+                                'c_id' => $event['course_id']
                             )
                         );
                         $this->logger->addInfo(
@@ -979,9 +975,13 @@ class ImportCsv
                     // Update
                     $params = array(
                         'title' => $row['title'],
+                        'category_code' => $row['course_category']
                     );
 
-                    $result = CourseManager::update_attributes($courseInfo['real_id'], $params);
+                    $result = CourseManager::update_attributes(
+                        $courseInfo['real_id'],
+                        $params
+                    );
 
                     $addTeacherToSession = isset($courseInfo['add_teachers_to_sessions_courses']) && !empty($courseInfo['add_teachers_to_sessions_courses']) ? true : false;
 
@@ -1395,64 +1395,69 @@ class ImportCsv
 
         // Course
         $table = Database::get_main_table(TABLE_MAIN_COURSE);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         $table = Database::get_main_table(TABLE_MAIN_ACCESS_URL_REL_COURSE);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         $table = Database::get_main_table(TABLE_MAIN_COURSE_USER);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         $table = Database::get_main_table(TABLE_MAIN_ACCESS_URL_REL_USER);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         // Sessions
         $table = Database::get_main_table(TABLE_MAIN_SESSION);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         $table = Database::get_main_table(TABLE_MAIN_SESSION_CATEGORY);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         $table = Database::get_main_table(TABLE_MAIN_SESSION_COURSE);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
+        Database::query($sql);
+        echo $sql.PHP_EOL;
+
+        $table = Database::get_main_table(TABLE_MAIN_SESSION_COURSE_USER);
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         $table = Database::get_main_table(TABLE_MAIN_SESSION_USER);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         $table = Database::get_main_table(TABLE_MAIN_ACCESS_URL_REL_SESSION);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         // Extra fields
         $table = Database::get_main_table(TABLE_MAIN_SESSION_FIELD_VALUES);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         $table = Database::get_main_table(TABLE_MAIN_COURSE_FIELD_VALUES);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
         $table = Database::get_main_table(TABLE_MAIN_USER_FIELD_VALUES);
-        $sql = "DELETE FROM $table";
+        $sql = "TRUNCATE $table";
         Database::query($sql);
         echo $sql.PHP_EOL;
 
@@ -1466,6 +1471,8 @@ class ImportCsv
             Database::get_main_table(TABLE_PERSONAL_AGENDA_REPEAT_NOT),
             Database::get_main_table(TABLE_PERSONAL_AGENDA_REPEAT),
             Database::get_main_table(TABLE_MAIN_CALENDAR_EVENT_VALUES),
+            Database::get_main_table(TABLE_TOOL_LIST),
+            Database::get_main_table(TABLE_TOOL_INTRO),
         );
 
         foreach ($truncateTables as $table) {

@@ -17,6 +17,8 @@ class Agenda
     /** @var array */
     public $course;
     public $comment;
+    private $isAllowedToEdit;
+    public $allowEventColoring;
 
     /**
      * Constructor
@@ -37,6 +39,7 @@ class Agenda
         }
         $this->setSessionId(api_get_session_id());
         $this->setSenderId(api_get_user_id());
+        $this->setIsAllowedToEdit(api_is_allowed_to_edit(null, true));
         $this->events = array();
 
         // Event colors
@@ -45,6 +48,8 @@ class Agenda
         $this->event_group_color = '#A0522D'; //siena
         $this->event_session_color = '#00496D'; // kind of green
         $this->event_personal_color = 'steel blue'; //steel blue
+
+        $this->allowEventColoring = api_get_configuration_value('allow_agenda_events_coloring');
     }
 
     /**
@@ -120,6 +125,7 @@ class Agenda
      * @param array $attachmentArray $_FILES['']
      * @param string $attachmentComment
      * @param string $eventComment
+     * @param string $color
      *
      * @return int
      */
@@ -134,7 +140,8 @@ class Agenda
         $parentEventId = null,
         $attachmentArray = array(),
         $attachmentComment = null,
-        $eventComment = null
+        $eventComment = null,
+        $color = ''
     ) {
         $start = api_get_utc_datetime($start);
         $end = api_get_utc_datetime($end);
@@ -153,6 +160,11 @@ class Agenda
                     'enddate' => $end,
                     'all_day' => $allDay
                 );
+
+                if ($this->allowEventColoring) {
+                    $attributes['color'] = $color;
+                }
+
                 $id = Database::insert(
                     $this->tbl_personal_agenda,
                     $attributes
@@ -173,6 +185,10 @@ class Agenda
 
                 if ($allow) {
                     $attributes['comment'] = $eventComment;
+                }
+
+                if ($this->allowEventColoring) {
+                    $attributes['color'] = $color;
                 }
 
                 if (!empty($parentEventId)) {
@@ -549,6 +565,7 @@ class Agenda
      * @param array $attachmentArray
      * @param string $attachmentComment
      * @param string $comment
+     * @param string $color
      *
      * @return bool
      */
@@ -562,7 +579,8 @@ class Agenda
         $usersToSend = array(),
         $attachmentArray = array(),
         $attachmentComment = null,
-        $comment = null
+        $comment = null,
+        $color = ''
     ) {
         $start = api_get_utc_datetime($start);
         $end = api_get_utc_datetime($end);
@@ -584,6 +602,11 @@ class Agenda
                     'enddate' => $end,
                     'all_day' => $allDay
                 );
+
+                if ($this->allowEventColoring) {
+                    $attributes['color'] = $color;
+                }
+
                 Database::update(
                     $this->tbl_personal_agenda,
                     $attributes,
@@ -598,13 +621,13 @@ class Agenda
                 }
 
                 $groupId = api_get_group_id();
-                $course_id = api_get_course_int_id();
+                $course_id = $this->course['real_id'];
 
                 if (empty($course_id)) {
                     return false;
                 }
 
-                if (api_is_allowed_to_edit(null, true)) {
+                if ($this->getIsAllowedToEdit()) {
 
                     $attributes = array(
                         'title' => $title,
@@ -618,6 +641,10 @@ class Agenda
 
                     if ($allow) {
                         $attributes['comment'] = $comment;
+                    }
+
+                    if ($this->allowEventColoring) {
+                        $attributes['color'] = $color;
                     }
 
                     Database::update(
@@ -942,9 +969,9 @@ class Agenda
                         );
 
                         if (!empty($sessionList)) {
-                            foreach ($sessionList as $sessionId) {
-                                $courses = UserManager::get_courses_list_by_session(
-                                    api_get_user_id(),
+                            foreach ($sessionList as $sessionItem) {
+                                $sessionId = $sessionItem['id'];
+                                $courses = SessionManager::get_course_list_by_session_id(
                                     $sessionId
                                 );
                                 $sessionInfo = array(
@@ -954,14 +981,6 @@ class Agenda
                                 $session_list[] = $sessionInfo;
                             }
                         }
-
-                        //var_dump($session_list);
-
-                        /*$courseList = SessionManager::getAllCoursesFollowedByUser(
-                            api_get_user_id(),
-                            null
-                        );
-                        var_dump($courseList);*/
                     }
                 }
 
@@ -1398,7 +1417,10 @@ class Agenda
 
         $result = Database::query($sql);
         if (Database::num_rows($result)) {
-            $events_added = array();
+            $eventsAdded = array();
+            foreach ($this->events as $eventData) {
+                $eventsAdded[] = $eventData['unique_id'];
+            }
             while ($row = Database::fetch_array($result, 'ASSOC')) {
                 $eventId = $row['ref'];
                 $items = $this->getUsersAndGroupSubscribedToEvent($eventId, $course_id, $this->sessionId);
@@ -1406,13 +1428,14 @@ class Agenda
                 $user_to_array = $items['users'];
                 $event = array();
                 $event['id'] = 'course_'.$row['id'];
+                $event['unique_id']  = 'course_'.$row['id'].intval($row['session_id']);
 
                 // To avoid doubles
-                if (in_array($row['id'], $events_added)) {
+                if (in_array($event['unique_id'], $eventsAdded)) {
                     continue;
                 }
 
-                $events_added[] = $row['id'];
+                $eventsAdded[] = $event['unique_id'];
                 $attachment = $this->getAttachment($row['id'], $courseInfo);
 
                 if (!empty($attachment)) {
@@ -1436,6 +1459,12 @@ class Agenda
 
                 if (isset($row['to_group_id']) && !empty($row['to_group_id'])) {
                     $event['borderColor'] = $event['backgroundColor'] = $this->event_group_color;
+                }
+
+                if ($this->allowEventColoring) {
+                    if (isset($row['color']) && !empty($row['color'])) {
+                        $event['borderColor'] = $event['backgroundColor'] = $row['color'];
+                    }
                 }
 
                 $event['editable'] = false;
@@ -2470,5 +2499,21 @@ class Agenda
             'users' => array($userId),
             'groups' => array($groupId)
         );
+    }
+
+    /**
+     * @return bool
+     */
+    public function getIsAllowedToEdit()
+    {
+        return $this->isAllowedToEdit;
+    }
+
+    /**
+     * @param bool $isAllowedToEdit
+     */
+    public function setIsAllowedToEdit($isAllowedToEdit)
+    {
+        $this->isAllowedToEdit = $isAllowedToEdit;
     }
 }
