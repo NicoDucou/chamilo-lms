@@ -792,6 +792,7 @@ class GradebookTable extends SortableTable
             $pChart->Stroke();
             ob_end_clean();
             $file = $Cache->GetHash($id, $dataSet->GetData());
+
             if (!empty($file)) {
                 $result = '<div id="contentArea" style="text-align: center;" >';
                 $result .= '<img src="' . api_get_path(WEB_ARCHIVE_PATH) . $file . '" >';

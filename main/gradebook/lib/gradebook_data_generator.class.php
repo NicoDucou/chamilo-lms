@@ -134,7 +134,7 @@ class GradebookDataGenerator
             $statusToFilter,
             true
         );*/
-        //$userCount = count($studentList);
+        $userCount = count($studentList);
 
         // Generate the data to display
         $data = array();
@@ -175,8 +175,6 @@ class GradebookDataGenerator
                     $average = $this->buildAverageResultColumn($item);
                     $row['average'] = $average['display'];
                     $row['average_score'] = $average['score'];
-
-
 
                     // Ranking
                     $ranking = $this->buildRankingColumn($item, $userId, $userCount);

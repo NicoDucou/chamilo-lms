@@ -897,7 +897,9 @@ class Category implements GradebookItem
                     $evalweight = $eval->get_weight();
                     $weightsum += $evalweight;
                     $rescount++;
-                    $ressum += $evalres[0] / $evalres[1] * $evalweight;
+                    if (!empty($evalres[1])) {
+                        $ressum += $evalres[0] / $evalres[1] * $evalweight;
+                    }
                 } else {
                     if ($eval->get_weight() != 0) {
                         $evalweight = $eval->get_weight();
