@@ -350,8 +350,10 @@ class GradebookTable extends SortableTable
 
                     // Student result
                     $row[] = $value_data;
-                    $this->dataForGraph['my_result'][] = (float) $scoredisplay->display_score($totalResult, SCORE_AVERAGE);
-                    $this->dataForGraph['average'][] = (float) $scoredisplay->display_score($totalAverage, SCORE_AVERAGE);
+                    $totalResultAverageValue = strip_tags($scoredisplay->display_score($totalResult, SCORE_AVERAGE));
+                    $this->dataForGraph['my_result'][] = (float) str_replace('%', '', $totalResultAverageValue);
+                    $totalAverageValue = strip_tags($scoredisplay->display_score($totalAverage, SCORE_AVERAGE));
+                    $this->dataForGraph['average'][] =  (float) str_replace('%', '', $totalAverageValue);
                     // Ranking
                     $row[] = $ranking;
                     // Best
@@ -459,13 +461,8 @@ class GradebookTable extends SortableTable
                         } else {
                             // Students get the results and certificates columns
                             $eval_n_links = array_merge($alleval, $alllink);
-
-
                             if (count($eval_n_links)> 0) {
-
                                 $value_data = isset($data[4]) ? $data[4] : null;
-
-
                                 if (!is_null($value_data)) {
                                     //$score = $item->calc_score(api_get_user_id());
                                     //$new_score = $data[3] * $score[0] / $score[1];
