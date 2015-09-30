@@ -236,6 +236,7 @@ class GradebookTable extends SortableTable
         $totalAverage = array(0, 0);
 
         // Categories.
+        if (!empty($data_array))
         foreach ($data_array as $data) {
 
             // list of items inside the gradebook (exercises, lps, forums, etc)
@@ -571,11 +572,10 @@ class GradebookTable extends SortableTable
                 );
 
                 $totalRanking = array();
-                foreach ($studentList as $student) {
+                foreach ($this->studentList as $student) {
                     $score = $main_cat[0]->calc_score($student['user_id']);
                     $totalRanking[$student['user_id']] = $score[0];
                 }
-
                 $totalRanking = AbstractLink::getCurrentUserRanking($user_id, $totalRanking);
 
                 $totalRanking = $scoredisplay->display_score(
@@ -592,6 +592,7 @@ class GradebookTable extends SortableTable
                     $totalAverage,
                     SCORE_DIV
                 );
+
 
                 if ($this->exportToPdf) {
                     $row = array(
@@ -706,7 +707,6 @@ class GradebookTable extends SortableTable
                 }
             }
         }
-
         return $sortable_data;
     }
 

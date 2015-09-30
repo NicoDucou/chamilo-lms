@@ -874,6 +874,7 @@ class Category implements GradebookItem
                     $session_id
                 );
 
+                $rescount = 0;
                 if ($cat->get_weight() != 0) {
                     $catweight = $cat->get_weight();
                     $rescount++;
@@ -907,10 +908,6 @@ class Category implements GradebookItem
         }
 
         if (!empty($links)) {
-
-            $bestResult = 0;
-            $weight = 0;
-
             /** @var EvalLink|ExerciseLink $link */
            foreach ($links as $link) {
                 $linkres = $link->calc_score($stud_id, $type);
@@ -942,7 +939,6 @@ class Category implements GradebookItem
                     return array($ressum, $weightsum);
                     break;
                 case 'ranking':
-                    //var_dump($students);
                     return null;
                     return AbstractLink::getCurrentUserRanking($students);
                     break;

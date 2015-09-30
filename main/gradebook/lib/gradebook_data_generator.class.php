@@ -134,7 +134,7 @@ class GradebookDataGenerator
             $statusToFilter,
             true
         );*/
-        $userCount = count($studentList);
+        //$userCount = count($studentList);
 
         // Generate the data to display
         $data = array();
@@ -155,8 +155,6 @@ class GradebookDataGenerator
             if (count($this->evals_links) > 0) {
                 // Items inside a category.
                 if (1) {
-
-
                     //(api_is_allowed_to_edit() && isset($_GET['user_id'])) ) {
                     $resultColumn = $this->build_result_column(
                         $userId,
@@ -190,7 +188,6 @@ class GradebookDataGenerator
                 }
             } else {
                 // Category.
-
                 // Result
                 $result = $this->build_result_column($userId, $item, $ignore_score_color, true);
                 $row[] = $result['display'];
@@ -226,7 +223,6 @@ class GradebookDataGenerator
             }
             $data[] = $row;
         }
-
         return $data;
     }
 
@@ -313,10 +309,6 @@ class GradebookDataGenerator
                 // category
                 case 'C' :
                     if ($score != null) {
-                        $displaytype = SCORE_PERCENT;
-                        if ($ignore_score_color) {
-                            $displaytype |= SCORE_IGNORE_SPLIT;
-                        }
                         if ($forceSimpleResult) {
                             return
                                 array(

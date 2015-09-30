@@ -525,7 +525,12 @@ class Evaluation implements GradebookItem
                 Session::write($key, $results);
             }
         } else {
-            $results = Result::load(null, $stud_id, $this->id);
+            $key = 'result_score_student_list_'.api_get_course_int_id().'_'.api_get_session_id().'_'.$this->id.'_'.api_get_user_id();
+            $results = Session::read($key);
+            if (empty($results)) {
+                $results = Result::load(null, $stud_id, $this->id);
+                Session::write($key, $results);
+            }
         }
 
 		$students = array();
