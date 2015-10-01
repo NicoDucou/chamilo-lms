@@ -82,8 +82,13 @@ class GradebookDataGenerator
      * 4: date
      * 5: student's score (if student logged in)
      */
-    public function get_data($sorting = 0, $start = 0, $count = null, $ignore_score_color = false, $studentList = array())
-    {
+    public function get_data(
+        $sorting = 0,
+        $start = 0,
+        $count = null,
+        $ignore_score_color = false,
+        $studentList = array()
+    ) {
         //$status = CourseManager::get_user_in_course_status(api_get_user_id(), api_get_course_id());
         // do some checks on count, redefine if invalid value
         if (!isset($count)) {
@@ -117,23 +122,6 @@ class GradebookDataGenerator
         // get selected items
         $visibleitems = array_slice($allitems, $start, $count);
         // status de user in course
-        $course_code = api_get_course_id();
-        $sessionId = api_get_session_id();
-
-        /*if (empty($sessionId)) {
-            $statusToFilter = STUDENT;
-        } else {
-            $statusToFilter = 0;
-        }
-
-        $userCount = CourseManager::get_user_list_from_course_code(
-            $course_code,
-            $sessionId,
-            null,
-            null,
-            $statusToFilter,
-            true
-        );*/
         $userCount = count($studentList);
 
         // Generate the data to display
@@ -152,9 +140,11 @@ class GradebookDataGenerator
             $totalWeight += $item->get_weight();
             $row[] = $item->get_weight();
 
-            if (count($this->evals_links) > 0) {
+            //if (count($this->evals_links) > 0) {
+            if (get_class($item) == 'Evaluation') {
                 // Items inside a category.
                 if (1) {
+                    //var_dump(get_class($item), $item->get_name());
                     //(api_is_allowed_to_edit() && isset($_GET['user_id'])) ) {
                     $resultColumn = $this->build_result_column(
                         $userId,
@@ -211,13 +201,12 @@ class GradebookDataGenerator
                         $ignore_score_color,
                         true
                     );
-                    $rankingStudentList[$user['user_id']] = $score['display'][0];
+                    $rankingStudentList[$user['user_id']] = $score['score'][0];
                 }
-                $scoreDisplay = ScoreDisplay::instance();
 
+                $scoreDisplay = ScoreDisplay::instance();
                 $score = AbstractLink::getCurrentUserRanking($userId, $rankingStudentList);
                 $row['ranking'] = $scoreDisplay->display_score($score, SCORE_DIV);
-
             }
             $data[] = $row;
         }
@@ -276,6 +265,8 @@ class GradebookDataGenerator
 
         $scoreDisplay = null;
         if (isset($score[0])) {
+            //error_log($score[0]);
+            //error_log($score[1]);
             $scoreDisplay = ScoreDisplay::instance();
             $scoreDisplay = $scoreDisplay->display_score($score, SCORE_DIV);
         }

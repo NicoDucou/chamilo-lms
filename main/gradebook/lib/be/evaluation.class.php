@@ -511,68 +511,84 @@ class Evaluation implements GradebookItem
 	 */
 	public function calc_score($stud_id = null, $type = null)
 	{
-		$rescount = 0;
-		$sum = 0;
-		$bestResult = 0;
-		$weight = 0;
-		$sumResult = 0;
+        $useSession = true;
+		if (isset($stud_id) && empty($type)) {
+			$key = 'result_score_student_list_'.api_get_course_int_id().'_'.api_get_session_id().'_'.$this->id.'_'.$stud_id;
+			$data = Session::read('calc_score');
+            $results = isset($data[$key]) ? $data[$key] : null;
 
-        if (empty($stud_id)) {
-            $key = 'result_score_student_list_'.api_get_course_int_id().'_'.api_get_session_id().'_'.$this->id;
-            $results = Session::read($key);
-            if (empty($results)) {
-                $results = Result::load(null, null, $this->id);
-                Session::write($key, $results);
+            if ($useSession == false) {
+                $results  = null;
             }
-        } else {
-            $key = 'result_score_student_list_'.api_get_course_int_id().'_'.api_get_session_id().'_'.$this->id.'_'.api_get_user_id();
-            $results = Session::read($key);
-            if (empty($results)) {
-                $results = Result::load(null, $stud_id, $this->id);
-                Session::write($key, $results);
-            }
-        }
-
-		$students = array();
-		/** @var Result $res */
-		foreach ($results as $res) {
-			$score = $res->get_score();
-			if (!empty($score) || $score == '0') {
-				$rescount++;
-				$sum += $score / $this->get_max();
-				$sumResult += $score;
-				if ($score > $bestResult) {
-					$bestResult = $score;
-				}
-				$weight = $this->get_max();
+			if (empty($results)) {
+				$results = Result::load(null, $stud_id, $this->id);
+				Session::write('calc_score', array($key => $results));
 			}
-			$students[$res->get_user_id()] = $score;
-		}
 
-		if ($rescount == 0) {
-			return null;
-		} else if (isset($stud_id) && empty($type)) {
+			$score = 0;
+			/** @var Result $res */
+			foreach ($results as $res) {
+				$score = $res->get_score();
+			}
+
 			return array($score, $this->get_max());
 		} else {
+
+			$count = 0;
+			$sum = 0;
+			$bestResult = 0;
+			$weight = 0;
+			$sumResult = 0;
+
+			$key = 'result_score_student_list_'.api_get_course_int_id().'_'.api_get_session_id().'_'.$this->id;
+            $data = Session::read('calc_score');
+            $allResults = isset($data[$key]) ? $data[$key] : null;
+            if ($useSession == false) {
+                $allResults  = null;
+            }
+			if (empty($allResults)) {
+				$allResults = Result::load(null, null, $this->id);
+				Session::write($key, $allResults);
+			}
+
+			$students = array();
+			/** @var Result $res */
+			foreach ($allResults as $res) {
+				$score = $res->get_score();
+				if (!empty($score) || $score == '0') {
+					$count++;
+					$sum += $score / $this->get_max();
+					$sumResult += $score;
+					if ($score > $bestResult) {
+						$bestResult = $score;
+					}
+					$weight = $this->get_max();
+				}
+				$students[$res->get_user_id()] = $score;
+			}
+
+			if (empty($count)) {
+				return null;
+			}
+
 			switch ($type) {
 				case 'best':
 					return array($bestResult, $weight);
 					break;
 				case 'average':
-					return array($sumResult/$rescount, $weight);
+					return array($sumResult/$count, $weight);
 					break;
 				case 'ranking':
                     $students = array();
                     /** @var Result $res */
-                    foreach ($results as $res) {
+                    foreach ($allResults as $res) {
                         $score = $res->get_score();
                         $students[$res->get_user_id()] = $score;
                     }
-
 					return AbstractLink::getCurrentUserRanking($stud_id, $students);
 					break;
 				default:
-					return array($sum, $rescount);
+					return array($sum, $count);
 					break;
 			}
 		}

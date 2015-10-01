@@ -6,6 +6,8 @@
  * @package chamilo.gradebook
  */
 
+use ChamiloSession as Session;
+
 $language_file = 'gradebook';
 
 require_once '../inc/global.inc.php';
@@ -112,6 +114,9 @@ switch ($action) {
                 true
             );
         }
+
+        // Delete calc_score session data
+        Session::erase('calc_score');
 
         break;
     case 'download':

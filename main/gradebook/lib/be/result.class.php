@@ -82,6 +82,7 @@ class Result
         $tbl_course_rel_course = Database :: get_main_table(TABLE_MAIN_COURSE_USER);
         $tbl_session_rel_course_user = Database :: get_main_table(TABLE_MAIN_SESSION_COURSE_USER);
         $sessionId = api_get_session_id();
+        $list_user_course_list = array();
 
         if (is_null($id) && is_null($user_id) && !is_null($evaluation_id)) {
             // Verified_if_exist_evaluation
@@ -102,7 +103,9 @@ class Result
                 } else {
                     $sql = 'SELECT course_code,user_id,status
                             FROM ' . $tbl_course_rel_course . '
-                            WHERE status ="' . STUDENT . '" AND course_code="' . api_get_course_id() . '" ';
+                            WHERE
+                                status ="' . STUDENT . '" AND
+                                course_code="' . api_get_course_id() . '" ';
                 }
 
                 $res_course_rel_user = Database::query($sql);
@@ -126,13 +129,24 @@ class Result
                         Database::query($sql_insert);
                     }
                 }
-                $list_user_course_list = array();
             }
         }
 
-        $sql = "SELECT gr.id, gr.user_id, gr.evaluation_id, gr.created_at, gr.score
+        $userIdList = array();
+        foreach($list_user_course_list as $data) {
+            $userIdList[] = $data['user_id'];
+        }
+        $userIdListToString = implode("', '", $userIdList);
+
+        $sql = "SELECT lastname, gr.id, gr.user_id, gr.evaluation_id, gr.created_at, gr.score
                 FROM $tbl_grade_results gr
-                LEFT JOIN $tbl_user u ON gr.user_id = u.user_id ";
+                INNER JOIN $tbl_user u
+                ON gr.user_id = u.user_id ";
+
+        if (!empty($userIdList)) {
+            $sql .= " AND u.user_id IN ('$userIdListToString')";
+        }
+
         $paramcount = 0;
         if (!empty($id)) {
             $sql.= ' WHERE gr.id = ' . intval($id);
@@ -153,11 +167,12 @@ class Result
                 $sql .= ' WHERE';
             }
             $sql .= ' gr.evaluation_id = ' . intval($evaluation_id);
-            $paramcount ++;
         }
         $sql .= ' ORDER BY u.lastname, u.firstname';
+
         $result = Database::query($sql);
         $allres = array();
+        $total = 0;
         while ($data = Database::fetch_array($result)) {
             $res = new Result();
             $res->set_id($data['id']);
@@ -166,7 +181,9 @@ class Result
             $res->set_date(api_get_local_time($data['created_at']));
             $res->set_score($data['score']);
             $allres[] = $res;
+            $total += $data['score'];
         }
+
         return $allres;
     }
 

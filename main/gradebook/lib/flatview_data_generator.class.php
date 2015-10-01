@@ -602,7 +602,10 @@ class FlatViewDataGenerator
 
         $evaluationsAdded = array();
 
-        for ($count = 0; ($count < $items_count) && ($items_start + $count < count($this->evals_links)); $count++) {
+        for ($count = 0;
+             ($count < $items_count) && ($items_start + $count < count($this->evals_links));
+             $count++
+        ) {
             /** @var AbstractLink $item */
             $item = $this->evals_links[$count + $items_start];
 
@@ -643,8 +646,6 @@ class FlatViewDataGenerator
             $item_total += $item->get_weight();
 
             $complete_score = $scoredisplay->display_score($score, SCORE_DIV_PERCENT, SCORE_ONLY_SCORE);
-            //$temp_score  = $scoredisplay->display_score(array($item_value, null), SCORE_DIV_SIMPLE_WITH_CUSTOM);
-            //$temp_score = Display::tip($temp_score, $complete_score);
 
             if (api_get_setting('gradebook_show_percentage_in_reports') == 'false') {
                 $real_score = $scoredisplay->display_score($real_score, SCORE_SIMPLE);

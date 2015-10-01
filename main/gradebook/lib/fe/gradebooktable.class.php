@@ -204,7 +204,7 @@ class GradebookTable extends SortableTable
             );
             $this->studentList = $studentList;
         }
-
+        //error_log(count($this->studentList));
         $this->datagen->userId = $this->userId;
 
         $data_array = $this->datagen->get_data(
@@ -396,8 +396,13 @@ class GradebookTable extends SortableTable
                     $sub_cat_info = new GradebookDataGenerator($allcat, $alleval, $alllink);
                     $sub_cat_info->userId = $user_id;
 
-                    $data_array = $sub_cat_info->get_data($sorting, $from, $this->per_page);
-
+                    $data_array = $sub_cat_info->get_data(
+                        $sorting,
+                        $from,
+                        $this->per_page,
+                        false,
+                        $this->studentList
+                    );
                     $total_weight = 0;
 
                     // Links.
