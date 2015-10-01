@@ -932,8 +932,6 @@ class Category implements GradebookItem
                     }
                 }
             }
-
-
         } else {
             if (!empty($course_code)) {
                 $cats = $this->get_subcategories(
@@ -1043,6 +1041,9 @@ class Category implements GradebookItem
                 return array($bestResult, $weightsum);
                 break;
             case 'average':
+                if (empty($count)) {
+                    return null;
+                }
                 return array($sumResult/$count, $weightsum);
                 break;
             case 'ranking':
