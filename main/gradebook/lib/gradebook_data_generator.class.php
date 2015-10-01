@@ -176,7 +176,6 @@ class GradebookDataGenerator
                 }
             } else {
                 // Category.
-                // Result
                 $result = $this->build_result_column($userId, $item, $ignore_score_color, true);
                 $row[] = $result['display'];
                 $row['result_score'] = $result['score'];
@@ -194,6 +193,7 @@ class GradebookDataGenerator
 
                 // Ranking
                 $rankingStudentList = array();
+                $invalidateResults = true;
                 foreach ($studentList as $user) {
                     $score = $this->build_result_column(
                         $user['user_id'],
@@ -201,12 +201,19 @@ class GradebookDataGenerator
                         $ignore_score_color,
                         true
                     );
+
+                    if (!empty($score['score'][0])) {
+                        $invalidateResults = false;
+                    }
                     $rankingStudentList[$user['user_id']] = $score['score'][0];
                 }
 
                 $scoreDisplay = ScoreDisplay::instance();
                 $score = AbstractLink::getCurrentUserRanking($userId, $rankingStudentList);
                 $row['ranking'] = $scoreDisplay->display_score($score, SCORE_DIV);
+                if ($invalidateResults) {
+                    $row['ranking'] = null;
+                }
             }
             $data[] = $row;
         }
@@ -265,8 +272,6 @@ class GradebookDataGenerator
 
         $scoreDisplay = null;
         if (isset($score[0])) {
-            //error_log($score[0]);
-            //error_log($score[1]);
             $scoreDisplay = ScoreDisplay::instance();
             $scoreDisplay = $scoreDisplay->display_score($score, SCORE_DIV);
         }

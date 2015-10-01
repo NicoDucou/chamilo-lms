@@ -1038,15 +1038,21 @@ class Category implements GradebookItem
 
         switch ($type) {
             case 'best':
+                if (empty($bestResult)) {
+                    return null;
+                }
                 return array($bestResult, $weightsum);
                 break;
             case 'average':
-                if (empty($count)) {
+                if (empty($count) || empty($sumResult)) {
                     return null;
                 }
                 return array($sumResult/$count, $weightsum);
                 break;
             case 'ranking':
+                // category ranking is calculated in gradebook_data_generator.class.php
+                // function get_data
+                return null;
                 return AbstractLink::getCurrentUserRanking($stud_id, []);
                 break;
             default:

@@ -123,19 +123,22 @@ if (isset($_GET['isStudentView'])) {
 if ((isset($_GET['selectcat']) && $_GET['selectcat']>0) &&
     (isset($_SESSION['studentview']) && $_SESSION['studentview']=='studentview')
 ) {
-    Display :: display_header();
+    /*Display :: display_header();
     //Introduction tool: student view
     Display::display_introduction_section(TOOL_GRADEBOOK, array('ToolbarSet' => 'AssessmentsIntroduction'));
     $category = $_GET['selectcat'];
+
     $cats = Category :: load ($category, null, null, null, null, null, false);
+
     $allcat = $cats[0]->get_subcategories($stud_id, $course_code, $session_id);
     $alleval = $cats[0]->get_evaluations($stud_id);
     $alllink = $cats[0]->get_links($stud_id);
     $addparams = array();
+    // add params to the future links (in the table shown)
     $gradebooktable= new GradebookTable($cats[0], $allcat, $alleval,$alllink, $addparams);
     $gradebooktable->display();
     Display :: display_footer();
-    exit;
+    exit;*/
 } else {
     if (!isset($_GET['selectcat']) &&
         ($_SESSION['studentview']=='studentview') ||
@@ -627,12 +630,14 @@ $simple_search_form='';
 if (isset($_GET['studentoverview'])) {
     //@todo this code also seems to be deprecated ...
     $cats= Category :: load($category);
+
     $stud_id= (api_is_allowed_to_edit() ? null : $stud_id);
-    $allcat= array ();
-    $alleval= $cats[0]->get_evaluations($stud_id, true);
-    $alllink= $cats[0]->get_links($stud_id, true);
+
+    $allcat = $cats[0]->get_subcategories($stud_id, $course_code, $session_id);
+    $alleval = $cats[0]->get_evaluations($stud_id, true);
+    $alllink = $cats[0]->get_links($stud_id, true);
     if (isset ($_GET['exportpdf'])) {
-        $datagen = new GradebookDataGenerator ($allcat,$alleval, $alllink);
+        $datagen = new GradebookDataGenerator($allcat, $alleval, $alllink);
         $header_names = array(get_lang('Name'),get_lang('Description'),get_lang('Weight'),get_lang('Date'),get_lang('Results'));
         $data_array = $datagen->get_data(GradebookDataGenerator :: GDG_SORT_NAME,0,null,true);
         $newarray = array();
@@ -703,6 +708,7 @@ if (isset($_GET['studentoverview'])) {
         }
         unset($cats);
     }
+
     $cats = Category::load($category, null, null, null, null, null, false);
 
     //with this fix the teacher only can view 1 gradebook
@@ -711,7 +717,6 @@ if (isset($_GET['studentoverview'])) {
     } else {
         $stud_id = $stud_id;
     }
-
     $allcat  = $cats[0]->get_subcategories($stud_id, $course_code, $session_id);
     $alleval = $cats[0]->get_evaluations($stud_id);
     $alllink = $cats[0]->get_links($stud_id);
@@ -803,6 +808,7 @@ if (isset($first_time) && $first_time==1 && api_is_allowed_to_edit(null,true)) {
     echo '<meta http-equiv="refresh" content="0;url='.api_get_self().'?cidReq='.$course_code.'" />';
 } else {
     $cats = Category::load(null, null, $course_code, null, null, $session_id, false);
+
 
     if (!empty($cats)) {
         if ((api_get_setting('gradebook_enable_grade_model') == 'true') &&
