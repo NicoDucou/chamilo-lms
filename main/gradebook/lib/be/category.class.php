@@ -1053,7 +1053,7 @@ class Category implements GradebookItem
                 // category ranking is calculated in gradebook_data_generator.class.php
                 // function get_data
                 return null;
-                return AbstractLink::getCurrentUserRanking($stud_id, []);
+                return AbstractLink::getCurrentUserRanking($stud_id, array());
                 break;
             default:
                 return array($ressum, $weightsum);
