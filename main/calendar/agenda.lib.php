@@ -1428,8 +1428,8 @@ class Agenda
                 $user_to_array = $items['users'];
                 $event = array();
                 $event['id'] = 'course_'.$row['id'];
-                $event['unique_id']  = 'course_'.$row['id'].intval($row['session_id'].$course_id);
-
+                $event['unique_id']  = 'event_'.$row['id'].'_'.intval($row['session_id']).'_'.$course_id;
+error_log('event unique id = ' . $event['unique_id']);
                 // To avoid doubles
                 if (in_array($event['unique_id'], $eventsAdded)) {
                     continue;
