@@ -1,0 +1,189 @@
+/*!
+ * CSS COOL BLUE - v. 2.0
+ * 2015 - Alex Aragón (aragonc@beeznest.com)
+ * Licensed GPL
+ * Based on Bootstrap
+*/
+
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+
+@font-face {
+    font-family: 'TeXGyreAdventor-Regular';
+    font-style: normal;
+    font-weight: normal;
+    src: local('TeXGyreAdventor-Regular'), url('texgyreadventor-regular.woff') format('woff');
+}
+
+
+@font-face {
+    font-family: 'TeXGyreAdventor-Italic';
+    font-style: normal;
+    font-weight: normal;
+    src: local('TeXGyreAdventor-Italic'), url('texgyreadventor-italic.woff') format('woff');
+}
+
+
+@font-face {
+    font-family: 'TeXGyreAdventor-Bold';
+    font-style: normal;
+    font-weight: normal;
+    src: local('TeXGyreAdventor-Bold'), url('texgyreadventor-bold.woff') format('woff');
+}
+
+
+@font-face {
+    font-family: 'TeXGyreAdventor-BoldItalic';
+    font-style: normal;
+    font-weight: normal;
+    src: local('TeXGyreAdventor-BoldItalic'), url('texgyreadventor-bolditalic.woff') format('woff');
+}
+
+
+html {
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  font-family: 'Roboto',sans-serif;
+  line-height: 1.72222;
+}
+h1,h2,h3,h4,h5,h6{
+    font-family: 'TeXGyreAdventor-Regular',  sans-serif;
+}
+a{
+  color: #666666;
+}
+a:hover{
+  color: #044375;
+  text-decoration: none;
+}
+
+.navbar-default {
+  background: #047eb6; /* Old browsers */
+  border-color: #E5E5E5;
+}
+.navbar-default .navbar-brand {
+  color: #ffffff;
+}
+.navbar-default .navbar-brand:hover, .navbar-default .navbar-brand:focus {
+  color: #ededed;
+}
+.navbar-default .navbar-text {
+  color: #ffffff;
+}
+.navbar-default .navbar-nav > li > a {
+    color: #ffffff;
+    font-family: 'TeXGyreAdventor-Bold', sans-serif;
+    text-transform: uppercase;
+}
+.navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
+    color: #FFFFFF;
+    background: #5389BA; /* Old browsers */
+}
+.navbar-default .navbar-nav > li > .dropdown-menu {
+    background: #FFFFFF;
+}
+.navbar-default .navbar-nav > li > .dropdown-menu > li > a {
+  color: #ffffff;
+}
+.navbar-default .navbar-nav > li > .dropdown-menu > li > a:hover,
+.navbar-default .navbar-nav > li > .dropdown-menu > li > a:focus {
+  color: #ededed;
+  background-color: #044375;
+}
+.navbar-default .navbar-nav > li > .dropdown-menu > li > .divider {
+  background-color: #0099c0;
+}
+.navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:hover, .navbar-default .navbar-nav > .active > a:focus {
+    color: #FFFFFF;
+    background: #04688d; /* Old browsers */
+    background: -moz-linear-gradient(top, #04688d 0%, #036896 0%, #020f29 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#04688d), color-stop(0%,#036896), color-stop(100%,#020f29)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #04688d 0%,#036896 0%,#020f29 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #04688d 0%,#036896 0%,#020f29 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #04688d 0%,#036896 0%,#020f29 100%); /* IE10+ */
+    background: linear-gradient(to bottom, #04688d 0%,#036896 0%,#020f29 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#04688d', endColorstr='#020f29',GradientType=0 ); /* IE6-9 */ 
+}
+.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {
+   color: #FFFFFF;
+    background: #044375; /* Old browsers */
+
+}
+.navbar-default .navbar-toggle {
+  border-color: #0099c0;
+}
+.navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
+  background-color: #0099c0;
+}
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: #ffffff;
+}
+.navbar-default .navbar-collapse,
+.navbar-default .navbar-form {
+  border-color: #ffffff;
+}
+.navbar-default .navbar-link {
+  color: #ffffff;
+}
+.navbar-default .navbar-link:hover {
+  color: #ededed;
+}
+
+@media (max-width: 767px) {
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover, .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: #ededed;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a, .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover, .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
+    color: #ededed;
+    background-color: #0099c0;
+  }
+}
+.breadcrumb{
+  background: #F9F9F9;
+  color: #006A84;
+}
+.nav li a:hover{
+    background: transparent;
+}
+.panel-default .panel-heading{
+    background-color: #F9F9F9;
+}
+footer{
+    background: url("images/footer.png");
+    padding: 10px 15px;
+    border-top: 3px solid #cdcdcd;
+}
+footer a{
+  color: #ffffff;
+}
+footer a:hover{
+  color: #CCC;
+}
+.footer{
+    padding-top: 3rem;
+}
+@media (min-width: 1024px) {
+    #cm-header{
+        background: url(images/bg-header.png);
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    #cm-header {
+        background: url(images/bg-header-tablet.png) 5px 10px;
+    }
+}
+
+/* Landscape phone to portrait tablet */
+@media (max-width: 767px) {
+    #cm-header {
+        background: url(images/bg-header-tablet.png);
+    }
+}
+
+/* Landscape phones and down */
+@media (max-width: 480px) {
+
+}
